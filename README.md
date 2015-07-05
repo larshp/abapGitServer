@@ -13,3 +13,4 @@ Scope:
 - No brances, no tags, no submodules, no blame
 - A lot of code from abapGit can be reused, but I'd like to keep the codebase/projects separated
 - Install via abapGit
+- As SICF service
