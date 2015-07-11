@@ -4,7 +4,7 @@
 Git server implemented in ABAP
 
 Prerequsites:
-- [ ] https://github.com/larshp/abapGit/issues/76
+- [X] https://github.com/larshp/abapGit/issues/76
 - [ ] https://github.com/larshp/abapGit/issues/86
 
 Scope:
