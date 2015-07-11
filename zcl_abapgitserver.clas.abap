@@ -13,4 +13,13 @@ ENDCLASS.
 
 
 CLASS ZCL_ABAPGITSERVER IMPLEMENTATION.
+
+
+METHOD if_http_extension~handle_request.
+
+* todo
+
+  RETURN.
+
+ENDMETHOD.
 ENDCLASS.
