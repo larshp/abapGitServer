@@ -3,9 +3,6 @@
 # abapGitServer
 Git server implemented in ABAP
 
-Prerequsites:
-- [X] https://github.com/larshp/abapGit/issues/76
-
 Scope:
 - Limited to work with abapGit, later it can be extended to work with "real" git clients
 - Web interface: browse/create repository
