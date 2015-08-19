@@ -1,0 +1,33 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<abapGit version="v0.2-alpha">
+ <T100A>
+  <ARBGB>ZABAPGITSERVER</ARBGB>
+  <MASTERLANG></MASTERLANG>
+  <APPLCLASS></APPLCLASS>
+  <RESPUSER></RESPUSER>
+  <LASTUSER></LASTUSER>
+  <LDATE>00000000</LDATE>
+  <LTIME>000000</LTIME>
+  <STEXT>abapGitServer</STEXT>
+ </T100A>
+ <T100>
+  <T100>
+   <SPRSL>E</SPRSL>
+   <ARBGB>ZABAPGITSERVER</ARBGB>
+   <MSGNR>000</MSGNR>
+   <TEXT>Error</TEXT>
+  </T100>
+  <T100>
+   <SPRSL>E</SPRSL>
+   <ARBGB>ZABAPGITSERVER</ARBGB>
+   <MSGNR>001</MSGNR>
+   <TEXT>Repository already exists</TEXT>
+  </T100>
+  <T100>
+   <SPRSL>E</SPRSL>
+   <ARBGB>ZABAPGITSERVER</ARBGB>
+   <MSGNR>002</MSGNR>
+   <TEXT>Repository not found</TEXT>
+  </T100>
+ </T100>
+</abapGit>
