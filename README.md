@@ -1,6 +1,6 @@
-# idea, coding not started
+# not working yet
 
-# abapGitServer
+## abapGitServer
 Git server implemented in ABAP
 
 Scope:
