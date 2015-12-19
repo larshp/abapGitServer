@@ -37,7 +37,6 @@ METHOD create.
   ls_branch-branch = zcl_ags_util=>uuid( ).
   ls_branch-name = iv_name.
 
-
   DATA(lo_file) = NEW zcl_ags_obj_file( ).
   lo_file->set_data( zcl_ags_util=>string_to_xstring_utf8( 'test' ) ).
 
