@@ -1,30 +1,33 @@
-class ZCL_AGS_REPO definition
-  public
-  create public .
+CLASS zcl_ags_repo DEFINITION
+  PUBLIC
+  CREATE PUBLIC .
 
-public section.
+  PUBLIC SECTION.
 
-  methods GET
-    returning
-      value(RS_DATA) type ZAGS_REPOS .
-  class-methods LIST
-    returning
-      value(RT_LIST) type ZAGS_REPOS_TT .
-  methods LIST_BRANCHES
-    returning
-      value(RT_LIST) type ZAGS_BRANCHES_TT .
-  class-methods CREATE
-    importing
-      !IV_NAME type ZAGS_REPOS-NAME
-    returning
-      value(RO_REPO) type ref to ZCL_AGS_REPO
-    raising
-      ZCX_AGS_ERROR .
-  methods CONSTRUCTOR
-    importing
-      !IV_NAME type ZAGS_REPOS-NAME
-    raising
-      ZCX_AGS_ERROR .
+    TYPES: ty_repos_tt TYPE STANDARD TABLE OF zags_repos WITH DEFAULT KEY,
+           ty_branches_tt type standard table of zags_branches with default key.
+
+    METHODS get
+      RETURNING
+        VALUE(rs_data) TYPE zags_repos .
+    CLASS-METHODS list
+      RETURNING
+        VALUE(rt_list) TYPE ty_repos_tt .
+    METHODS list_branches
+      RETURNING
+        VALUE(rt_list) TYPE ty_branches_tt .
+    CLASS-METHODS create
+      IMPORTING
+        !iv_name       TYPE zags_repos-name
+      RETURNING
+        VALUE(ro_repo) TYPE REF TO zcl_ags_repo
+      RAISING
+        zcx_ags_error .
+    METHODS constructor
+      IMPORTING
+        !iv_name TYPE zags_repos-name
+      RAISING
+        zcx_ags_error .
 protected section.
 private section.
 
@@ -51,7 +54,7 @@ ENDMETHOD.
 
 METHOD create.
 
-  DATA: lt_list TYPE zags_repos_tt,
+  DATA: lt_list TYPE ty_repos_tt,
         ls_repo TYPE zags_repos.
 
 

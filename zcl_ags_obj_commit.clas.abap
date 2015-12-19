@@ -1,48 +1,56 @@
-class ZCL_AGS_OBJ_COMMIT definition
-  public
-  create public .
+CLASS zcl_ags_obj_commit DEFINITION
+  PUBLIC
+  CREATE PUBLIC .
 
-public section.
+  PUBLIC SECTION.
 
-  interfaces ZIF_AGS_OBJECT .
+    INTERFACES zif_ags_object .
 
-  methods GET_TREE
-    returning
-      value(RV_TREE) type ZAGS_OBJ_COMMIT-TREE .
-  methods GET_PARENT
-    returning
-      value(RV_PARENT) type ZAGS_OBJ_COMMIT-PARENT .
-  methods GET_AUTHOR
-    returning
-      value(RV_AUTHOR) type ZAGS_OBJ_COMMIT-AUTHOR .
-  methods GET_COMMITTER
-    returning
-      value(RV_COMMITTER) type ZAGS_OBJ_COMMIT-COMMITTER .
-  methods GET_BODY
-    returning
-      value(RV_BODY) type ZAGS_OBJ_COMMIT-BODY .
-  methods SET_TREE
-    importing
-      !IV_TREE type ZAGS_OBJ_COMMIT-TREE .
-  methods SET_PARENT
-    importing
-      !IV_PARENT type ZAGS_OBJ_COMMIT-PARENT .
-  methods SET_AUTHOR
-    importing
-      !IV_AUTHOR type ZAGS_OBJ_COMMIT-AUTHOR .
-  methods SET_COMMITTER
-    importing
-      !IV_COMMITTER type ZAGS_OBJ_COMMIT-COMMITTER .
-  methods SET_BODY
-    importing
-      !IV_BODY type ZAGS_OBJ_COMMIT-BODY .
+    TYPES: BEGIN OF ty_commit,
+             tree      TYPE zags_sha1,	
+             parent    TYPE zags_sha1,
+             author    TYPE string,
+             committer TYPE string,
+             body      TYPE string,
+           END OF ty_commit.
+
+    METHODS get_tree
+      RETURNING
+        VALUE(rv_tree) TYPE ty_commit-tree .
+    METHODS get_parent
+      RETURNING
+        VALUE(rv_parent) TYPE ty_commit-parent .
+    METHODS get_author
+      RETURNING
+        VALUE(rv_author) TYPE ty_commit-author .
+    METHODS get_committer
+      RETURNING
+        VALUE(rv_committer) TYPE ty_commit-committer .
+    METHODS get_body
+      RETURNING
+        VALUE(rv_body) TYPE ty_commit-body .
+    METHODS set_tree
+      IMPORTING
+        !iv_tree TYPE ty_commit-tree .
+    METHODS set_parent
+      IMPORTING
+        !iv_parent TYPE ty_commit-parent .
+    METHODS set_author
+      IMPORTING
+        !iv_author TYPE ty_commit-author .
+    METHODS set_committer
+      IMPORTING
+        !iv_committer TYPE ty_commit-committer .
+    METHODS set_body
+      IMPORTING
+        !iv_body TYPE ty_commit-body .
 protected section.
 private section.
 
   aliases C_NEWLINE
     for ZIF_AGS_OBJECT~C_NEWLINE .
 
-  data MS_DATA type ZAGS_OBJ_COMMIT .
+  data MS_DATA type ty_COMMIT .
 ENDCLASS.
 
 

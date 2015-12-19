@@ -1,30 +1,38 @@
-class ZCL_AGS_OBJ_TREE definition
-  public
-  final
-  create public .
+CLASS zcl_ags_obj_tree DEFINITION
+  PUBLIC
+  FINAL
+  CREATE PUBLIC .
 
-public section.
+  PUBLIC SECTION.
 
-  interfaces ZIF_AGS_OBJECT .
+    INTERFACES zif_ags_object .
 
-  constants:
-    BEGIN OF c_chmod,
-                 file TYPE c LENGTH 6 VALUE '100644',
-                 dir  TYPE c LENGTH 5 VALUE '40000',
-    END OF c_chmod .
+    CONSTANTS:
+      BEGIN OF c_chmod,
+        file TYPE c LENGTH 6 VALUE '100644',
+        dir  TYPE c LENGTH 5 VALUE '40000',
+      END OF c_chmod .
 
-  methods ADD_FILE
-    importing
-      !IV_CHMOD type CLIKE
-      !IV_NAME type ZAGS_OBJ_TREE-NAME
-      !IO_FILE type ZAGS_OBJ_TREE-FILE .
-  methods LIST_FILES
-    returning
-      value(RT_FILES) type ZAGS_OBJ_TREE_TT .
+    TYPES: BEGIN OF ty_tree,
+             chmod TYPE string,
+             name  TYPE string,
+             file  TYPE REF TO zcl_ags_obj_file,
+           END OF ty_tree.
+
+    TYPES: ty_tree_tt TYPE STANDARD TABLE OF ty_tree WITH DEFAULT KEY.
+
+    METHODS add_file
+      IMPORTING
+        !iv_chmod TYPE clike
+        !iv_name  TYPE ty_tree-name
+        !io_file  TYPE ty_tree-file .
+    METHODS list_files
+      RETURNING
+        VALUE(rt_files) TYPE ty_tree_tt .
 protected section.
 private section.
 
-  data MT_DATA type ZAGS_OBJ_TREE_TT .
+  data MT_DATA type ty_tree_tt .
 ENDCLASS.
 
 
