@@ -201,6 +201,7 @@ METHOD zif_ags_object~serialize.
         lv_parent_lower TYPE string.
 
 
+
   lv_tree_lower = ms_data-tree.
   TRANSLATE lv_tree_lower TO LOWER CASE.
 
