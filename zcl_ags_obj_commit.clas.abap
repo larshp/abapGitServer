@@ -88,7 +88,6 @@ ENDMETHOD.
 
 METHOD get_tree.
 
-
   rv_tree = ms_data-tree.
 
 ENDMETHOD.
