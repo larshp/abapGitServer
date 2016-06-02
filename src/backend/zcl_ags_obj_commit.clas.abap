@@ -19,7 +19,7 @@ CLASS zcl_ags_obj_commit DEFINITION
 
     TYPES:
       BEGIN OF ty_commit,
-        tree      TYPE zags_sha1,	
+        tree      TYPE zags_sha1,
         parent    TYPE zags_sha1,
         author    TYPE string,
         committer TYPE string,
