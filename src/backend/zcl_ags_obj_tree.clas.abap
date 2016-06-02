@@ -1,34 +1,44 @@
-CLASS zcl_ags_obj_tree DEFINITION
-  PUBLIC
-  FINAL
-  CREATE PUBLIC .
+class ZCL_AGS_OBJ_TREE definition
+  public
+  final
+  create public .
 
-  PUBLIC SECTION.
+public section.
 
-    INTERFACES zif_ags_object .
+  interfaces ZIF_AGS_OBJECT .
 
-    CONSTANTS:
-      BEGIN OF c_chmod,
+  aliases C_NEWLINE
+    for ZIF_AGS_OBJECT~C_NEWLINE .
+  aliases DESERIALIZE
+    for ZIF_AGS_OBJECT~DESERIALIZE .
+  aliases SERIALIZE
+    for ZIF_AGS_OBJECT~SERIALIZE .
+  aliases SHA1
+    for ZIF_AGS_OBJECT~SHA1 .
+
+  types:
+    BEGIN OF ty_tree,
+             chmod TYPE string,
+             name  TYPE string,
+             file  TYPE REF TO zcl_ags_obj_file,
+           END OF ty_tree .
+  types:
+    ty_tree_tt TYPE STANDARD TABLE OF ty_tree WITH DEFAULT KEY .
+
+  constants:
+    BEGIN OF c_chmod,
         file TYPE c LENGTH 6 VALUE '100644',
         dir  TYPE c LENGTH 5 VALUE '40000',
       END OF c_chmod .
 
-    TYPES: BEGIN OF ty_tree,
-             chmod TYPE string,
-             name  TYPE string,
-             file  TYPE REF TO zcl_ags_obj_file,
-           END OF ty_tree.
-
-    TYPES: ty_tree_tt TYPE STANDARD TABLE OF ty_tree WITH DEFAULT KEY.
-
-    METHODS add_file
-      IMPORTING
-        !iv_chmod TYPE clike
-        !iv_name  TYPE ty_tree-name
-        !io_file  TYPE ty_tree-file .
-    METHODS list_files
-      RETURNING
-        VALUE(rt_files) TYPE ty_tree_tt .
+  methods ADD_FILE
+    importing
+      !IV_CHMOD type CLIKE
+      !IV_NAME type TY_TREE-NAME
+      !IO_FILE type TY_TREE-FILE .
+  methods LIST_FILES
+    returning
+      value(RT_FILES) type TY_TREE_TT .
 protected section.
 private section.
 
@@ -73,7 +83,9 @@ ENDMETHOD.
 
 METHOD zif_ags_object~sha1.
 
-  BREAK-POINT.
+  zcl_ags_util=>sha1(
+      iv_type = 'tree'
+      iv_data = serialize( ) ).
 
 ENDMETHOD.
 ENDCLASS.

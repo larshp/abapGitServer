@@ -94,6 +94,20 @@
     </item>
     <item>
      <ID>S</ID>
+     <KEY>P_DELETE</KEY>
+     <ENTRY>Delete Repository</ENTRY>
+     <LENGTH>25</LENGTH>
+     <SPLIT/>
+    </item>
+    <item>
+     <ID>S</ID>
+     <KEY>P_LISTB</KEY>
+     <ENTRY>List Branches</ENTRY>
+     <LENGTH>21</LENGTH>
+     <SPLIT/>
+    </item>
+    <item>
+     <ID>S</ID>
      <KEY>P_RNAME</KEY>
      <ENTRY>Repository</ENTRY>
      <LENGTH>18</LENGTH>

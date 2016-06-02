@@ -12,5 +12,7 @@ interface ZIF_AGS_OBJECT
       !IV_DATA type XSTRING .
   methods SHA1
     returning
-      value(RV_SHA1) type ZAGS_SHA1 .
+      value(RV_SHA1) type ZAGS_SHA1
+    raising
+      ZCX_AGS_ERROR .
 endinterface.

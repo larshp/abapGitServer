@@ -34,6 +34,15 @@ public section.
       attr3 type scx_attrname value '',
       attr4 type scx_attrname value '',
     end of M002 .
+  constants:
+    begin of M004,
+      msgid type symsgid value 'ZABAPGITSERVER',
+      msgno type symsgno value '004',
+      attr1 type scx_attrname value '',
+      attr2 type scx_attrname value '',
+      attr3 type scx_attrname value '',
+      attr4 type scx_attrname value '',
+    end of M004 .
 
   methods CONSTRUCTOR
     importing

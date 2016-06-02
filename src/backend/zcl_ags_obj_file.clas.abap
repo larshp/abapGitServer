@@ -6,6 +6,15 @@ public section.
 
   interfaces ZIF_AGS_OBJECT .
 
+  aliases C_NEWLINE
+    for ZIF_AGS_OBJECT~C_NEWLINE .
+  aliases DESERIALIZE
+    for ZIF_AGS_OBJECT~DESERIALIZE .
+  aliases SERIALIZE
+    for ZIF_AGS_OBJECT~SERIALIZE .
+  aliases SHA1
+    for ZIF_AGS_OBJECT~SHA1 .
+
   methods GET_DATA
     returning
       value(RV_DATA) type XSTRING .
@@ -53,7 +62,9 @@ ENDMETHOD.
 
 METHOD zif_ags_object~sha1.
 
-  BREAK-POINT.
+  zcl_ags_util=>sha1(
+      iv_type = 'blob'
+      iv_data = serialize( ) ).
 
 ENDMETHOD.
 ENDCLASS.
