@@ -10,6 +10,8 @@ public section.
     for ZIF_AGS_OBJECT~C_NEWLINE .
   aliases DESERIALIZE
     for ZIF_AGS_OBJECT~DESERIALIZE .
+  aliases SAVE
+    for ZIF_AGS_OBJECT~SAVE .
   aliases SERIALIZE
     for ZIF_AGS_OBJECT~SERIALIZE .
   aliases SHA1
@@ -53,6 +55,19 @@ METHOD zif_ags_object~deserialize.
 ENDMETHOD.
 
 
+METHOD zif_ags_object~save.
+
+  DATA: ls_object TYPE zags_objects.
+
+  ls_object-sha1 = sha1( ).
+  ls_object-type = 'blob'.
+  ls_object-data = serialize( ).
+
+  MODIFY zags_objects FROM ls_object.
+
+ENDMETHOD.
+
+
 METHOD zif_ags_object~serialize.
 
   rv_data = mv_data.
@@ -62,9 +77,9 @@ ENDMETHOD.
 
 METHOD zif_ags_object~sha1.
 
-  zcl_ags_util=>sha1(
+  rv_sha1 = zcl_ags_util=>sha1(
       iv_type = 'blob'
-      iv_data = serialize( ) ).
+      iv_data = serialize( ) ) ##NO_TEXT.
 
 ENDMETHOD.
 ENDCLASS.

@@ -7,7 +7,9 @@ CLASS ltcl_test DEFINITION FOR TESTING
   PRIVATE SECTION.
     CONSTANTS: c_sha1 TYPE zags_sha1 VALUE '5F46CB3C4B7F0B3600B64F744CDE614A283A88DC'.
 
-    METHODS: serialize FOR TESTING.
+    METHODS:
+      serialize FOR TESTING
+        RAISING zcx_ags_error.
 
 ENDCLASS.       "ltcl_Test
 

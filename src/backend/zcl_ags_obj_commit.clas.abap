@@ -1,59 +1,61 @@
-class ZCL_AGS_OBJ_COMMIT definition
-  public
-  create public .
+CLASS zcl_ags_obj_commit DEFINITION
+  PUBLIC
+  CREATE PUBLIC .
 
-public section.
+  PUBLIC SECTION.
 
-  interfaces ZIF_AGS_OBJECT .
+    INTERFACES zif_ags_object .
 
-  aliases C_NEWLINE
-    for ZIF_AGS_OBJECT~C_NEWLINE .
-  aliases DESERIALIZE
-    for ZIF_AGS_OBJECT~DESERIALIZE .
-  aliases SERIALIZE
-    for ZIF_AGS_OBJECT~SERIALIZE .
-  aliases SHA1
-    for ZIF_AGS_OBJECT~SHA1 .
+    ALIASES c_newline
+      FOR zif_ags_object~c_newline .
+    ALIASES deserialize
+      FOR zif_ags_object~deserialize .
+    ALIASES save
+      FOR zif_ags_object~save .
+    ALIASES serialize
+      FOR zif_ags_object~serialize .
+    ALIASES sha1
+      FOR zif_ags_object~sha1 .
 
-  types:
-    BEGIN OF ty_commit,
-             tree      TYPE zags_sha1,	
-             parent    TYPE zags_sha1,
-             author    TYPE string,
-             committer TYPE string,
-             body      TYPE string,
-           END OF ty_commit .
+    TYPES:
+      BEGIN OF ty_commit,
+        tree      TYPE zags_sha1,	
+        parent    TYPE zags_sha1,
+        author    TYPE string,
+        committer TYPE string,
+        body      TYPE string,
+      END OF ty_commit .
 
-  methods GET_TREE
-    returning
-      value(RV_TREE) type TY_COMMIT-TREE .
-  methods GET_PARENT
-    returning
-      value(RV_PARENT) type TY_COMMIT-PARENT .
-  methods GET_AUTHOR
-    returning
-      value(RV_AUTHOR) type TY_COMMIT-AUTHOR .
-  methods GET_COMMITTER
-    returning
-      value(RV_COMMITTER) type TY_COMMIT-COMMITTER .
-  methods GET_BODY
-    returning
-      value(RV_BODY) type TY_COMMIT-BODY .
-  methods SET_TREE
-    importing
-      !IV_TREE type ZAGS_SHA1 .
-  methods SET_PARENT
-    importing
-      !IV_PARENT type TY_COMMIT-PARENT .
-  methods SET_AUTHOR
-    importing
-      !IV_AUTHOR type TY_COMMIT-AUTHOR .
-  methods SET_COMMITTER
-    importing
-      !IV_COMMITTER type TY_COMMIT-COMMITTER .
-  methods SET_BODY
-    importing
-      !IV_BODY type TY_COMMIT-BODY .
+    METHODS get_tree
+      RETURNING
+        VALUE(rv_tree) TYPE ty_commit-tree .
+    METHODS get_parent
+      RETURNING
+        VALUE(rv_parent) TYPE ty_commit-parent .
+    METHODS get_author
+      RETURNING
+        VALUE(rv_author) TYPE ty_commit-author .
+    METHODS get_committer
+      RETURNING
+        VALUE(rv_committer) TYPE ty_commit-committer .
+    METHODS get_body
+      RETURNING
+        VALUE(rv_body) TYPE ty_commit-body .
+    METHODS set_tree
+      IMPORTING
+        !iv_tree TYPE zags_sha1 .
+    METHODS set_parent
+      IMPORTING
+        !iv_parent TYPE ty_commit-parent .
+    METHODS set_author
+      IMPORTING
+        !iv_author TYPE ty_commit-author .
+    METHODS set_committer
+      IMPORTING
+        !iv_committer TYPE ty_commit-committer .
+    METHODS set_body
+      IMPORTING
+        !iv_body TYPE ty_commit-body .
 protected section.
 private section.
 
@@ -199,6 +201,19 @@ METHOD zif_ags_object~deserialize.
 ENDMETHOD.
 
 
+METHOD zif_ags_object~save.
+
+  DATA: ls_object TYPE zags_objects.
+
+  ls_object-sha1 = sha1( ).
+  ls_object-type = 'commit' ##NO_TEXT.
+  ls_object-data = serialize( ).
+
+  MODIFY zags_objects FROM ls_object.
+
+ENDMETHOD.
+
+
 METHOD zif_ags_object~serialize.
 
   DATA: lv_string       TYPE string,
@@ -242,9 +257,9 @@ ENDMETHOD.
 
 METHOD zif_ags_object~sha1.
 
-  zcl_ags_util=>sha1(
+  rv_sha1 = zcl_ags_util=>sha1(
       iv_type = 'commit'
-      iv_data = serialize( ) ).
+      iv_data = serialize( ) ) ##NO_TEXT.
 
 ENDMETHOD.
 ENDCLASS.

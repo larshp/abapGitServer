@@ -50,7 +50,7 @@ METHOD dump_test_link.
       port     = lv_port.
 
   CONCATENATE 'http://' lv_host ':' lv_port '/zgit/foobar.git'
-    INTO rv_string.
+    INTO rv_string ##NO_TEXT.
 
 ENDMETHOD.
 
@@ -64,7 +64,7 @@ METHOD if_http_extension~handle_request.
   lv_path = server->request->get_header_field( '~path' ).
 
   IF lv_path CP 'sap/zgit/static/*'.
-    server->response->set_data( read_mime( 'index.html' ) ).
+    server->response->set_data( read_mime( 'index.html' ) ) ##NO_TEXT.
   ELSE.
 *    server->response->set_data( read_mime( 'index.html' ) ).
     server->response->set_cdata( dump_test_link( ) ).

@@ -4,9 +4,9 @@ SELECTION-SCREEN BEGIN OF BLOCK b1 WITH FRAME TITLE TEXT-001.
 PARAMETERS: p_crepo  TYPE c RADIOBUTTON GROUP g1,
             p_listb  TYPE c RADIOBUTTON GROUP g1,
             p_delete TYPE c RADIOBUTTON GROUP g1,
-            p_rname  TYPE zags_repos-name DEFAULT 'foobar',
+            p_rname  TYPE zags_repos-name DEFAULT 'foobar' ##NO_TEXT,
             p_cbra   TYPE c RADIOBUTTON GROUP g1,
-            p_bname  TYPE zags_repos-name DEFAULT 'refs/heads/master'.
+            p_bname  TYPE zags_repos-name DEFAULT 'refs/heads/master' ##NO_TEXT.
 SELECTION-SCREEN END OF BLOCK b1.
 
 CLASS lcl_app DEFINITION FINAL.
@@ -48,7 +48,7 @@ CLASS lcl_app IMPLEMENTATION.
             ASSERT 1 = 2.
         ENDCASE.
         COMMIT WORK.
-        MESSAGE s001(zabapgitserver).
+        MESSAGE s003(zabapgitserver).
       CATCH zcx_ags_error INTO lx_error.
         ROLLBACK WORK.
         MESSAGE lx_error TYPE 'E'.

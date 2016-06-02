@@ -6,13 +6,20 @@ interface ZIF_AGS_OBJECT
 
   methods SERIALIZE
     returning
-      value(RV_DATA) type XSTRING .
+      value(RV_DATA) type XSTRING
+    raising
+      ZCX_AGS_ERROR .
   methods DESERIALIZE
     importing
-      !IV_DATA type XSTRING .
+      !IV_DATA type XSTRING
+    raising
+      ZCX_AGS_ERROR .
   methods SHA1
     returning
       value(RV_SHA1) type ZAGS_SHA1
+    raising
+      ZCX_AGS_ERROR .
+  methods SAVE
     raising
       ZCX_AGS_ERROR .
 endinterface.

@@ -11,7 +11,9 @@ public section.
   class-methods CREATE
     importing
       !IO_REPO type ref to ZCL_AGS_REPO
-      !IV_NAME type ZAGS_BRANCHES-NAME .
+      !IV_NAME type ZAGS_BRANCHES-NAME
+    raising
+      ZCX_AGS_ERROR .
   methods CONSTRUCTOR
     importing
       !IO_REPO type ref to ZCL_AGS_REPO
@@ -50,25 +52,26 @@ METHOD create.
   DATA: ls_branch TYPE zags_branches.
 
 
-  ls_branch-repo   = io_repo->get_data( )-repo.
-  ls_branch-branch = zcl_ags_util=>uuid( ).
-  ls_branch-name   = iv_name.
-
-
   DATA(lo_file) = NEW zcl_ags_obj_file( ).
-  lo_file->set_data( zcl_ags_util=>string_to_xstring_utf8( 'test' ) ).
+  lo_file->set_data( zcl_ags_util=>string_to_xstring_utf8( 'test' ) ) ##NO_TEXT.
+  lo_file->save( ).
 
   DATA(lo_tree) = NEW zcl_ags_obj_tree( ).
   lo_tree->add_file( iv_chmod = zcl_ags_obj_tree=>c_chmod-file
                      iv_name  = 'test.txt'
-                     io_file  = lo_file ).
+                     io_file  = lo_file ) ##NO_TEXT.
+  lo_tree->save( ).
 
   DATA(lo_commit) = NEW zcl_ags_obj_commit( ).
   lo_commit->set_tree( lo_tree->sha1( ) ).
-  lo_commit->set_author( 'author' ).
-  lo_commit->set_body( 'body' ).
-  lo_commit->set_committer( 'committer' ).
+  lo_commit->set_author( 'author' ) ##NO_TEXT.
+  lo_commit->set_body( 'body' ) ##NO_TEXT.
+  lo_commit->set_committer( 'committer' ) ##NO_TEXT.
+  lo_commit->save( ).
 
+  ls_branch-repo   = io_repo->get_data( )-repo.
+  ls_branch-branch = zcl_ags_util=>uuid( ).
+  ls_branch-name   = iv_name.
   ls_branch-sha1 = lo_commit->sha1( ).
 
   INSERT zags_branches FROM ls_branch.

@@ -75,7 +75,7 @@ METHOD create.
 
   ls_repo-repo = zcl_ags_util=>uuid( ).
   ls_repo-name = iv_name.
-  ls_repo-head = 'refs/heads/master'.
+  ls_repo-head = 'refs/heads/master' ##NO_TEXT.
 
   INSERT zags_repos FROM ls_repo.
   ASSERT sy-subrc = 0.
@@ -100,7 +100,7 @@ METHOD delete.
 ENDMETHOD.
 
 
-METHOD GET_DATA.
+METHOD get_data.
 
   rs_data = ms_data.
 
@@ -110,25 +110,25 @@ ENDMETHOD.
 METHOD list.
 
   SELECT * FROM zags_repos
-    INTO TABLE rt_list.
+    INTO TABLE rt_list.                                 "#EC CI_NOWHERE
 
 ENDMETHOD.
 
 
 METHOD list_branches.
 
-  DATA: lt_list   TYPE TABLE OF zags_branches,
+  DATA: lt_list   TYPE TABLE OF zags_branches-name,
         lo_branch TYPE REF TO zcl_ags_branch.
 
 
-  SELECT * FROM zags_branches INTO TABLE lt_list
+  SELECT name FROM zags_branches INTO TABLE lt_list
     WHERE repo = ms_data-repo.
 
-  LOOP AT lt_list ASSIGNING FIELD-SYMBOL(<ls_list>).
+  LOOP AT lt_list ASSIGNING FIELD-SYMBOL(<lv_list>).
     CREATE OBJECT lo_branch
       EXPORTING
         io_repo = me
-        iv_name = <ls_list>-name.
+        iv_name = <lv_list>.
 
     APPEND lo_branch TO rt_list.
   ENDLOOP.
