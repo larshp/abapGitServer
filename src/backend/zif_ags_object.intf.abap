@@ -1,25 +1,23 @@
-interface ZIF_AGS_OBJECT
-  public .
+INTERFACE zif_ags_object PUBLIC.
 
+  CONSTANTS c_newline TYPE abap_char1 VALUE cl_abap_char_utilities=>newline ##NO_TEXT.
 
-  constants C_NEWLINE type ABAP_CHAR1 value CL_ABAP_CHAR_UTILITIES=>NEWLINE ##NO_TEXT.
-
-  methods SERIALIZE
-    returning
-      value(RV_DATA) type XSTRING
-    raising
-      ZCX_AGS_ERROR .
-  methods DESERIALIZE
-    importing
-      !IV_DATA type XSTRING
-    raising
-      ZCX_AGS_ERROR .
-  methods SHA1
-    returning
-      value(RV_SHA1) type ZAGS_SHA1
-    raising
-      ZCX_AGS_ERROR .
-  methods SAVE
-    raising
-      ZCX_AGS_ERROR .
-endinterface.
+  METHODS serialize
+    RETURNING
+      VALUE(rv_data) TYPE xstring
+    RAISING
+      zcx_ags_error.
+  METHODS deserialize
+    IMPORTING
+      !iv_data TYPE xstring
+    RAISING
+      zcx_ags_error.
+  METHODS sha1
+    RETURNING
+      VALUE(rv_sha1) TYPE zags_sha1
+    RAISING
+      zcx_ags_error.
+  METHODS save
+    RAISING
+      zcx_ags_error.
+ENDINTERFACE.

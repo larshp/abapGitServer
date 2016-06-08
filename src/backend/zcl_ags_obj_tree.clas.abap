@@ -1,50 +1,50 @@
-class ZCL_AGS_OBJ_TREE definition
-  public
-  final
-  create public .
+CLASS zcl_ags_obj_tree DEFINITION
+  PUBLIC
+  FINAL
+  CREATE PUBLIC.
 
-public section.
+  PUBLIC SECTION.
 
-  interfaces ZIF_AGS_OBJECT .
+    INTERFACES zif_ags_object.
 
-  aliases C_NEWLINE
-    for ZIF_AGS_OBJECT~C_NEWLINE .
-  aliases DESERIALIZE
-    for ZIF_AGS_OBJECT~DESERIALIZE .
-  aliases SAVE
-    for ZIF_AGS_OBJECT~SAVE .
-  aliases SERIALIZE
-    for ZIF_AGS_OBJECT~SERIALIZE .
-  aliases SHA1
-    for ZIF_AGS_OBJECT~SHA1 .
+    ALIASES c_newline
+      FOR zif_ags_object~c_newline.
+    ALIASES deserialize
+      FOR zif_ags_object~deserialize.
+    ALIASES save
+      FOR zif_ags_object~save.
+    ALIASES serialize
+      FOR zif_ags_object~serialize.
+    ALIASES sha1
+      FOR zif_ags_object~sha1.
 
-  types:
-    BEGIN OF ty_tree,
-             chmod TYPE string,
-             name  TYPE string,
-             file  TYPE REF TO zcl_ags_obj_file,
-           END OF ty_tree .
-  types:
-    ty_tree_tt TYPE STANDARD TABLE OF ty_tree WITH DEFAULT KEY .
+    TYPES:
+      BEGIN OF ty_tree,
+        chmod TYPE string,
+        name  TYPE string,
+        file  TYPE REF TO zcl_ags_obj_file,
+      END OF ty_tree.
+    TYPES:
+      ty_tree_tt TYPE STANDARD TABLE OF ty_tree WITH DEFAULT KEY.
 
-  constants:
-    BEGIN OF c_chmod,
+    CONSTANTS:
+      BEGIN OF c_chmod,
         file TYPE c LENGTH 6 VALUE '100644',
         dir  TYPE c LENGTH 5 VALUE '40000',
-      END OF c_chmod .
+      END OF c_chmod.
 
-  methods ADD_FILE
-    importing
-      !IV_CHMOD type CLIKE
-      !IV_NAME type TY_TREE-NAME
-      !IO_FILE type TY_TREE-FILE .
-  methods LIST_FILES
-    returning
-      value(RT_FILES) type TY_TREE_TT .
-protected section.
-private section.
+    METHODS add_file
+      IMPORTING
+        !iv_chmod TYPE clike
+        !iv_name  TYPE ty_tree-name
+        !io_file  TYPE ty_tree-file.
+    METHODS list_files
+      RETURNING
+        VALUE(rt_files) TYPE ty_tree_tt.
+  PROTECTED SECTION.
+  PRIVATE SECTION.
 
-  data MT_DATA type ty_tree_tt .
+    DATA mt_data TYPE ty_tree_tt.
 ENDCLASS.
 
 
@@ -52,24 +52,24 @@ ENDCLASS.
 CLASS ZCL_AGS_OBJ_TREE IMPLEMENTATION.
 
 
-METHOD add_file.
+  METHOD add_file.
 
-  APPEND INITIAL LINE TO mt_data ASSIGNING FIELD-SYMBOL(<ls_data>).
-  <ls_data>-chmod = iv_chmod.
-  <ls_data>-name = iv_name.
-  <ls_data>-file = io_file.
+    APPEND INITIAL LINE TO mt_data ASSIGNING FIELD-SYMBOL(<ls_data>).
+    <ls_data>-chmod = iv_chmod.
+    <ls_data>-name = iv_name.
+    <ls_data>-file = io_file.
 
-ENDMETHOD.
-
-
-METHOD list_files.
-
-  rt_files = mt_data.
-
-ENDMETHOD.
+  ENDMETHOD.
 
 
-METHOD zif_ags_object~deserialize.
+  METHOD list_files.
+
+    rt_files = mt_data.
+
+  ENDMETHOD.
+
+
+  METHOD zif_ags_object~deserialize.
 
 *    CONSTANTS: lc_sha_length TYPE i VALUE 20,
 *               lc_null       TYPE x VALUE '00'.
@@ -119,53 +119,53 @@ METHOD zif_ags_object~deserialize.
 *      ENDIF.
 *    ENDDO.
 
-  BREAK-POINT.
+    BREAK-POINT.
 
-ENDMETHOD.
-
-
-METHOD zif_ags_object~save.
-
-  DATA: ls_object TYPE zags_objects.
-
-  ls_object-sha1 = sha1( ).
-  ls_object-type = 'tree' ##NO_TEXT.
-  ls_object-data = serialize( ).
-
-  MODIFY zags_objects FROM ls_object.
-
-ENDMETHOD.
+  ENDMETHOD.
 
 
-METHOD zif_ags_object~serialize.
+  METHOD zif_ags_object~save.
 
-  CONSTANTS: lc_null TYPE x VALUE '00'.
+    DATA: ls_object TYPE zags_objects.
 
-  DATA: lv_string  TYPE string,
-        lv_hex20   TYPE x LENGTH 20,
-        lv_xstring TYPE xstring.
+    ls_object-sha1 = sha1( ).
+    ls_object-type = 'tree' ##NO_TEXT.
+    ls_object-data = serialize( ).
+
+    MODIFY zags_objects FROM ls_object.
+
+  ENDMETHOD.
+
+
+  METHOD zif_ags_object~serialize.
+
+    CONSTANTS: lc_null TYPE x VALUE '00'.
+
+    DATA: lv_string  TYPE string,
+          lv_hex20   TYPE x LENGTH 20,
+          lv_xstring TYPE xstring.
 
 * todo, sort tree
 
-  LOOP AT mt_data ASSIGNING FIELD-SYMBOL(<ls_data>).
-    ASSERT NOT <ls_data>-chmod IS INITIAL.
-    ASSERT NOT <ls_data>-name IS INITIAL.
+    LOOP AT mt_data ASSIGNING FIELD-SYMBOL(<ls_data>).
+      ASSERT NOT <ls_data>-chmod IS INITIAL.
+      ASSERT NOT <ls_data>-name IS INITIAL.
 
-    CONCATENATE <ls_data>-chmod <ls_data>-name INTO lv_string SEPARATED BY space.
-    lv_xstring = zcl_ags_util=>string_to_xstring_utf8( lv_string ).
+      CONCATENATE <ls_data>-chmod <ls_data>-name INTO lv_string SEPARATED BY space.
+      lv_xstring = zcl_ags_util=>string_to_xstring_utf8( lv_string ).
 
-    lv_hex20 = to_upper( <ls_data>-file->sha1( ) ).
-    CONCATENATE rv_data lv_xstring lc_null lv_hex20 INTO rv_data IN BYTE MODE.
-  ENDLOOP.
+      lv_hex20 = to_upper( <ls_data>-file->sha1( ) ).
+      CONCATENATE rv_data lv_xstring lc_null lv_hex20 INTO rv_data IN BYTE MODE.
+    ENDLOOP.
 
-ENDMETHOD.
+  ENDMETHOD.
 
 
-METHOD zif_ags_object~sha1.
+  METHOD zif_ags_object~sha1.
 
-  rv_sha1 = zcl_ags_util=>sha1(
-      iv_type = 'tree'
-      iv_data = serialize( ) ) ##NO_TEXT.
+    rv_sha1 = zcl_ags_util=>sha1(
+        iv_type = 'tree'
+        iv_data = serialize( ) ) ##NO_TEXT.
 
-ENDMETHOD.
+  ENDMETHOD.
 ENDCLASS.
