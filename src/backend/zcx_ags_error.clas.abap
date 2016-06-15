@@ -43,11 +43,33 @@ public section.
       attr3 type scx_attrname value '',
       attr4 type scx_attrname value '',
     end of M004 .
+  constants:
+    begin of M005,
+      msgid type symsgid value 'ZABAPGITSERVER',
+      msgno type symsgno value '005',
+      attr1 type scx_attrname value 'SHA1',
+      attr2 type scx_attrname value '',
+      attr3 type scx_attrname value '',
+      attr4 type scx_attrname value '',
+    end of M005 .
+  constants:
+    begin of M006,
+      msgid type symsgid value 'ZABAPGITSERVER',
+      msgno type symsgno value '006',
+      attr1 type scx_attrname value 'STRING',
+      attr2 type scx_attrname value '',
+      attr3 type scx_attrname value '',
+      attr4 type scx_attrname value '',
+    end of M006 .
+  data SHA1 type ZAGS_SHA1 .
+  data STRING type STRING .
 
   methods CONSTRUCTOR
     importing
       !TEXTID like IF_T100_MESSAGE=>T100KEY optional
-      !PREVIOUS like PREVIOUS optional .
+      !PREVIOUS like PREVIOUS optional
+      !SHA1 type ZAGS_SHA1 optional
+      !STRING type STRING optional .
 protected section.
 private section.
 ENDCLASS.
@@ -62,6 +84,8 @@ CALL METHOD SUPER->CONSTRUCTOR
 EXPORTING
 PREVIOUS = PREVIOUS
 .
+me->SHA1 = SHA1 .
+me->STRING = STRING .
 clear me->textid.
 if textid is initial.
   IF_T100_MESSAGE~T100KEY = ZCX_AGS_ERROR .

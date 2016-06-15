@@ -1,0 +1,55 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<abapGit version="v1.0.0" serializer="LCL_OBJECT_DTEL" serializer_version="v1.0.0">
+ <asx:abap xmlns:asx="http://www.sap.com/abapxml" version="1.0">
+  <asx:values>
+   <DD04V>
+    <ROLLNAME>ZAGS_REPO_NAME</ROLLNAME>
+    <DDLANGUAGE>E</DDLANGUAGE>
+    <DOMNAME/>
+    <ROUTPUTLEN>000000</ROUTPUTLEN>
+    <MEMORYID/>
+    <LOGFLAG/>
+    <HEADLEN>20</HEADLEN>
+    <SCRLEN1>10</SCRLEN1>
+    <SCRLEN2>20</SCRLEN2>
+    <SCRLEN3>40</SCRLEN3>
+    <DDTEXT>Repository name</DDTEXT>
+    <REPTEXT>Repository name</REPTEXT>
+    <SCRTEXT_S>Repository</SCRTEXT_S>
+    <SCRTEXT_M>Repository name</SCRTEXT_M>
+    <SCRTEXT_L>Repository name</SCRTEXT_L>
+    <ACTFLAG/>
+    <APPLCLASS/>
+    <AUTHCLASS>00</AUTHCLASS>
+    <AS4USER/>
+    <AS4DATE>0000-00-00</AS4DATE>
+    <AS4TIME>00:00:00</AS4TIME>
+    <DTELMASTER>E</DTELMASTER>
+    <RESERVEDTE/>
+    <DTELGLOBAL/>
+    <SHLPNAME/>
+    <SHLPFIELD/>
+    <DEFFDNAME/>
+    <DATATYPE>CHAR</DATATYPE>
+    <LENG>000020</LENG>
+    <DECIMALS>000000</DECIMALS>
+    <OUTPUTLEN>000020</OUTPUTLEN>
+    <LOWERCASE/>
+    <SIGNFLAG/>
+    <CONVEXIT/>
+    <VALEXI/>
+    <ENTITYTAB/>
+    <REFKIND/>
+    <REFTYPE/>
+    <PROXYTYPE/>
+    <LTRFLDDIS/>
+    <BIDICTRLC/>
+    <NOHISTORY/>
+   </DD04V>
+   <TPARA>
+    <PARAMID/>
+    <PARTEXT/>
+   </TPARA>
+  </asx:values>
+ </asx:abap>
+</abapGit>

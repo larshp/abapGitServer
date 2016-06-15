@@ -9,17 +9,6 @@ CLASS zcl_ags_repo DEFINITION
     TYPES:
       ty_branches_tt TYPE STANDARD TABLE OF REF TO zcl_ags_branch WITH DEFAULT KEY.
 
-    METHODS get_data
-      RETURNING
-        VALUE(rs_data) TYPE zags_repos.
-    CLASS-METHODS list
-      RETURNING
-        VALUE(rt_list) TYPE ty_repos_tt.
-    METHODS list_branches
-      RETURNING
-        VALUE(rt_list) TYPE ty_branches_tt
-      RAISING
-        zcx_ags_error.
     CLASS-METHODS create
       IMPORTING
         !iv_name       TYPE zags_repos-name
@@ -27,12 +16,23 @@ CLASS zcl_ags_repo DEFINITION
         VALUE(ro_repo) TYPE REF TO zcl_ags_repo
       RAISING
         zcx_ags_error.
+    CLASS-METHODS list
+      RETURNING
+        VALUE(rt_list) TYPE ty_repos_tt.
     METHODS constructor
       IMPORTING
         !iv_name TYPE zags_repos-name
       RAISING
         zcx_ags_error.
     METHODS delete
+      RAISING
+        zcx_ags_error.
+    METHODS get_data
+      RETURNING
+        VALUE(rs_data) TYPE zags_repos.
+    METHODS list_branches
+      RETURNING
+        VALUE(rt_list) TYPE ty_branches_tt
       RAISING
         zcx_ags_error.
   PROTECTED SECTION.

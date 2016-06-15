@@ -71,7 +71,7 @@ CLASS ZCL_AGS_BRANCH IMPLEMENTATION.
     ls_branch-repo   = io_repo->get_data( )-repo.
     ls_branch-branch = zcl_ags_util=>uuid( ).
     ls_branch-name   = iv_name.
-    ls_branch-sha1 = lo_commit->sha1( ).
+    ls_branch-sha1   = lo_commit->sha1( ).
 
     INSERT zags_branches FROM ls_branch.
     ASSERT sy-subrc = 0.

@@ -43,6 +43,18 @@
      <MSGNR>004</MSGNR>
      <TEXT>Error while calculating SHA1</TEXT>
     </T100>
+    <T100>
+     <SPRSL>E</SPRSL>
+     <ARBGB>ZABAPGITSERVER</ARBGB>
+     <MSGNR>005</MSGNR>
+     <TEXT>Object not found, &amp;1</TEXT>
+    </T100>
+    <T100>
+     <SPRSL>E</SPRSL>
+     <ARBGB>ZABAPGITSERVER</ARBGB>
+     <MSGNR>006</MSGNR>
+     <TEXT>Unknown path, &amp;1</TEXT>
+    </T100>
    </T100>
   </asx:values>
  </asx:abap>

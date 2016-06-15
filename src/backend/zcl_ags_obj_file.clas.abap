@@ -23,15 +23,33 @@ CLASS zcl_ags_obj_file DEFINITION
     METHODS set_data
       IMPORTING
         !iv_data TYPE xstring.
+    METHODS constructor
+      IMPORTING
+        !iv_sha1 TYPE zags_sha1 OPTIONAL
+      RAISING
+        zcx_ags_error.
   PROTECTED SECTION.
   PRIVATE SECTION.
 
     DATA mv_data TYPE xstring.
+    DATA mv_new TYPE abap_bool.
 ENDCLASS.
 
 
 
 CLASS ZCL_AGS_OBJ_FILE IMPLEMENTATION.
+
+
+  METHOD constructor.
+
+    IF iv_sha1 IS INITIAL.
+      mv_new = abap_true.
+    ELSE.
+      mv_new = abap_false.
+      deserialize( zcl_ags_lookup=>read_object( iv_sha1 )-data ).
+    ENDIF.
+
+  ENDMETHOD.
 
 
   METHOD get_data.
@@ -58,6 +76,8 @@ CLASS ZCL_AGS_OBJ_FILE IMPLEMENTATION.
   METHOD zif_ags_object~save.
 
     DATA: ls_object TYPE zags_objects.
+
+    ASSERT mv_new = abap_true.
 
     ls_object-sha1 = sha1( ).
     ls_object-type = 'blob'.
