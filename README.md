@@ -12,3 +12,5 @@ Scope:
 - A lot of code from abapGit can be reused, but I'd like to keep the codebase/projects separated
 - Install via abapGit
 - As SICF service
+
+Currently 7.50 is required, backport is planned
