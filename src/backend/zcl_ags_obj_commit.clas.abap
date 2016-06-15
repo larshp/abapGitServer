@@ -226,7 +226,7 @@ CLASS ZCL_AGS_OBJ_COMMIT IMPLEMENTATION.
     ASSERT mv_new = abap_true.
 
     ls_object-sha1 = sha1( ).
-    ls_object-type = 'commit' ##NO_TEXT.
+    ls_object-type = zif_ags_constants=>c_type-commit.
     ls_object-data = serialize( ).
 
     MODIFY zags_objects FROM ls_object.
@@ -278,8 +278,13 @@ CLASS ZCL_AGS_OBJ_COMMIT IMPLEMENTATION.
   METHOD zif_ags_object~sha1.
 
     rv_sha1 = zcl_ags_util=>sha1(
-        iv_type = 'commit'
+        iv_type = zif_ags_constants=>c_type-commit
         iv_data = serialize( ) ) ##NO_TEXT.
 
+  ENDMETHOD.
+
+
+  METHOD zif_ags_object~type.
+    rv_type = zif_ags_constants=>c_type-commit.
   ENDMETHOD.
 ENDCLASS.

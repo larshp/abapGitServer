@@ -55,6 +55,12 @@
      <MSGNR>006</MSGNR>
      <TEXT>Unknown path, &amp;1</TEXT>
     </T100>
+    <T100>
+     <SPRSL>E</SPRSL>
+     <ARBGB>ZABAPGITSERVER</ARBGB>
+     <MSGNR>007</MSGNR>
+     <TEXT>Unknown chmod</TEXT>
+    </T100>
    </T100>
   </asx:values>
  </asx:abap>

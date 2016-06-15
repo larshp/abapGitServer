@@ -46,7 +46,7 @@ CLASS ZCL_AGS_SERVICE_GIT IMPLEMENTATION.
   METHOD branch_list.
 
     DEFINE _capability.
-      APPEND &1 TO lt_capabilities.
+      APPEND &1 TO lt_capabilities ##NO_TEXT.
     END-OF-DEFINITION.
 
     DATA: lv_reply        TYPE string,
@@ -77,7 +77,7 @@ CLASS ZCL_AGS_SERVICE_GIT IMPLEMENTATION.
 * todo, list all branches
     APPEND '001e# service=git-upload-pack' TO lt_reply ##NO_TEXT.
     APPEND '000000e8' && lv_sha1 && ' HEAD' && get_null( ) && lv_reply TO lt_reply.
-    APPEND '003f' && lv_sha1 && ' refs/heads/master' TO lt_reply.
+    APPEND '003f' && lv_sha1 && ' refs/heads/master' TO lt_reply ##NO_TEXT.
     APPEND '0000' TO lt_reply.
 
     CONCATENATE LINES OF lt_reply INTO lv_reply
@@ -115,7 +115,9 @@ CLASS ZCL_AGS_SERVICE_GIT IMPLEMENTATION.
 
     DATA(lo_commit) = NEW zcl_ags_obj_commit( iv_branch ).
 
-    ii_server->response->set_data( zcl_ags_pack=>encode( lo_commit ) ).
+    ii_server->response->set_data(
+      zcl_ags_pack=>encode(
+      zcl_ags_pack=>explode( lo_commit ) ) ).
 
   ENDMETHOD.
 
@@ -125,7 +127,7 @@ CLASS ZCL_AGS_SERVICE_GIT IMPLEMENTATION.
     DATA(lv_path) = ii_server->request->get_header_field( '~path' ).
     FIND REGEX 'sap/zgit/git/(.*).git*'
       IN lv_path
-      SUBMATCHES rv_name.
+      SUBMATCHES rv_name ##NO_TEXT.
 
   ENDMETHOD.
 

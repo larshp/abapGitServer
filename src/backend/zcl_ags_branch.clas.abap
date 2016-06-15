@@ -51,14 +51,14 @@ CLASS ZCL_AGS_BRANCH IMPLEMENTATION.
     DATA: ls_branch TYPE zags_branches.
 
 
-    DATA(lo_file) = NEW zcl_ags_obj_file( ).
-    lo_file->set_data( zcl_ags_util=>string_to_xstring_utf8( 'test' ) ) ##NO_TEXT.
-    lo_file->save( ).
+    DATA(lo_blob) = NEW zcl_ags_obj_blob( ).
+    lo_blob->set_data( zcl_ags_util=>string_to_xstring_utf8( 'test' ) ) ##NO_TEXT.
+    lo_blob->save( ).
 
     DATA(lo_tree) = NEW zcl_ags_obj_tree( ).
     lo_tree->add_file( iv_chmod = zcl_ags_obj_tree=>c_chmod-file
                        iv_name  = 'test.txt'
-                       io_file  = lo_file ) ##NO_TEXT.
+                       iv_sha1  = lo_blob->sha1( ) ) ##NO_TEXT.
     lo_tree->save( ).
 
     DATA(lo_commit) = NEW zcl_ags_obj_commit( ).

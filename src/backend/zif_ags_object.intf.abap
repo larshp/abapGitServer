@@ -2,6 +2,9 @@ INTERFACE zif_ags_object PUBLIC.
 
   CONSTANTS c_newline TYPE abap_char1 VALUE cl_abap_char_utilities=>newline ##NO_TEXT.
 
+  METHODS type
+    RETURNING
+      VALUE(rv_type) TYPE zags_type.
   METHODS serialize
     RETURNING
       VALUE(rv_data) TYPE xstring

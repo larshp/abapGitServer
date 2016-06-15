@@ -1,4 +1,4 @@
-CLASS zcl_ags_obj_file DEFINITION
+CLASS zcl_ags_obj_blob DEFINITION
   PUBLIC
   CREATE PUBLIC.
 
@@ -37,7 +37,7 @@ ENDCLASS.
 
 
 
-CLASS ZCL_AGS_OBJ_FILE IMPLEMENTATION.
+CLASS ZCL_AGS_OBJ_BLOB IMPLEMENTATION.
 
 
   METHOD constructor.
@@ -80,7 +80,7 @@ CLASS ZCL_AGS_OBJ_FILE IMPLEMENTATION.
     ASSERT mv_new = abap_true.
 
     ls_object-sha1 = sha1( ).
-    ls_object-type = 'blob'.
+    ls_object-type = zif_ags_constants=>c_type-blob.
     ls_object-data = serialize( ).
 
     MODIFY zags_objects FROM ls_object.
@@ -98,8 +98,13 @@ CLASS ZCL_AGS_OBJ_FILE IMPLEMENTATION.
   METHOD zif_ags_object~sha1.
 
     rv_sha1 = zcl_ags_util=>sha1(
-        iv_type = 'blob'
+        iv_type = zif_ags_constants=>c_type-blob
         iv_data = serialize( ) ) ##NO_TEXT.
 
+  ENDMETHOD.
+
+
+  METHOD zif_ags_object~type.
+    rv_type = zif_ags_constants=>c_type-blob.
   ENDMETHOD.
 ENDCLASS.
