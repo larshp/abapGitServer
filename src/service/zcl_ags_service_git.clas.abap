@@ -12,6 +12,14 @@ CLASS zcl_ags_service_git DEFINITION
   PROTECTED SECTION.
   PRIVATE SECTION.
 
+    TYPES:
+      ty_hex4 TYPE x LENGTH 4.
+
+    METHODS encode_length
+      IMPORTING
+        !iv_length    TYPE i
+      RETURNING
+        VALUE(rv_hex) TYPE ty_hex4.
     METHODS pack
       IMPORTING
         !iv_branch TYPE zags_sha1
@@ -96,6 +104,29 @@ CLASS ZCL_AGS_SERVICE_GIT IMPLEMENTATION.
   ENDMETHOD.
 
 
+  METHOD encode_length.
+
+    DATA: lv_char TYPE string,
+          lv_x    TYPE x LENGTH 2.
+
+    lv_x = iv_length.
+
+    lv_char = lv_x.
+
+    DATA(lv_xstring) = zcl_ags_util=>string_to_xstring_utf8( lv_char ).
+
+    rv_hex = lv_xstring.
+
+*    CALL METHOD ('\PROGRAM=ZABAPGIT\CLASS=LCL_CONVERT')=>int_to_xstring
+*      EXPORTING
+*        iv_i       = iv_length
+*        iv_length  = 4
+*      RECEIVING
+*        rv_xstring = rv_hex.
+
+  ENDMETHOD.
+
+
   METHOD get_null.
 
     DATA: lv_x(4) TYPE x VALUE '00000000',
@@ -113,11 +144,33 @@ CLASS ZCL_AGS_SERVICE_GIT IMPLEMENTATION.
 
   METHOD pack.
 
+    CONSTANTS: lc_band1 TYPE x VALUE '01'.
+
+    DATA: lv_response TYPE xstring,
+          lv_length   TYPE i.
+
+
     DATA(lo_commit) = NEW zcl_ags_obj_commit( iv_branch ).
 
-    ii_server->response->set_data(
-      zcl_ags_pack=>encode(
-      zcl_ags_pack=>explode( lo_commit ) ) ).
+    DATA(lv_pack) = zcl_ags_pack=>encode( zcl_ags_pack=>explode( lo_commit ) ).
+
+    WHILE xstrlen( lv_pack ) > 0.
+      IF xstrlen( lv_pack ) >= 8196.
+        lv_length = 8196.
+      ELSE.
+        lv_length = xstrlen( lv_pack ).
+      ENDIF.
+
+* make sure to include the length encoding itself and band identifier in the length
+      DATA(lv_encoded) = encode_length( lv_length + 5 ).
+
+      CONCATENATE lv_response lv_encoded lc_band1 lv_pack(lv_length)
+        INTO lv_response IN BYTE MODE.
+
+      lv_pack = lv_pack+lv_length.
+    ENDWHILE.
+
+    ii_server->response->set_data( lv_response ).
 
   ENDMETHOD.
 

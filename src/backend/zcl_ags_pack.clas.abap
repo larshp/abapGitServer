@@ -1,36 +1,38 @@
-class ZCL_AGS_PACK definition
-  public
-  final
-  create public .
+CLASS zcl_ags_pack DEFINITION
+  PUBLIC
+  FINAL
+  CREATE PUBLIC.
 
-public section.
+  PUBLIC SECTION.
 
-  types:
-    BEGIN OF ty_object,
+    TYPES:
+      BEGIN OF ty_object,
         sha1 TYPE zags_sha1,
         type TYPE zags_type,
         data TYPE xstring,
-      END OF ty_object .
-  types:
-    ty_objects_tt TYPE STANDARD TABLE OF ty_object WITH DEFAULT KEY .
+      END OF ty_object.
+    TYPES:
+      ty_objects_tt TYPE STANDARD TABLE OF ty_object WITH DEFAULT KEY.
+    TYPES:
+      ty_adler32 TYPE x LENGTH 4.
 
-  class-methods ENCODE
-    importing
-      !IT_OBJECTS type TY_OBJECTS_TT
-    returning
-      value(RV_PACK) type XSTRING .
-  class-methods DECODE
-    importing
-      !IV_PACK type XSTRING
-    returning
-      value(RT_PACK) type TY_OBJECTS_TT .
-  class-methods EXPLODE
-    importing
-      !II_OBJECT type ref to ZIF_AGS_OBJECT
-    returning
-      value(RT_OBJECTS) type TY_OBJECTS_TT
-    raising
-      ZCX_AGS_ERROR .
+    CLASS-METHODS encode
+      IMPORTING
+        !it_objects    TYPE ty_objects_tt
+      RETURNING
+        VALUE(rv_data) TYPE xstring.
+    CLASS-METHODS decode
+      IMPORTING
+        !iv_data          TYPE xstring
+      RETURNING
+        VALUE(rt_objects) TYPE ty_objects_tt.
+    CLASS-METHODS explode
+      IMPORTING
+        !ii_object        TYPE REF TO zif_ags_object
+      RETURNING
+        VALUE(rt_objects) TYPE ty_objects_tt
+      RAISING
+        zcx_ags_error.
   PROTECTED SECTION.
   PRIVATE SECTION.
 ENDCLASS.
@@ -41,10 +43,24 @@ CLASS ZCL_AGS_PACK IMPLEMENTATION.
 
 
   METHOD decode.
+
+    CALL METHOD ('\PROGRAM=ZABAPGIT\CLASS=LCL_GIT_PACK')=>decode
+      EXPORTING
+        iv_data    = iv_data
+      RECEIVING
+        rt_objects = rt_objects.
+
   ENDMETHOD.
 
 
   METHOD encode.
+
+    CALL METHOD ('\PROGRAM=ZABAPGIT\CLASS=LCL_GIT_PACK')=>encode
+      EXPORTING
+        it_objects = it_objects
+      RECEIVING
+        rv_data    = rv_data.
+
   ENDMETHOD.
 
 

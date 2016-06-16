@@ -178,12 +178,12 @@ CLASS ZCL_AGS_OBJ_COMMIT IMPLEMENTATION.
         CASE lv_mode.
           WHEN 'tree'.
             lv_char40 = <lv_string>+5.
-            TRANSLATE lv_char40 TO UPPER CASE.
+*            TRANSLATE lv_char40 TO LOWER CASE.
             ms_data-tree = lv_char40.
             lv_mode = 'parent'.                             "#EC NOTEXT
           WHEN 'parent'.
             lv_char40 = <lv_string>+7.
-            TRANSLATE lv_char40 TO UPPER CASE.
+*            TRANSLATE lv_char40 TO LOWER CASE.
             ms_data-parent = lv_char40.
             lv_mode = 'author'.                             "#EC NOTEXT
           WHEN 'author'.

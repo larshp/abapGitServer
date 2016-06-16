@@ -1,40 +1,40 @@
-class ZCL_AGS_UTIL definition
-  public
-  create public .
+CLASS zcl_ags_util DEFINITION
+  PUBLIC
+  CREATE PUBLIC.
 
-public section.
+  PUBLIC SECTION.
 
-  types:
-    ty_type TYPE c LENGTH 6 .
+    TYPES:
+      ty_type TYPE c LENGTH 6.
 
-  class-methods SHA1_RAW
-    importing
-      !IV_DATA type XSTRING
-    returning
-      value(RV_SHA1) type ZAGS_SHA1
-    raising
-      ZCX_AGS_ERROR .
-  class-methods SHA1
-    importing
-      !IV_TYPE type ZAGS_TYPE
-      !IV_DATA type XSTRING
-    returning
-      value(RV_SHA1) type ZAGS_SHA1
-    raising
-      ZCX_AGS_ERROR .
-  class-methods UUID
-    returning
-      value(RV_UUID) type SYSUUID_C22 .
-  class-methods XSTRING_TO_STRING_UTF8
-    importing
-      !IV_DATA type XSTRING
-    returning
-      value(RV_STRING) type STRING .
-  class-methods STRING_TO_XSTRING_UTF8
-    importing
-      !IV_STRING type STRING
-    returning
-      value(RV_XSTRING) type XSTRING .
+    CLASS-METHODS sha1_raw
+      IMPORTING
+        !iv_data       TYPE xstring
+      RETURNING
+        VALUE(rv_sha1) TYPE zags_sha1
+      RAISING
+        zcx_ags_error.
+    CLASS-METHODS sha1
+      IMPORTING
+        !iv_type       TYPE zags_type
+        !iv_data       TYPE xstring
+      RETURNING
+        VALUE(rv_sha1) TYPE zags_sha1
+      RAISING
+        zcx_ags_error.
+    CLASS-METHODS uuid
+      RETURNING
+        VALUE(rv_uuid) TYPE sysuuid_c22.
+    CLASS-METHODS xstring_to_string_utf8
+      IMPORTING
+        !iv_data         TYPE xstring
+      RETURNING
+        VALUE(rv_string) TYPE string.
+    CLASS-METHODS string_to_xstring_utf8
+      IMPORTING
+        !iv_string        TYPE string
+      RETURNING
+        VALUE(rv_xstring) TYPE xstring.
   PROTECTED SECTION.
   PRIVATE SECTION.
 ENDCLASS.
