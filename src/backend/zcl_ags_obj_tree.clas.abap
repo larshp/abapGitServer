@@ -41,7 +41,7 @@ CLASS zcl_ags_obj_tree DEFINITION
         !iv_chmod TYPE ty_chmod
         !iv_name  TYPE ty_tree-name
         !iv_sha1  TYPE ty_tree-sha1.
-    METHODS list_files
+    METHODS get_files
       RETURNING
         VALUE(rt_files) TYPE ty_tree_tt.
     METHODS constructor
@@ -83,7 +83,7 @@ CLASS ZCL_AGS_OBJ_TREE IMPLEMENTATION.
   ENDMETHOD.
 
 
-  METHOD list_files.
+  METHOD get_files.
 
     rt_files = mt_data.
 

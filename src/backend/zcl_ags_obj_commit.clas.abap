@@ -163,27 +163,23 @@ CLASS ZCL_AGS_OBJ_COMMIT IMPLEMENTATION.
           lv_len    TYPE i,
           lt_string TYPE TABLE OF string.
 
-    FIELD-SYMBOLS: <lv_string> LIKE LINE OF lt_string.
-
 
     lv_string = zcl_ags_util=>xstring_to_string_utf8( iv_data ).
 
     SPLIT lv_string AT c_newline INTO TABLE lt_string.
 
     lv_mode = 'tree'.                                       "#EC NOTEXT
-    LOOP AT lt_string ASSIGNING <lv_string>.
+    LOOP AT lt_string ASSIGNING FIELD-SYMBOL(<lv_string>).
       lv_len = strlen( lv_mode ).
 
       IF NOT lv_mode IS INITIAL AND <lv_string>(lv_len) = lv_mode.
         CASE lv_mode.
           WHEN 'tree'.
             lv_char40 = <lv_string>+5.
-*            TRANSLATE lv_char40 TO LOWER CASE.
             ms_data-tree = lv_char40.
             lv_mode = 'parent'.                             "#EC NOTEXT
           WHEN 'parent'.
             lv_char40 = <lv_string>+7.
-*            TRANSLATE lv_char40 TO LOWER CASE.
             ms_data-parent = lv_char40.
             lv_mode = 'author'.                             "#EC NOTEXT
           WHEN 'author'.

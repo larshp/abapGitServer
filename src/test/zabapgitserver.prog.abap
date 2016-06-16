@@ -1,13 +1,18 @@
 REPORT zabapgitserver.
 
 SELECTION-SCREEN BEGIN OF BLOCK b1 WITH FRAME TITLE TEXT-001.
+
+PARAMETERS: p_rname TYPE zags_repos-name DEFAULT 'foobar' ##NO_TEXT,
+            p_sha1  TYPE zags_sha1.
+
 PARAMETERS: p_crepo  TYPE c RADIOBUTTON GROUP g1,
             p_listb  TYPE c RADIOBUTTON GROUP g1,
             p_delete TYPE c RADIOBUTTON GROUP g1,
-            p_rname  TYPE zags_repos-name DEFAULT 'foobar' ##NO_TEXT,
-            p_cbra   TYPE c RADIOBUTTON GROUP g1,
-            p_bname  TYPE zags_repos-name DEFAULT 'refs/heads/master' ##NO_TEXT.
+            p_blob   TYPE c RADIOBUTTON GROUP g1,
+            p_commit TYPE c RADIOBUTTON GROUP g1,
+            p_tree   TYPE c RADIOBUTTON GROUP g1.
 SELECTION-SCREEN END OF BLOCK b1.
+
 
 CLASS lcl_app DEFINITION FINAL.
 
@@ -16,13 +21,17 @@ CLASS lcl_app DEFINITION FINAL.
 
   PRIVATE SECTION.
     CLASS-METHODS:
+      display_blob
+        RAISING zcx_ags_error,
+      display_tree
+        RAISING zcx_ags_error,
+      display_commit
+        RAISING zcx_ags_error,
       delete_repository
         RAISING zcx_ags_error,
       create_repository
         RAISING zcx_ags_error,
       list_branches
-        RAISING zcx_ags_error,
-      create_branch
         RAISING zcx_ags_error.
 
 ENDCLASS.
@@ -31,28 +40,62 @@ CLASS lcl_app IMPLEMENTATION.
 
   METHOD run.
 
-    DATA: lx_error TYPE REF TO zcx_ags_error.
-
-
     TRY.
         CASE abap_true.
           WHEN p_crepo.
             create_repository( ).
-          WHEN p_cbra.
-            create_branch( ).
           WHEN p_listb.
             list_branches( ).
           WHEN p_delete.
             delete_repository( ).
+          WHEN p_blob.
+            display_blob( ).
+          WHEN p_commit.
+            display_commit( ).
+          WHEN p_tree.
+            display_tree( ).
           WHEN OTHERS.
             ASSERT 1 = 2.
         ENDCASE.
         COMMIT WORK.
         MESSAGE s003(zabapgitserver).
-      CATCH zcx_ags_error INTO lx_error.
-        ROLLBACK WORK.
+      CATCH zcx_ags_error INTO DATA(lx_error).
+        ROLLBACK WORK.                                 "#EC CI_ROLLBACK
         MESSAGE lx_error TYPE 'E'.
     ENDTRY.
+
+  ENDMETHOD.
+
+  METHOD display_blob.
+    DATA(lo_blob) = NEW zcl_ags_obj_blob( p_sha1 ).
+
+    DATA(lv_string) = zcl_ags_util=>xstring_to_string_utf8( lo_blob->get_data( ) ).
+
+    WHILE strlen( lv_string ) > 200.
+      WRITE: / lv_string(200).
+      lv_string = lv_string+200.
+    ENDWHILE.
+    WRITE: / lv_string.
+
+  ENDMETHOD.
+
+  METHOD display_tree.
+    DATA(lo_tree) = NEW zcl_ags_obj_tree( p_sha1 ).
+
+    LOOP AT lo_tree->get_files( ) ASSIGNING FIELD-SYMBOL(<ls_file>).
+      WRITE: / <ls_file>-sha1, <ls_file>-chmod, <ls_file>-name.
+    ENDLOOP.
+
+  ENDMETHOD.
+
+  METHOD display_commit.
+    DATA(lo_commit) = NEW zcl_ags_obj_commit( p_sha1 ).
+
+    WRITE: / 'tree:'(002), lo_commit->get_tree( ).
+    WRITE: / 'parent:'(003), lo_commit->get_parent( ).
+    WRITE: / 'author:'(004), lo_commit->get_author( ).
+    WRITE: / 'committer:'(005), lo_commit->get_committer( ).
+    WRITE: / 'body:'(006), lo_commit->get_body( ).
 
   ENDMETHOD.
 
@@ -90,12 +133,6 @@ CLASS lcl_app IMPLEMENTATION.
     LOOP AT lt_branches ASSIGNING FIELD-SYMBOL(<lo_branch>).
       WRITE: / <lo_branch>->get_data( )-name, <lo_branch>->get_data( )-sha1.
     ENDLOOP.
-
-  ENDMETHOD.
-
-  METHOD create_branch.
-
-    BREAK-POINT.
 
   ENDMETHOD.
 

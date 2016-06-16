@@ -1,0 +1,39 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<abapGit version="v1.0.0" serializer="LCL_OBJECT_DOMA" serializer_version="v1.0.0">
+ <asx:abap xmlns:asx="http://www.sap.com/abapxml" version="1.0">
+  <asx:values>
+   <DD01V>
+    <DOMNAME>ZAGS_SHA1</DOMNAME>
+    <DDLANGUAGE>E</DDLANGUAGE>
+    <DATATYPE>CHAR</DATATYPE>
+    <LENG>000040</LENG>
+    <OUTPUTLEN>000040</OUTPUTLEN>
+    <DECIMALS>000000</DECIMALS>
+    <LOWERCASE>X</LOWERCASE>
+    <SIGNFLAG/>
+    <LANGFLAG/>
+    <VALEXI/>
+    <ENTITYTAB/>
+    <CONVEXIT/>
+    <MASK/>
+    <MASKLEN>0000</MASKLEN>
+    <DDTEXT>SHA1</DDTEXT>
+    <ACTFLAG/>
+    <APPLCLASS/>
+    <AUTHCLASS>00</AUTHCLASS>
+    <AS4USER/>
+    <AS4DATE>0000-00-00</AS4DATE>
+    <AS4TIME>00:00:00</AS4TIME>
+    <DOMMASTER/>
+    <RESERVEDOM/>
+    <DOMGLOBAL/>
+    <APPENDNAME/>
+    <APPEXIST/>
+    <PROXYTYPE/>
+    <OUTPUTSTYLE>00</OUTPUTSTYLE>
+    <AMPMFORMAT/>
+   </DD01V>
+   <DD07V_TAB/>
+  </asx:values>
+ </asx:abap>
+</abapGit>

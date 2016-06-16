@@ -80,7 +80,7 @@ CLASS ZCL_AGS_PACK IMPLEMENTATION.
         lo_tree = NEW zcl_ags_obj_tree( lo_commit->get_tree( ) ).
         APPEND LINES OF explode( lo_tree ) TO rt_objects.
       WHEN TYPE zcl_ags_obj_tree INTO lo_tree.
-        LOOP AT lo_tree->list_files( ) ASSIGNING FIELD-SYMBOL(<ls_file>).
+        LOOP AT lo_tree->get_files( ) ASSIGNING FIELD-SYMBOL(<ls_file>).
           CASE <ls_file>-chmod.
             WHEN zcl_ags_obj_tree=>c_chmod-dir.
               DATA(lo_sub) = NEW zcl_ags_obj_tree( <ls_file>-sha1 ).
