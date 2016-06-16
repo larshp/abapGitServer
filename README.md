@@ -13,4 +13,6 @@ Scope:
 - Install via abapGit
 - As SICF service
 
-Currently 7.50 is required, backport is planned
+Currently 7.50 is required, backport is planned. 
+
+abapGit must be installed as ZABAPGIT report for abapGitServer to work
