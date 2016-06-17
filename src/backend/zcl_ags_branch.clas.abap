@@ -34,6 +34,7 @@ CLASS ZCL_AGS_BRANCH IMPLEMENTATION.
 
     DATA(lv_repo) = io_repo->get_data( )-repo.
 
+
     SELECT SINGLE * FROM zags_branches INTO ms_data
       WHERE name = iv_name
       AND repo = lv_repo.
