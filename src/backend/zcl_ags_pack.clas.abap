@@ -26,6 +26,11 @@ CLASS zcl_ags_pack DEFINITION
         !iv_data          TYPE xstring
       RETURNING
         VALUE(rt_objects) TYPE ty_objects_tt.
+    CLASS-METHODS save
+      IMPORTING
+        !it_objects TYPE ty_objects_tt
+      RAISING
+        zcx_ags_error.
     CLASS-METHODS explode
       IMPORTING
         !ii_object        TYPE REF TO zif_ags_object
@@ -94,6 +99,36 @@ CLASS ZCL_AGS_PACK IMPLEMENTATION.
 
 * todo, how to handle duplicates?
 * eg, if the same file exists in 2 subdirectories?
+
+  ENDMETHOD.
+
+
+  METHOD save.
+
+    DATA: li_object TYPE REF TO zif_ags_object.
+
+
+    LOOP AT it_objects ASSIGNING FIELD-SYMBOL(<ls_object>).
+      CASE <ls_object>-type.
+        WHEN zif_ags_constants=>c_type-blob.
+          li_object = NEW zcl_ags_obj_blob( ).
+        WHEN zif_ags_constants=>c_type-tree.
+          li_object = NEW zcl_ags_obj_tree( ).
+        WHEN zif_ags_constants=>c_type-commit.
+          li_object = NEW zcl_ags_obj_commit( ).
+        WHEN OTHERS.
+          RAISE EXCEPTION TYPE zcx_ags_error
+            EXPORTING
+              textid = zcx_ags_error=>m009.
+      ENDCASE.
+
+      li_object->deserialize( <ls_object>-data ).
+
+      ASSERT li_object->sha1( ) = <ls_object>-sha1.
+
+      li_object->save( ).
+
+    ENDLOOP.
 
   ENDMETHOD.
 ENDCLASS.

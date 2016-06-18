@@ -1,28 +1,31 @@
-CLASS zcl_ags_branch DEFINITION
-  PUBLIC
-  CREATE PUBLIC.
+class ZCL_AGS_BRANCH definition
+  public
+  create public .
 
-  PUBLIC SECTION.
+public section.
 
-    METHODS delete.
-    METHODS get_data
-      RETURNING
-        VALUE(rs_data) TYPE zags_branches.
-    CLASS-METHODS create
-      IMPORTING
-        !io_repo TYPE REF TO zcl_ags_repo
-        !iv_name TYPE zags_branches-name
-      RAISING
-        zcx_ags_error.
-    METHODS constructor
-      IMPORTING
-        !io_repo TYPE REF TO zcl_ags_repo
-        !iv_name TYPE zags_branches-name
-      RAISING
-        zcx_ags_error.
+  methods DELETE .
+  methods GET_DATA
+    returning
+      value(RS_DATA) type ZAGS_BRANCHES .
+  class-methods CREATE
+    importing
+      !IO_REPO type ref to ZCL_AGS_REPO
+      !IV_NAME type ZAGS_BRANCHES-NAME
+    raising
+      ZCX_AGS_ERROR .
+  methods CONSTRUCTOR
+    importing
+      !IO_REPO type ref to ZCL_AGS_REPO
+      !IV_NAME type ZAGS_BRANCHES-NAME
+    raising
+      ZCX_AGS_ERROR .
+  methods UPDATE_SHA1
+    importing
+      !IV_SHA1 type ZAGS_SHA1 .
+private section.
 
-  PRIVATE SECTION.
-    DATA ms_data TYPE zags_branches.
+  data MS_DATA type ZAGS_BRANCHES .
 ENDCLASS.
 
 
@@ -95,6 +98,18 @@ CLASS ZCL_AGS_BRANCH IMPLEMENTATION.
   METHOD get_data.
 
     rs_data = ms_data.
+
+  ENDMETHOD.
+
+
+  METHOD update_sha1.
+
+    ASSERT NOT iv_sha1 IS INITIAL.
+
+    UPDATE zags_branches SET sha1 = iv_sha1
+      WHERE repo = ms_data-repo
+      AND branch = ms_data-branch.
+    ASSERT sy-subrc = 0.
 
   ENDMETHOD.
 ENDCLASS.

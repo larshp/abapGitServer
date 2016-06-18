@@ -3,10 +3,12 @@ REPORT zabapgitserver.
 SELECTION-SCREEN BEGIN OF BLOCK b1 WITH FRAME TITLE TEXT-001.
 
 PARAMETERS: p_rname TYPE zags_repos-name DEFAULT 'foobar' ##NO_TEXT,
+            p_bname TYPE zags_branches-name DEFAULT 'refs/heads/master' ##NO_TEXT,
             p_sha1  TYPE zags_sha1.
 
 PARAMETERS: p_crepo  TYPE c RADIOBUTTON GROUP g1,
             p_listb  TYPE c RADIOBUTTON GROUP g1,
+            p_listbf TYPE c RADIOBUTTON GROUP g1,
             p_delete TYPE c RADIOBUTTON GROUP g1,
             p_blob   TYPE c RADIOBUTTON GROUP g1,
             p_commit TYPE c RADIOBUTTON GROUP g1,
@@ -32,6 +34,8 @@ CLASS lcl_app DEFINITION FINAL.
       create_repository
         RAISING zcx_ags_error,
       list_branches
+        RAISING zcx_ags_error,
+      list_branch_files
         RAISING zcx_ags_error.
 
 ENDCLASS.
@@ -54,6 +58,8 @@ CLASS lcl_app IMPLEMENTATION.
             display_commit( ).
           WHEN p_tree.
             display_tree( ).
+          WHEN p_listbf.
+            list_branch_files( ).
           WHEN OTHERS.
             ASSERT 1 = 2.
         ENDCASE.
@@ -63,6 +69,19 @@ CLASS lcl_app IMPLEMENTATION.
         ROLLBACK WORK.                                 "#EC CI_ROLLBACK
         MESSAGE lx_error TYPE 'E'.
     ENDTRY.
+
+  ENDMETHOD.
+
+  METHOD list_branch_files.
+
+    DATA(lo_repo) = NEW zcl_ags_repo( p_rname ).
+    DATA(lo_branch) = lo_repo->get_branch( p_bname ).
+    DATA(lo_commit) = NEW zcl_ags_obj_commit( lo_branch->get_data( )-sha1 ).
+    DATA(lo_tree) = NEW zcl_ags_obj_tree( lo_commit->get_tree( ) ).
+
+    LOOP AT lo_tree->get_files( ) ASSIGNING FIELD-SYMBOL(<ls_file>).
+      WRITE: / <ls_file>-name.
+    ENDLOOP.
 
   ENDMETHOD.
 

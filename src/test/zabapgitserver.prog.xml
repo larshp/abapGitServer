@@ -115,6 +115,13 @@
     </item>
     <item>
      <ID>S</ID>
+     <KEY>P_BNAME</KEY>
+     <ENTRY>.</ENTRY>
+     <LENGTH>25</LENGTH>
+     <SPLIT>D</SPLIT>
+    </item>
+    <item>
+     <ID>S</ID>
      <KEY>P_COMMIT</KEY>
      <ENTRY>Display commit</ENTRY>
      <LENGTH>22</LENGTH>
@@ -143,17 +150,24 @@
     </item>
     <item>
      <ID>S</ID>
-     <KEY>P_RNAME</KEY>
-     <ENTRY>Repository</ENTRY>
-     <LENGTH>18</LENGTH>
+     <KEY>P_LISTBF</KEY>
+     <ENTRY>List branch files</ENTRY>
+     <LENGTH>25</LENGTH>
      <SPLIT/>
     </item>
     <item>
      <ID>S</ID>
+     <KEY>P_RNAME</KEY>
+     <ENTRY>.</ENTRY>
+     <LENGTH>18</LENGTH>
+     <SPLIT>D</SPLIT>
+    </item>
+    <item>
+     <ID>S</ID>
      <KEY>P_SHA1</KEY>
-     <ENTRY>SHA1</ENTRY>
+     <ENTRY>.</ENTRY>
      <LENGTH>12</LENGTH>
-     <SPLIT/>
+     <SPLIT>D</SPLIT>
     </item>
     <item>
      <ID>S</ID>
