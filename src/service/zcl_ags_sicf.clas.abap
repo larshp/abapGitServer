@@ -1,10 +1,10 @@
-CLASS zcl_ags_sicf DEFINITION
-  PUBLIC
-  CREATE PUBLIC.
+class ZCL_AGS_SICF definition
+  public
+  create public .
 
-  PUBLIC SECTION.
+public section.
 
-    INTERFACES if_http_extension.
+  interfaces IF_HTTP_EXTENSION .
   PROTECTED SECTION.
   PRIVATE SECTION.
 ENDCLASS.

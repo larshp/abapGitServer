@@ -61,6 +61,12 @@
      <MSGNR>007</MSGNR>
      <TEXT>Unknown chmod</TEXT>
     </T100>
+    <T100>
+     <SPRSL>E</SPRSL>
+     <ARBGB>ZABAPGITSERVER</ARBGB>
+     <MSGNR>008</MSGNR>
+     <TEXT>Unable to determine service</TEXT>
+    </T100>
    </T100>
   </asx:values>
  </asx:abap>

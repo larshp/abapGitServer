@@ -10,40 +10,63 @@ CLASS zcl_ags_service_git DEFINITION
       RAISING
         zcx_ags_error.
   PROTECTED SECTION.
-  PRIVATE SECTION.
+PRIVATE SECTION.
 
-    TYPES:
-      ty_hex4 TYPE x LENGTH 4.
+  TYPES:
+    ty_hex4 TYPE x LENGTH 4.
+  TYPES:
+    BEGIN OF ty_push,
+      branch      TYPE zags_sha1,
+      commit      TYPE zags_sha1,
+      branch_name TYPE zags_branch_name,
+      length      TYPE i,
+    END OF ty_push .
 
-    METHODS encode_length
-      IMPORTING
-        !iv_length    TYPE i
-      RETURNING
-        VALUE(rv_hex) TYPE ty_hex4.
-    METHODS pack
-      IMPORTING
-        !iv_branch TYPE zags_sha1
-        !ii_server TYPE REF TO if_http_server
-      RAISING
-        zcx_ags_error.
-    METHODS decode_want
-      IMPORTING
-        !iv_string     TYPE string
-      RETURNING
-        VALUE(rv_sha1) TYPE zags_sha1.
-    METHODS repo_name
-      IMPORTING
-        !ii_server     TYPE REF TO if_http_server
-      RETURNING
-        VALUE(rv_name) TYPE zags_repos-name.
-    METHODS get_null
-      RETURNING
-        VALUE(rv_char) TYPE char1.
-    METHODS branch_list
-      IMPORTING
-        !ii_server TYPE REF TO if_http_server
-      RAISING
-        zcx_ags_error.
+  METHODS decode_length
+    IMPORTING
+      !iv_data         TYPE string
+    RETURNING
+      VALUE(rv_length) TYPE i .
+  METHODS decode_push
+    IMPORTING
+      !iv_data       TYPE string
+    RETURNING
+      VALUE(rs_push) TYPE ty_push
+    RAISING
+      zcx_ags_error .
+  METHODS encode_length
+    IMPORTING
+      !iv_length    TYPE i
+    RETURNING
+      VALUE(rv_hex) TYPE ty_hex4 .
+  METHODS unpack
+    IMPORTING
+      !ii_server TYPE REF TO if_http_server
+    RAISING
+      zcx_ags_error .
+  METHODS pack
+    IMPORTING
+      !ii_server TYPE REF TO if_http_server
+    RAISING
+      zcx_ags_error .
+  METHODS decode_want
+    IMPORTING
+      !iv_string     TYPE string
+    RETURNING
+      VALUE(rv_sha1) TYPE zags_sha1 .
+  METHODS repo_name
+    IMPORTING
+      !ii_server     TYPE REF TO if_http_server
+    RETURNING
+      VALUE(rv_name) TYPE zags_repos-name .
+  METHODS get_null
+    RETURNING
+      VALUE(rv_char) TYPE char1 .
+  METHODS branch_list
+    IMPORTING
+      !ii_server TYPE REF TO if_http_server
+    RAISING
+      zcx_ags_error .
 ENDCLASS.
 
 
@@ -96,6 +119,44 @@ CLASS ZCL_AGS_SERVICE_GIT IMPLEMENTATION.
   ENDMETHOD.
 
 
+  METHOD decode_length.
+
+    DATA: lv_x TYPE x LENGTH 1.
+
+
+    ASSERT strlen( iv_data ) >= 4.
+
+* todo, extend implementation
+    ASSERT iv_data(2) = '00'.
+
+    lv_x = iv_data+2.
+
+    rv_length = lv_x.
+
+  ENDMETHOD.
+
+
+  METHOD decode_push.
+
+    DATA: lt_data TYPE TABLE OF string.
+
+    rs_push-length = decode_length( iv_data ).
+
+    DATA(lv_data) = iv_data(rs_push-length).
+    lv_data = lv_data+4. " skip length, already decoded
+
+    SPLIT lv_data AT get_null( ) INTO TABLE lt_data.
+    ASSERT lines( lt_data ) > 0.
+
+    lv_data = lt_data[ 1 ].
+
+    rs_push-branch      = lv_data.
+    rs_push-commit      = lv_data+41.
+    rs_push-branch_name = lv_data+82.
+
+  ENDMETHOD.
+
+
   METHOD decode_want.
 
 * todo, proper decoding
@@ -116,13 +177,6 @@ CLASS ZCL_AGS_SERVICE_GIT IMPLEMENTATION.
     DATA(lv_xstring) = zcl_ags_util=>string_to_xstring_utf8( lv_char ).
 
     rv_hex = lv_xstring.
-
-*    CALL METHOD ('\PROGRAM=ZABAPGIT\CLASS=LCL_CONVERT')=>int_to_xstring
-*      EXPORTING
-*        iv_i       = iv_length
-*        iv_length  = 4
-*      RECEIVING
-*        rv_xstring = rv_hex.
 
   ENDMETHOD.
 
@@ -150,7 +204,9 @@ CLASS ZCL_AGS_SERVICE_GIT IMPLEMENTATION.
           lv_length   TYPE i.
 
 
-    DATA(lo_commit) = NEW zcl_ags_obj_commit( iv_branch ).
+    DATA(lv_branch) = decode_want( ii_server->request->get_cdata( ) ).
+
+    DATA(lo_commit) = NEW zcl_ags_obj_commit( lv_branch ).
 
     DATA(lv_pack) = zcl_ags_pack=>encode( zcl_ags_pack=>explode( lo_commit ) ).
 
@@ -178,7 +234,7 @@ CLASS ZCL_AGS_SERVICE_GIT IMPLEMENTATION.
   METHOD repo_name.
 
     DATA(lv_path) = ii_server->request->get_header_field( '~path' ).
-    FIND REGEX 'sap/zgit/git/(.*).git*'
+    FIND REGEX 'sap/zgit/git/(.*)\.git*'
       IN lv_path
       SUBMATCHES rv_name ##NO_TEXT.
 
@@ -187,14 +243,48 @@ CLASS ZCL_AGS_SERVICE_GIT IMPLEMENTATION.
 
   METHOD run.
 
-    DATA(lv_data) = ii_server->request->get_cdata( ).
+    DATA(lv_path) = ii_server->request->get_header_field( '~path_info' ).
 
-    IF lv_data IS INITIAL.
+    IF ii_server->request->get_cdata( ) IS INITIAL.
       branch_list( ii_server ).
+    ELSEIF lv_path CP '*git-upload-pack*'.
+      pack( ii_server ).
+    ELSEIF lv_path CP '*git-receive-pack*'.
+      unpack( ii_server ).
     ELSE.
-      pack( iv_branch = decode_want( lv_data )
-            ii_server = ii_server ).
+      RAISE EXCEPTION TYPE zcx_ags_error
+        EXPORTING
+          textid = zcx_ags_error=>m008.
     ENDIF.
+
+  ENDMETHOD.
+
+
+  METHOD unpack.
+
+    DATA(ls_push) = decode_push( ii_server->request->get_cdata( ) ).
+
+    DATA(lv_xstring) = ii_server->request->get_data( ).
+    lv_xstring = lv_xstring+ls_push-length.
+    ASSERT lv_xstring(4) = '30303030'. " in utf8 = '0000'
+    lv_xstring = lv_xstring+4.
+
+    DATA(lt_objects) = zcl_ags_pack=>decode( lv_xstring ).
+
+    READ TABLE lt_objects WITH KEY sha1 = ls_push-commit TRANSPORTING NO FIELDS.
+* new commit should exist in objects
+    ASSERT sy-subrc = 0.
+
+    DATA(lo_repo) = NEW zcl_ags_repo( repo_name( ii_server ) ).
+
+* todo, new branches?
+    DATA(lo_branch) = lo_repo->get_branch( ls_push-branch_name ).
+
+    ASSERT lo_branch->get_data( )-sha1 = ls_push-branch.
+
+* todo, update sha1 of branch to ls_push-commit
+
+* todo
 
   ENDMETHOD.
 ENDCLASS.
