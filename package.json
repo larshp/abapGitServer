@@ -6,8 +6,8 @@
   "repository": {
     "type": "git",
     "url": "git+https://github.com/larshp/abapGitServer.git"
-  },  
+  },
   "devDependencies": {
-    "abaplint": ">=0.25.5"
+    "abaplint": "^0.26.5"
   }
 }
