@@ -1,25 +1,35 @@
-CLASS zcl_ags_service_static DEFINITION
-  PUBLIC
-  CREATE PUBLIC.
+class ZCL_AGS_SERVICE_STATIC definition
+  public
+  create public .
 
-  PUBLIC SECTION.
+public section.
 
-    METHODS run
-      IMPORTING
-        !ii_server TYPE REF TO if_http_server.
+  methods RUN .
+  methods CONSTRUCTOR
+    importing
+      !II_SERVER type ref to IF_HTTP_SERVER .
   PROTECTED SECTION.
-  PRIVATE SECTION.
+private section.
 
-    METHODS read_mime
-      IMPORTING
-        !iv_url        TYPE string
-      RETURNING
-        VALUE(rv_data) TYPE xstring.
+  data MI_SERVER type ref to IF_HTTP_SERVER .
+
+  methods READ_MIME
+    importing
+      !IV_URL type STRING
+    returning
+      value(RV_DATA) type XSTRING .
 ENDCLASS.
 
 
 
 CLASS ZCL_AGS_SERVICE_STATIC IMPLEMENTATION.
+
+
+  METHOD constructor.
+
+    mi_server = ii_server.
+
+  ENDMETHOD.
 
 
   METHOD read_mime.
@@ -43,7 +53,7 @@ CLASS ZCL_AGS_SERVICE_STATIC IMPLEMENTATION.
 
   METHOD run.
 
-    ii_server->response->set_data( read_mime( 'index.html' ) ) ##NO_TEXT.
+    mi_server->response->set_data( read_mime( 'index.html' ) ) ##NO_TEXT.
 
   ENDMETHOD.
 ENDCLASS.

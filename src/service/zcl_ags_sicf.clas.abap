@@ -1,10 +1,10 @@
-CLASS zcl_ags_sicf DEFINITION
-  PUBLIC
-  CREATE PUBLIC.
+class ZCL_AGS_SICF definition
+  public
+  create public .
 
-  PUBLIC SECTION.
+public section.
 
-    INTERFACES if_http_extension.
+  interfaces IF_HTTP_EXTENSION .
   PROTECTED SECTION.
   PRIVATE SECTION.
 ENDCLASS.
@@ -24,11 +24,11 @@ CLASS ZCL_AGS_SICF IMPLEMENTATION.
 
     TRY.
         IF lv_path CP '/sap/zgit/static/*'.
-          DATA(lo_static) = NEW zcl_ags_service_static( ).
-          lo_static->run( server ).
+          DATA(lo_static) = NEW zcl_ags_service_static( server ).
+          lo_static->run( ).
         ELSEIF lv_path CP '/sap/zgit/git/*'.
-          DATA(lo_git) = NEW zcl_ags_service_git( ).
-          lo_git->run( server ).
+          DATA(lo_git) = NEW zcl_ags_service_git( server ).
+          lo_git->run( ).
         ELSE.
           RAISE EXCEPTION TYPE zcx_ags_error
             EXPORTING
@@ -38,7 +38,11 @@ CLASS ZCL_AGS_SICF IMPLEMENTATION.
 
         server->response->set_status( code   = 200
                                       reason = lv_reason ).
+
+        COMMIT WORK.
       CATCH zcx_ags_error INTO DATA(lx_error).
+        ROLLBACK WORK.
+
         server->response->set_status( code   = 500
                                       reason = 'Error' ) ##NO_TEXT.
         server->response->set_cdata( lx_error->if_message~get_text( ) ).

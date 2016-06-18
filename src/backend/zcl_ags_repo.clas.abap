@@ -1,44 +1,51 @@
-CLASS zcl_ags_repo DEFINITION
-  PUBLIC
-  CREATE PUBLIC.
+class ZCL_AGS_REPO definition
+  public
+  create public .
 
-  PUBLIC SECTION.
+public section.
 
-    TYPES:
-      ty_repos_tt TYPE STANDARD TABLE OF zags_repos WITH DEFAULT KEY.
-    TYPES:
-      ty_branches_tt TYPE STANDARD TABLE OF REF TO zcl_ags_branch WITH DEFAULT KEY.
+  types:
+    ty_repos_tt TYPE STANDARD TABLE OF zags_repos WITH DEFAULT KEY .
+  types:
+    ty_branches_tt TYPE STANDARD TABLE OF REF TO zcl_ags_branch WITH DEFAULT KEY .
 
-    CLASS-METHODS create
-      IMPORTING
-        !iv_name       TYPE zags_repos-name
-      RETURNING
-        VALUE(ro_repo) TYPE REF TO zcl_ags_repo
-      RAISING
-        zcx_ags_error.
-    CLASS-METHODS list
-      RETURNING
-        VALUE(rt_list) TYPE ty_repos_tt.
-    METHODS constructor
-      IMPORTING
-        !iv_name TYPE zags_repos-name
-      RAISING
-        zcx_ags_error.
-    METHODS delete
-      RAISING
-        zcx_ags_error.
-    METHODS get_data
-      RETURNING
-        VALUE(rs_data) TYPE zags_repos.
-    METHODS list_branches
-      RETURNING
-        VALUE(rt_list) TYPE ty_branches_tt
-      RAISING
-        zcx_ags_error.
+  class-methods CREATE
+    importing
+      !IV_NAME type ZAGS_REPOS-NAME
+    returning
+      value(RO_REPO) type ref to ZCL_AGS_REPO
+    raising
+      ZCX_AGS_ERROR .
+  class-methods LIST
+    returning
+      value(RT_LIST) type TY_REPOS_TT .
+  methods CONSTRUCTOR
+    importing
+      !IV_NAME type ZAGS_REPOS-NAME
+    raising
+      ZCX_AGS_ERROR .
+  methods DELETE
+    raising
+      ZCX_AGS_ERROR .
+  methods GET_DATA
+    returning
+      value(RS_DATA) type ZAGS_REPOS .
+  methods LIST_BRANCHES
+    returning
+      value(RT_LIST) type TY_BRANCHES_TT
+    raising
+      ZCX_AGS_ERROR .
+  methods GET_BRANCH
+    importing
+      !IV_BRANCH_NAME type ZAGS_BRANCH_NAME
+    returning
+      value(RO_BRANCH) type ref to ZCL_AGS_BRANCH
+    raising
+      ZCX_AGS_ERROR .
   PROTECTED SECTION.
-  PRIVATE SECTION.
+private section.
 
-    DATA ms_data TYPE zags_repos.
+  data MS_DATA type ZAGS_REPOS .
 ENDCLASS.
 
 
@@ -96,6 +103,19 @@ CLASS ZCL_AGS_REPO IMPLEMENTATION.
 
     DELETE FROM zags_repos WHERE name = ms_data-name.
     ASSERT sy-subrc = 0.
+
+  ENDMETHOD.
+
+
+  METHOD get_branch.
+
+    LOOP AT list_branches( ) INTO ro_branch.
+      IF ro_branch->get_data( )-name = iv_branch_name.
+        RETURN.
+      ENDIF.
+    ENDLOOP.
+
+    ASSERT 0 = 1.
 
   ENDMETHOD.
 
