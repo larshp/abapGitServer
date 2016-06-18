@@ -16,3 +16,5 @@ Scope:
 Currently 7.50 is required, backport is planned. 
 
 abapGit must be installed as ZABAPGIT report for abapGitServer to work
+
+Only tested with abapGit as client, support for normal git clients is planned
