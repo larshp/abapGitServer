@@ -1,24 +1,38 @@
-class ZCL_AGS_SERVICE_REST definition
-  public
-  create public .
+CLASS zcl_ags_service_rest DEFINITION
+  PUBLIC
+  CREATE PUBLIC.
 
-public section.
+  PUBLIC SECTION.
 
-  interfaces ZIF_AGS_SERVICE .
+    INTERFACES zif_ags_service.
 
-  methods CONSTRUCTOR
-    importing
-      !II_SERVER type ref to IF_HTTP_SERVER .
+    METHODS constructor
+      IMPORTING
+        !ii_server TYPE REF TO if_http_server.
   PROTECTED SECTION.
-private section.
+  PRIVATE SECTION.
 
-  data MI_SERVER type ref to IF_HTTP_SERVER .
+    TYPES:
+      BEGIN OF ty_file,
+        filename TYPE string,
+      END OF ty_file.
+    TYPES:
+      ty_files_tt TYPE STANDARD TABLE OF ty_file WITH DEFAULT KEY.
 
-  methods TO_JSON
-    importing
-      !IG_DATA type ANY
-    returning
-      value(RV_JSON) type XSTRING .
+    DATA mi_server TYPE REF TO if_http_server.
+
+    METHODS list_files
+      IMPORTING
+        !iv_name        TYPE zags_repo_name
+      RETURNING
+        VALUE(rt_files) TYPE ty_files_tt
+      RAISING
+        zcx_ags_error.
+    METHODS to_json
+      IMPORTING
+        !ig_data       TYPE any
+      RETURNING
+        VALUE(rv_json) TYPE xstring.
 ENDCLASS.
 
 
@@ -26,9 +40,42 @@ ENDCLASS.
 CLASS ZCL_AGS_SERVICE_REST IMPLEMENTATION.
 
 
-  METHOD CONSTRUCTOR.
+  METHOD constructor.
 
     mi_server = ii_server.
+
+  ENDMETHOD.
+
+
+  METHOD list_files.
+* todo, unit test this method
+* todo, move this method to somewhere else?
+    TYPES: BEGIN OF ty_tree,
+             sha1 TYPE zags_sha1,
+             base TYPE string,
+           END OF ty_tree.
+
+    DATA: lt_trees TYPE STANDARD TABLE OF ty_tree WITH DEFAULT KEY.
+
+    DATA(lo_repo) = NEW zcl_ags_repo( iv_name ).
+    DATA(lo_branch) = lo_repo->get_branch( lo_repo->get_data( )-head ).
+    DATA(lo_commit) = NEW zcl_ags_obj_commit( lo_branch->get_data( )-sha1 ).
+    APPEND VALUE #( sha1 = lo_commit->get_tree( ) base = '/' ) TO lt_trees.
+
+    LOOP AT lt_trees ASSIGNING FIELD-SYMBOL(<ls_tree>).
+      DATA(lo_tree) = NEW zcl_ags_obj_tree( <ls_tree>-sha1 ).
+      LOOP AT lo_tree->get_files( ) ASSIGNING FIELD-SYMBOL(<ls_file>).
+        CASE <ls_file>-chmod.
+          WHEN zcl_ags_obj_tree=>c_chmod-dir.
+            APPEND VALUE #(
+              sha1 = lo_commit->get_tree( )
+              base = <ls_tree>-base && <ls_file>-name && '/' )
+              TO lt_trees.
+          WHEN OTHERS.
+            APPEND VALUE #( filename = <ls_tree>-base && <ls_file>-name ) TO rt_files.
+        ENDCASE.
+      ENDLOOP.
+    ENDLOOP.
 
   ENDMETHOD.
 
@@ -48,7 +95,8 @@ CLASS ZCL_AGS_SERVICE_REST IMPLEMENTATION.
 
   METHOD zif_ags_service~run.
 
-    DATA: lv_path TYPE string.
+    DATA: lv_path TYPE string,
+          lv_name TYPE zags_repo_name.
 
 
     lv_path = mi_server->request->get_header_field( '~path' ).
@@ -56,10 +104,16 @@ CLASS ZCL_AGS_SERVICE_REST IMPLEMENTATION.
     IF lv_path CP '*/repositories/'.
       DATA(lt_list) = zcl_ags_repo=>list( ).
       mi_server->response->set_data( to_json( lt_list ) ).
+    ELSEIF lv_path CP '*/repo/*/files/'.
+      FIND REGEX '/sap/zgit/rest/repo/(.*)/files/'
+        IN lv_path
+        SUBMATCHES lv_name ##NO_TEXT.
+      ASSERT sy-subrc = 0.
+      mi_server->response->set_data( to_json( list_files( lv_name ) ) ).
     ELSE.
-      mi_server->response->set_status( code   = 500
-                                       reason = 'Error' ) ##NO_TEXT.
-      mi_server->response->set_cdata( 'rest error' ).
+      RAISE EXCEPTION TYPE zcx_ags_error
+        EXPORTING
+          textid = zcx_ags_error=>m010.
     ENDIF.
 
   ENDMETHOD.

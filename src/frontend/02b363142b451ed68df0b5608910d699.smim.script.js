@@ -16,8 +16,7 @@ class REST {
   }
 
   static listFiles(repoName, callback) {
-    console.log("files " + repoName);
-//    this.get("repositories/", callback);
+    this.get("repo/" + repoName + "/files/", callback);
   }
 
   static get(folder, callback) {
@@ -77,7 +76,7 @@ class Repo extends React.Component {
       <div>
       <h1>{this.props.params.id}</h1>
       {this.state.spinner?<Spinner />:""}
-      {this.state.data.map((e) => { return (<div><Link to={e.NAME+"/"}>{e.NAME}</Link><br /></div>);})}
+      {this.state.data.map((e) => { return (<div>{e.FILENAME}<br /></div>);})}
       </div>);
   }
 }                  

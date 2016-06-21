@@ -72,6 +72,8 @@ CLASS ZCL_AGS_REPO IMPLEMENTATION.
           ls_repo TYPE zags_repos.
 
 
+    ASSERT NOT iv_name CA ' /\'.
+
     lt_list = list( ).
     READ TABLE lt_list WITH KEY name = iv_name TRANSPORTING NO FIELDS.
     IF sy-subrc = 0.

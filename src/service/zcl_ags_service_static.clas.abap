@@ -1,24 +1,24 @@
-class ZCL_AGS_SERVICE_STATIC definition
-  public
-  create public .
+CLASS zcl_ags_service_static DEFINITION
+  PUBLIC
+  CREATE PUBLIC.
 
-public section.
+  PUBLIC SECTION.
 
-  interfaces ZIF_AGS_SERVICE .
+    INTERFACES zif_ags_service.
 
-  methods CONSTRUCTOR
-    importing
-      !II_SERVER type ref to IF_HTTP_SERVER .
+    METHODS constructor
+      IMPORTING
+        !ii_server TYPE REF TO if_http_server.
   PROTECTED SECTION.
-private section.
+  PRIVATE SECTION.
 
-  data MI_SERVER type ref to IF_HTTP_SERVER .
+    DATA mi_server TYPE REF TO if_http_server.
 
-  methods READ_MIME
-    importing
-      !IV_URL type STRING
-    returning
-      value(RV_DATA) type XSTRING .
+    METHODS read_mime
+      IMPORTING
+        !iv_url        TYPE string
+      RETURNING
+        VALUE(rv_data) TYPE xstring.
 ENDCLASS.
 
 

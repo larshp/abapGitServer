@@ -1,55 +1,55 @@
-class ZCL_AGS_SERVICE_GIT definition
-  public
-  create public .
+CLASS zcl_ags_service_git DEFINITION
+  PUBLIC
+  CREATE PUBLIC.
 
-public section.
+  PUBLIC SECTION.
 
-  interfaces ZIF_AGS_SERVICE .
+    INTERFACES zif_ags_service.
 
-  methods CONSTRUCTOR
-    importing
-      !II_SERVER type ref to IF_HTTP_SERVER .
+    METHODS constructor
+      IMPORTING
+        !ii_server TYPE REF TO if_http_server.
   PROTECTED SECTION.
-private section.
+  PRIVATE SECTION.
 
-  types:
-    BEGIN OF ty_push,
-      branch      TYPE zags_sha1,
-      commit      TYPE zags_sha1,
-      branch_name TYPE zags_branch_name,
-      length      TYPE i,
-    END OF ty_push .
+    TYPES:
+      BEGIN OF ty_push,
+        branch      TYPE zags_sha1,
+        commit      TYPE zags_sha1,
+        branch_name TYPE zags_branch_name,
+        length      TYPE i,
+      END OF ty_push.
 
-  data MI_SERVER type ref to IF_HTTP_SERVER .
+    DATA mi_server TYPE REF TO if_http_server.
 
-  methods BRANCH_LIST
-    raising
-      ZCX_AGS_ERROR .
-  methods DECODE_PUSH
-    importing
-      !IV_DATA type STRING
-    returning
-      value(RS_PUSH) type TY_PUSH
-    raising
-      ZCX_AGS_ERROR .
-  methods DECODE_WANT
-    importing
-      !IV_STRING type STRING
-    returning
-      value(RV_SHA1) type ZAGS_SHA1 .
-  methods GET_NULL
-    returning
-      value(RV_CHAR) type CHAR1 .
-  methods PACK
-    raising
-      ZCX_AGS_ERROR .
-  methods REPO_NAME
-    returning
-      value(RV_NAME) type ZAGS_REPOS-NAME .
-  methods UNPACK
-    raising
-      ZCX_AGS_ERROR .
-  methods UNPACK_OK .
+    METHODS branch_list
+      RAISING
+        zcx_ags_error.
+    METHODS decode_push
+      IMPORTING
+        !iv_data       TYPE string
+      RETURNING
+        VALUE(rs_push) TYPE ty_push
+      RAISING
+        zcx_ags_error.
+    METHODS decode_want
+      IMPORTING
+        !iv_string     TYPE string
+      RETURNING
+        VALUE(rv_sha1) TYPE zags_sha1.
+    METHODS get_null
+      RETURNING
+        VALUE(rv_char) TYPE char1.
+    METHODS pack
+      RAISING
+        zcx_ags_error.
+    METHODS repo_name
+      RETURNING
+        VALUE(rv_name) TYPE zags_repos-name.
+    METHODS unpack
+      RAISING
+        zcx_ags_error.
+    METHODS unpack_ok.
 ENDCLASS.
 
 

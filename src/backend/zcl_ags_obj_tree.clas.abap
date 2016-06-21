@@ -22,7 +22,7 @@ CLASS zcl_ags_obj_tree DEFINITION
       ty_chmod TYPE c LENGTH 6.
     TYPES:
       BEGIN OF ty_tree,
-        chmod TYPE string,
+        chmod TYPE ty_chmod,
         name  TYPE string,
         sha1  TYPE zags_sha1,
       END OF ty_tree.

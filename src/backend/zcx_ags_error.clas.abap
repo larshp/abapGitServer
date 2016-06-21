@@ -88,6 +88,15 @@ public section.
       attr3 type scx_attrname value '',
       attr4 type scx_attrname value '',
     end of M009 .
+  constants:
+    begin of M010,
+      msgid type symsgid value 'ZABAPGITSERVER',
+      msgno type symsgno value '010',
+      attr1 type scx_attrname value '',
+      attr2 type scx_attrname value '',
+      attr3 type scx_attrname value '',
+      attr4 type scx_attrname value '',
+    end of M010 .
   data SHA1 type ZAGS_SHA1 .
   data STRING type STRING .
 
