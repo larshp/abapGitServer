@@ -16,25 +16,23 @@ CLASS ZCL_AGS_SICF IMPLEMENTATION.
 
   METHOD if_http_extension~handle_request.
 
-    DATA: lv_reason TYPE string,
-          lv_path   TYPE string.
+    DATA: lv_reason  TYPE string,
+          lv_path    TYPE string,
+          li_service TYPE REF TO zif_ags_service.
 
 
     lv_path = server->request->get_header_field( '~path' ).
 
     TRY.
-        IF lv_path CP '/sap/zgit/static/*'.
-          DATA(lo_static) = NEW zcl_ags_service_static( server ).
-          lo_static->run( ).
-        ELSEIF lv_path CP '/sap/zgit/git/*'.
-          DATA(lo_git) = NEW zcl_ags_service_git( server ).
-          lo_git->run( ).
+        IF lv_path CP '/sap/zgit/git/*'.
+          li_service = NEW zcl_ags_service_git( server ).
+        ELSEIF lv_path CP '/sap/zgit/rest/*'.
+          li_service = NEW zcl_ags_service_rest( server ).
         ELSE.
-          RAISE EXCEPTION TYPE zcx_ags_error
-            EXPORTING
-              textid = zcx_ags_error=>m006
-              string = lv_path.
+          li_service = NEW zcl_ags_service_static( server ).
         ENDIF.
+
+        li_service->run( ).
 
         server->response->set_status( code   = 200
                                       reason = lv_reason ).

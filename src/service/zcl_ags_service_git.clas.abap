@@ -4,12 +4,11 @@ class ZCL_AGS_SERVICE_GIT definition
 
 public section.
 
+  interfaces ZIF_AGS_SERVICE .
+
   methods CONSTRUCTOR
     importing
       !II_SERVER type ref to IF_HTTP_SERVER .
-  methods RUN
-    raising
-      ZCX_AGS_ERROR .
   PROTECTED SECTION.
 private section.
 
@@ -199,25 +198,6 @@ CLASS ZCL_AGS_SERVICE_GIT IMPLEMENTATION.
   ENDMETHOD.
 
 
-  METHOD run.
-
-    DATA(lv_path) = mi_server->request->get_header_field( '~path_info' ).
-
-    IF mi_server->request->get_cdata( ) IS INITIAL.
-      branch_list( ).
-    ELSEIF lv_path CP '*git-upload-pack*'.
-      pack( ).
-    ELSEIF lv_path CP '*git-receive-pack*'.
-      unpack( ).
-    ELSE.
-      RAISE EXCEPTION TYPE zcx_ags_error
-        EXPORTING
-          textid = zcx_ags_error=>m008.
-    ENDIF.
-
-  ENDMETHOD.
-
-
   METHOD unpack.
 
     CONSTANTS: lc_utf_0000 TYPE x LENGTH 4 VALUE '30303030'.
@@ -256,6 +236,25 @@ CLASS ZCL_AGS_SERVICE_GIT IMPLEMENTATION.
 
 * todo, this is all wrong(but will work in most cases):
     mi_server->response->set_cdata( '000eunpack ok#0019ok refs/heads/master#00000000' ).
+
+  ENDMETHOD.
+
+
+  METHOD zif_ags_service~run.
+
+    DATA(lv_path) = mi_server->request->get_header_field( '~path_info' ).
+
+    IF mi_server->request->get_cdata( ) IS INITIAL.
+      branch_list( ).
+    ELSEIF lv_path CP '*git-upload-pack*'.
+      pack( ).
+    ELSEIF lv_path CP '*git-receive-pack*'.
+      unpack( ).
+    ELSE.
+      RAISE EXCEPTION TYPE zcx_ags_error
+        EXPORTING
+          textid = zcx_ags_error=>m008.
+    ENDIF.
 
   ENDMETHOD.
 ENDCLASS.

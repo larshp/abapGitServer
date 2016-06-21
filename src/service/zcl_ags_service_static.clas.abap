@@ -4,7 +4,8 @@ class ZCL_AGS_SERVICE_STATIC definition
 
 public section.
 
-  methods RUN .
+  interfaces ZIF_AGS_SERVICE .
+
   methods CONSTRUCTOR
     importing
       !II_SERVER type ref to IF_HTTP_SERVER .
@@ -51,9 +52,23 @@ CLASS ZCL_AGS_SERVICE_STATIC IMPLEMENTATION.
   ENDMETHOD.
 
 
-  METHOD run.
+  METHOD zif_ags_service~run.
 
-    mi_server->response->set_data( read_mime( 'index.html' ) ) ##NO_TEXT.
+    DATA: lv_name TYPE string,
+          lv_path TYPE string.
+
+
+    lv_path = mi_server->request->get_header_field( '~path' ).
+
+    FIND REGEX '/sap/zgit/static/(.*)'
+      IN lv_path
+      SUBMATCHES lv_name ##NO_TEXT.
+
+    IF lv_name IS INITIAL.
+      lv_name = 'index.html'.
+    ENDIF.
+
+    mi_server->response->set_data( read_mime( lv_name ) ) ##NO_TEXT.
 
   ENDMETHOD.
 ENDCLASS.
