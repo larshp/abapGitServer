@@ -55,7 +55,12 @@ class RepoList extends React.Component {
       <div>
       <h1>abapGitServer</h1>
       {this.state.spinner?<Spinner />:""}
-      {this.state.data.map((e) => { return (<div><Link to={e.NAME+"/"}>{e.NAME}</Link><br /></div>);})}
+      {this.state.data.map((e) => { return (
+        <div>
+          <Link to={e.NAME+"/"}>{e.NAME}</Link><br />
+          {e.DESCRIPTION}<br />
+          <br />
+        </div>);})}
       </div>);
   }
 }
