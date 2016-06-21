@@ -37,7 +37,6 @@ CLASS ZCL_AGS_SERVICE_REST IMPLEMENTATION.
 
     DATA: lo_writer TYPE REF TO cl_sxml_string_writer.
 
-
     lo_writer = cl_sxml_string_writer=>create( if_sxml=>co_xt_json ).
     CALL TRANSFORMATION id
       SOURCE data = ig_data
