@@ -1,3 +1,4 @@
+const base = '/sap/zgit';
 const Link = ReactRouter.Link;
 
 function handleError(evt, callback, json) {
@@ -13,7 +14,7 @@ function handleError(evt, callback, json) {
 }
 
 class REST {
-  static root = "/sap/zgit/rest/";
+  static root = base + "/rest/";
 
   static listRepositories(callback) {
     this.get("list/", callback);
@@ -125,6 +126,8 @@ class Repo extends React.Component {
     return (
       <div>
       <h1>{this.props.params.repo}</h1>
+      Clone URL: {window.location.origin}{base}/git/{this.props.params.repo}.git<br />
+      <br />
       {this.state.spinner?<Spinner />:""}
       {this.state.data.map((e) => { return (
         <div>
@@ -139,7 +142,7 @@ class Router extends React.Component {
         
   render() { 
     const history = ReactRouter.useRouterHistory(History.createHistory)({
-      basename: '/sap/zgit'
+      basename: base
       });
       
 /*
