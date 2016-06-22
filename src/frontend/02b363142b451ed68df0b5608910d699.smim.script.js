@@ -117,7 +117,17 @@ class Create extends React.Component {
   render() {
     return(<div>create</div>);
   }
-}            
+}         
+           
+class BranchList extends React.Component {
+  render() {
+    return(<div>
+           <Breadcrumb routes={this.props.routes} params={this.props.params} />
+           <h1>Branch list</h1>
+           <Link to={this.props.params.repo + "/master"}>master</Link>
+           </div>);
+  }
+}              
 
 class Blob extends React.Component {
   constructor(props) {
@@ -148,24 +158,18 @@ class Blob extends React.Component {
     let lang = this.determineLanguage();
     return(<div>
       <Breadcrumb routes={this.props.routes} params={this.props.params} />
-      <h1>Blob {this.props.params.splat}</h1>
-      {this.props.params.branch}<br />
-      <br />
+      <h1>{this.props.params.splat}</h1>
       {this.state.spinner?<Spinner />:<pre><code className={lang}>{this.state.data}</code></pre>}             
       </div>);
   }
 }               
 
 class Breadcrumb extends React.Component {
-  bread;
-  path;
+  bread = [];
+  path = "";
            
   constructor(props) {
     super(props);
-    this.bread = [];
-    this.path = "";
-console.log("routes");
-console.log(props.routes);      
     this.build();      
   }
     
@@ -191,8 +195,9 @@ console.log(props.routes);
     } else {
       return;
     }
-    
-    this.bread.push({name, path: this.path});
+    if (name) {
+      this.bread.push({name, path: this.path});
+    }
   }
   
   build() {
@@ -203,9 +208,12 @@ console.log(props.routes);
 
   show(e) {
     if (e.path) {
-      return (<div><Link to={e.path}>{e.name}</Link></div>);
+      return (<div className="inline">
+              <Link className="inline" to={e.path}>{e.name}</Link>
+              <div className="inline">&nbsp;&gt;&nbsp;</div>
+              </div>);
     } else {
-      return (<div>{e.name}</div>);
+      return (<div className="inline">{e.name}</div>);
     }      
   }
     
@@ -237,14 +245,13 @@ class RepoList extends React.Component {
   render() {
     return (
       <div>
-      <Breadcrumb routes={this.props.routes} params={this.props.params} />
       <h1>abapGitServer</h1>
       {this.state.spinner?<Spinner />:this.state.data.map(this.repo)}
       </div>);
   }
 }
             
-class Repo extends React.Component {
+class FilesList extends React.Component {
   constructor(props) {
     super(props);
     this.state = {data: [], spinner: true};
@@ -258,7 +265,7 @@ class Repo extends React.Component {
   file(e) {
     return (
       <div>
-      <Link to={this.props.params.repo + "/blob/master"+e.FILENAME}>{e.FILENAME}</Link>
+      <Link to={this.props.params.repo + "/" + this.props.params.branch + "/blob" + e.FILENAME}>{e.FILENAME}</Link>
       <br />
       </div>);
   }
@@ -269,7 +276,7 @@ class Repo extends React.Component {
       <Breadcrumb routes={this.props.routes} params={this.props.params} />
       <h1>{this.props.params.repo}</h1>
       Clone URL: {window.location.origin}{base}/git/{this.props.params.repo}.git<br />
-      <Link to={this.props.params.repo + "/commits/master"}>list commits</Link><br />
+      <Link to={this.props.params.repo + "/" + this.props.params.branch + "/commits"}>list commits</Link><br />
       <br />
       {this.state.spinner?<Spinner />:this.state.data.map(this.file.bind(this))}
       </div>);
@@ -284,28 +291,29 @@ class Router extends React.Component {
 /*
 * FRONTEND folder overview 
 *
-* Folder                                 Component       Description
-* /                                      RepoList        list repositories
-* /create/                                               create repository
-* /edit/(name)                                           edit repo description
-* /repo/(name)/(branch)/                 Repo            list files in branch 
-* /repo/(name)/(branch)/commits          CommitList      list commits
-* /repo/(name)/(branch)/blob/(filename)  Blob            display blob
+* FOLDER                            COMPONENT       DESCRIPTION
+* /                                 RepoList        list repositories
+* /create/                                          create repository
+* /edit/(name)                                      edit repo description
+* /(name)/                          BranchList      list branches
+* /(name)/(branch)/                 FilesList       list files in branch 
+* /(name)/(branch)/commits          CommitList      list commits
+* /(name)/(branch)/blob/(filename)  Blob            display blob
 */
+
     return (
       <ReactRouter.Router history={history} >
-        <ReactRouter.Route path="/" name="Home">
+        <ReactRouter.Route path="/" name="abapGitServer">
           <ReactRouter.IndexRoute component={RepoList} />
           <ReactRouter.Route path="create" component={Create} />
           <ReactRouter.Route path=":repo">
-            <ReactRouter.IndexRoute component={Repo} />
-            <ReactRouter.Route path="blob" name="Blob">
-              <ReactRouter.Route path=":branch">
+            <ReactRouter.IndexRoute component={BranchList} />
+            <ReactRouter.Route path=":branch">
+              <ReactRouter.IndexRoute component={FilesList} />
+              <ReactRouter.Route path="commits" component={CommitList} name="Commits" />
+              <ReactRouter.Route path="blob">
                 <ReactRouter.Route path="*" component={Blob} />
-              </ReactRouter.Route>
-            </ReactRouter.Route>
-            <ReactRouter.Route path="commits" name="Commits">
-              <ReactRouter.Route path=":branch" component={CommitList}/>
+              </ReactRouter.Route>      
             </ReactRouter.Route>
           </ReactRouter.Route>
         </ReactRouter.Route>
