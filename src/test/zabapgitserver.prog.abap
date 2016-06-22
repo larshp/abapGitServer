@@ -77,7 +77,7 @@ CLASS lcl_app IMPLEMENTATION.
     DATA(lo_repo) = NEW zcl_ags_repo( p_rname ).
     DATA(lo_branch) = lo_repo->get_branch( p_bname ).
     DATA(lo_commit) = NEW zcl_ags_obj_commit( lo_branch->get_data( )-sha1 ).
-    DATA(lo_tree) = NEW zcl_ags_obj_tree( lo_commit->get_tree( ) ).
+    DATA(lo_tree) = NEW zcl_ags_obj_tree( lo_commit->get( )-tree ).
 
     LOOP AT lo_tree->get_files( ) ASSIGNING FIELD-SYMBOL(<ls_file>).
       WRITE: / <ls_file>-name.
@@ -110,11 +110,11 @@ CLASS lcl_app IMPLEMENTATION.
   METHOD display_commit.
     DATA(lo_commit) = NEW zcl_ags_obj_commit( p_sha1 ).
 
-    WRITE: / 'tree:'(002), lo_commit->get_tree( ).
-    WRITE: / 'parent:'(003), lo_commit->get_parent( ).
-    WRITE: / 'author:'(004), lo_commit->get_author( ).
-    WRITE: / 'committer:'(005), lo_commit->get_committer( ).
-    WRITE: / 'body:'(006), lo_commit->get_body( ).
+    WRITE: / 'tree:'(002), lo_commit->get( )-tree.
+    WRITE: / 'parent:'(003), lo_commit->get( )-parent.
+    WRITE: / 'author:'(004), lo_commit->get( )-author.
+    WRITE: / 'committer:'(005), lo_commit->get( )-committer.
+    WRITE: / 'body:'(006), lo_commit->get( )-body.
 
   ENDMETHOD.
 

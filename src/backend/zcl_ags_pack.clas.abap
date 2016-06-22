@@ -82,7 +82,7 @@ CLASS ZCL_AGS_PACK IMPLEMENTATION.
 * traverse sub objects
     CASE TYPE OF ii_object.
       WHEN TYPE zcl_ags_obj_commit INTO DATA(lo_commit).
-        lo_tree = NEW zcl_ags_obj_tree( lo_commit->get_tree( ) ).
+        lo_tree = NEW zcl_ags_obj_tree( lo_commit->get( )-tree ).
         APPEND LINES OF explode( lo_tree ) TO rt_objects.
       WHEN TYPE zcl_ags_obj_tree INTO lo_tree.
         LOOP AT lo_tree->get_files( ) ASSIGNING FIELD-SYMBOL(<ls_file>).

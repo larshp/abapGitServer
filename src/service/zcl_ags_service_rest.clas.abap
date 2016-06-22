@@ -10,44 +10,52 @@ CLASS zcl_ags_service_rest DEFINITION
       IMPORTING
         !ii_server TYPE REF TO if_http_server.
   PROTECTED SECTION.
-  PRIVATE SECTION.
+private section.
 
-    TYPES:
-      BEGIN OF ty_file,
+  types:
+    BEGIN OF ty_file,
         filename TYPE string,
         sha1     TYPE zags_sha1,
-      END OF ty_file.
-    TYPES:
-      ty_files_tt TYPE STANDARD TABLE OF ty_file WITH DEFAULT KEY.
+      END OF ty_file .
+  types:
+    ty_files_tt TYPE STANDARD TABLE OF ty_file WITH DEFAULT KEY .
 
-    DATA mi_server TYPE REF TO if_http_server.
+  data MI_SERVER type ref to IF_HTTP_SERVER .
 
-    METHODS list_repos
-      RETURNING
-        VALUE(rt_list) TYPE zcl_ags_repo=>ty_repos_tt
-      RAISING
-        zcx_ags_error.
-    METHODS read_blob
-      IMPORTING
-        !iv_repo           TYPE zags_repo_name
-        !iv_branch         TYPE string
-        !iv_filename       TYPE string
-      RETURNING
-        VALUE(rv_contents) TYPE xstring
-      RAISING
-        zcx_ags_error.
-    METHODS list_files
-      IMPORTING
-        !iv_name        TYPE zags_repo_name
-      RETURNING
-        VALUE(rt_files) TYPE ty_files_tt
-      RAISING
-        zcx_ags_error.
-    METHODS to_json
-      IMPORTING
-        !ig_data       TYPE any
-      RETURNING
-        VALUE(rv_json) TYPE xstring.
+  methods LIST_COMMITS
+    importing
+      !IV_NAME type ZAGS_REPO_NAME
+      !IV_BRANCH type ZAGS_BRANCH_NAME
+    returning
+      value(RT_COMMITS) type ZCL_AGS_OBJ_COMMIT=>TY_COMMITS_TT
+    raising
+      ZCX_AGS_ERROR .
+  methods LIST_REPOS
+    returning
+      value(RT_LIST) type ZCL_AGS_REPO=>TY_REPOS_TT
+    raising
+      ZCX_AGS_ERROR .
+  methods READ_BLOB
+    importing
+      !IV_REPO type ZAGS_REPO_NAME
+      !IV_BRANCH type STRING
+      !IV_FILENAME type STRING
+    returning
+      value(RV_CONTENTS) type XSTRING
+    raising
+      ZCX_AGS_ERROR .
+  methods LIST_FILES
+    importing
+      !IV_NAME type ZAGS_REPO_NAME
+    returning
+      value(RT_FILES) type TY_FILES_TT
+    raising
+      ZCX_AGS_ERROR .
+  methods TO_JSON
+    importing
+      !IG_DATA type ANY
+    returning
+      value(RV_JSON) type XSTRING .
 ENDCLASS.
 
 
@@ -58,6 +66,21 @@ CLASS ZCL_AGS_SERVICE_REST IMPLEMENTATION.
   METHOD constructor.
 
     mi_server = ii_server.
+
+  ENDMETHOD.
+
+
+  METHOD list_commits.
+
+    DATA(lo_repo) = NEW zcl_ags_repo( iv_name ).
+    DATA(lo_branch) = lo_repo->get_branch( iv_branch ).
+    DATA(lo_commit) = NEW zcl_ags_obj_commit( lo_branch->get_data( )-sha1 ).
+
+    APPEND lo_commit->get( ) TO rt_commits.
+    WHILE NOT lo_commit->get( )-parent IS INITIAL.
+      lo_commit = NEW zcl_ags_obj_commit( lo_commit->get( )-parent ).
+      APPEND lo_commit->get( ) TO rt_commits.
+    ENDWHILE.
 
   ENDMETHOD.
 
@@ -76,21 +99,23 @@ CLASS ZCL_AGS_SERVICE_REST IMPLEMENTATION.
     DATA(lo_repo) = NEW zcl_ags_repo( iv_name ).
     DATA(lo_branch) = lo_repo->get_branch( lo_repo->get_data( )-head ).
     DATA(lo_commit) = NEW zcl_ags_obj_commit( lo_branch->get_data( )-sha1 ).
-    APPEND VALUE #( sha1 = lo_commit->get_tree( ) base = '/' ) TO lt_trees.
+    APPEND VALUE #( sha1 = lo_commit->get( )-tree base = '/' ) TO lt_trees.
 
     LOOP AT lt_trees ASSIGNING FIELD-SYMBOL(<ls_tree>).
       DATA(lo_tree) = NEW zcl_ags_obj_tree( <ls_tree>-sha1 ).
-      LOOP AT lo_tree->get_files( ) ASSIGNING FIELD-SYMBOL(<ls_file>).
+      DATA(lt_files) = lo_tree->get_files( ).
+      LOOP AT lt_files ASSIGNING FIELD-SYMBOL(<ls_file>).
         CASE <ls_file>-chmod.
           WHEN zcl_ags_obj_tree=>c_chmod-dir.
             APPEND VALUE #(
-              sha1 = lo_commit->get_tree( )
+              sha1 = <ls_file>-sha1
               base = <ls_tree>-base && <ls_file>-name && '/' )
               TO lt_trees.
           WHEN OTHERS.
             APPEND VALUE #(
               filename = <ls_tree>-base && <ls_file>-name
-              sha1 = <ls_file>-sha1 ) TO rt_files.
+              sha1 = <ls_file>-sha1 )
+              TO rt_files.
         ENDCASE.
       ENDLOOP.
     ENDLOOP.
@@ -161,7 +186,7 @@ CLASS ZCL_AGS_SERVICE_REST IMPLEMENTATION.
       IN lv_path
       SUBMATCHES lv_name ##NO_TEXT.
 
-    FIND REGEX lv_base && '/(\w*)$'
+    FIND REGEX '/(\w*)$'
       IN lv_path
       SUBMATCHES lv_last ##NO_TEXT.
 
@@ -180,7 +205,9 @@ CLASS ZCL_AGS_SERVICE_REST IMPLEMENTATION.
     ELSEIF lv_path CP lv_base && '/repo/*/commit/*'.
 * todo
     ELSEIF lv_path CP lv_base && '/repo/*/commits/*'.
-* todo
+      mi_server->response->set_data( to_json(
+        list_commits( iv_name   = lv_name
+                      iv_branch = CONV #( lv_last ) ) ) ).
     ELSE.
       RAISE EXCEPTION TYPE zcx_ags_error
         EXPORTING

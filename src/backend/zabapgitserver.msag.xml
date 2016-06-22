@@ -85,6 +85,12 @@
      <MSGNR>011</MSGNR>
      <TEXT>File not found</TEXT>
     </T100>
+    <T100>
+     <SPRSL>E</SPRSL>
+     <ARBGB>ZABAPGITSERVER</ARBGB>
+     <MSGNR>012</MSGNR>
+     <TEXT>Commit, bad field format</TEXT>
+    </T100>
    </T100>
   </asx:values>
  </asx:abap>

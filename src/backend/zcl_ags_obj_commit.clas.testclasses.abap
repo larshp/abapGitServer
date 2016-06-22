@@ -35,24 +35,24 @@ CLASS ltcl_test IMPLEMENTATION.
     lo_new->zif_ags_object~deserialize( lv_xstr ).
 
     cl_abap_unit_assert=>assert_equals(
-        act = lo_new->get_author( )
-        exp = lo_old->get_author( ) ).
+        act = lo_new->get( )-author
+        exp = lo_old->get( )-author ).
 
     cl_abap_unit_assert=>assert_equals(
-        act = lo_new->get_body( )
-        exp = lo_old->get_body( ) ).
+        act = lo_new->get( )-body
+        exp = lo_old->get( )-body ).
 
     cl_abap_unit_assert=>assert_equals(
-        act = lo_new->get_committer( )
-        exp = lo_old->get_committer( ) ).
+        act = lo_new->get( )-committer
+        exp = lo_old->get( )-committer ).
 
     cl_abap_unit_assert=>assert_equals(
-        act = lo_new->get_parent( )
-        exp = lo_old->get_parent( ) ).
+        act = lo_new->get( )-parent
+        exp = lo_old->get( )-parent ).
 
     cl_abap_unit_assert=>assert_equals(
-        act = lo_new->get_tree( )
-        exp = lo_old->get_tree( ) ).
+        act = lo_new->get( )-tree
+        exp = lo_old->get( )-tree ).
 
   ENDMETHOD.
 

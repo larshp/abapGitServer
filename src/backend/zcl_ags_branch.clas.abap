@@ -52,7 +52,8 @@ CLASS ZCL_AGS_BRANCH IMPLEMENTATION.
 
   METHOD create.
 
-    DATA: ls_branch TYPE zags_branches.
+    DATA: ls_branch TYPE zags_branches,
+          lv_user   TYPE string.
 
 
     DATA(lo_blob) = NEW zcl_ags_obj_blob( ).
@@ -65,11 +66,13 @@ CLASS ZCL_AGS_BRANCH IMPLEMENTATION.
                        iv_sha1  = lo_blob->sha1( ) ) ##NO_TEXT.
     lo_tree->save( ).
 
+    lv_user = |initial <foo@bar.com> { zcl_ags_util=>get_time( ) }|.
+
     DATA(lo_commit) = NEW zcl_ags_obj_commit( ).
     lo_commit->set_tree( lo_tree->sha1( ) ).
-    lo_commit->set_author( 'author' ) ##NO_TEXT.
-    lo_commit->set_body( 'body' ) ##NO_TEXT.
-    lo_commit->set_committer( 'committer' ) ##NO_TEXT.
+    lo_commit->set_author( lv_user ) ##NO_TEXT.
+    lo_commit->set_committer( lv_user ) ##NO_TEXT.
+    lo_commit->set_body( 'initial' ) ##NO_TEXT.
     lo_commit->save( ).
 
     ls_branch-repo   = io_repo->get_data( )-repo.

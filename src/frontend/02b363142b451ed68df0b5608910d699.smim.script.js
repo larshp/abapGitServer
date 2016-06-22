@@ -24,6 +24,10 @@ class REST {
     this.get("repo/" + repoName + "/tree/master", callback);
   }
 
+  static listCommits(repoName, branch, callback) {
+    this.get("repo/" + repoName + "/commits/" + branch, callback);
+  }
+
   static readBlob(repoName, branch, filename, callback) {
     const url = "repo/" + repoName + "/blob/master/" + filename;
     this.get(url, callback, false);
@@ -43,6 +47,34 @@ class NoMatch extends React.Component {
   }
 }
 
+class CommitList extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = {data: [], spinner: true };
+    REST.listCommits(props.params.repo, 
+                     props.params.branch, 
+                     (d) => { this.update(d);});      
+  }
+
+  update(d) {
+    console.log(d);
+    this.setState({data: d, spinner: false});
+  }    
+
+  commit(e) {
+    return (<div>{e.SHA1} {e.COMMITTER} {e.BODY}</div>);
+  }
+    
+  render() {
+    return (<div><h1>commit list</h1>
+      {this.props.params.repo}<br />
+      {this.props.params.branch}<br />
+      <br />
+      {this.state.spinner?<Spinner />:this.state.data.map(this.commit)}
+      </div>);
+  }
+}
+            
 class Spinner extends React.Component {
   render() {
     return(<div className="sk-rotating-plane"></div>);
@@ -95,18 +127,21 @@ class RepoList extends React.Component {
   update(d) {
     this.setState({data: d, spinner: false});
   }
-            
-  render() {     
+
+  repo(e) {
     return (
-      <div>
-      <h1>abapGitServer</h1>
-      {this.state.spinner?<Spinner />:""}
-      {this.state.data.map((e) => { return (
         <div>
           <Link to={e.NAME+"/"}>{e.NAME}</Link><br />
           {e.DESCRIPTION}<br />
           <br />
-        </div>);})}
+        </div>);
+  }    
+    
+  render() {     
+    return (
+      <div>
+      <h1>abapGitServer</h1>
+      {this.state.spinner?<Spinner />:this.state.data.map(this.repo)}
       </div>);
   }
 }
@@ -120,20 +155,24 @@ class Repo extends React.Component {
 
   update(d) {
     this.setState({data: d, spinner: false});
-  }                                   
-                                   
+  }
+  
+  file(e) {
+    return (
+      <div>
+      <Link to={this.props.params.repo + "/blob/master"+e.FILENAME}>{e.FILENAME}</Link>
+      <br />
+      </div>);
+  }
+                           
   render() {
     return (
       <div>
       <h1>{this.props.params.repo}</h1>
       Clone URL: {window.location.origin}{base}/git/{this.props.params.repo}.git<br />
+      <Link to={this.props.params.repo + "/commits/master"}>list commits</Link><br />
       <br />
-      {this.state.spinner?<Spinner />:""}
-      {this.state.data.map((e) => { return (
-        <div>
-        <Link to={this.props.params.repo + "/blob/master"+e.FILENAME}>{e.FILENAME}</Link>
-        <br />
-        </div>);})}
+      {this.state.spinner?<Spinner />:this.state.data.map(this.file.bind(this))}
       </div>);
   }
 }                  
@@ -148,12 +187,13 @@ class Router extends React.Component {
 /*
 * FRONTEND folder overview 
 *
-* Folder                 Component       Description
-* /                      RepoList        list repositories
-* /create/                               create repository
-* /repo/(name)/          Repo            list files in master/HEAD branch
-* /repo/(name)/edit                      edit repo description
-* /repo/(name)/blob/(branch)/(filename)  display blob
+* Folder                           Component       Description
+* /                                RepoList        list repositories
+* /create/                                         create repository
+* /repo/(name)/                    Repo            list files in master/HEAD branch
+* /repo/(name)/commits/(branch)    CommitList      list commits
+* /repo/(name)/edit                                edit repo description
+* /repo/(name)/blob/(branch)/(filename)            display blob
 */
     return (
       <ReactRouter.Router history={history} >
@@ -163,6 +203,9 @@ class Router extends React.Component {
             <ReactRouter.IndexRoute component={Repo} />
             <ReactRouter.Route path="blob">
               <ReactRouter.Route path=":branch/*" component={Blob} />
+            </ReactRouter.Route>
+            <ReactRouter.Route path="commits">
+              <ReactRouter.Route path=":branch" component={CommitList}/>
             </ReactRouter.Route>
           </ReactRouter.Route>
         </ReactRouter.Route>
