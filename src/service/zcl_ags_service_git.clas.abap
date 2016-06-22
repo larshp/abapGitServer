@@ -219,6 +219,7 @@ CLASS ZCL_AGS_SERVICE_GIT IMPLEMENTATION.
     DATA(lo_repo) = NEW zcl_ags_repo( repo_name( ) ).
 
 * todo, new branches?
+    ls_push-branch_name = ls_push-branch_name+11.
     DATA(lo_branch) = lo_repo->get_branch( ls_push-branch_name ).
 
     ASSERT lo_branch->get_data( )-sha1 = ls_push-branch.
