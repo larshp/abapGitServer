@@ -79,6 +79,12 @@
      <MSGNR>010</MSGNR>
      <TEXT>REST error</TEXT>
     </T100>
+    <T100>
+     <SPRSL>E</SPRSL>
+     <ARBGB>ZABAPGITSERVER</ARBGB>
+     <MSGNR>011</MSGNR>
+     <TEXT>File not found</TEXT>
+    </T100>
    </T100>
   </asx:values>
  </asx:abap>

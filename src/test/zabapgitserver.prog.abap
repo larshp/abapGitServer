@@ -3,7 +3,7 @@ REPORT zabapgitserver.
 SELECTION-SCREEN BEGIN OF BLOCK b1 WITH FRAME TITLE TEXT-001.
 
 PARAMETERS: p_rname TYPE zags_repos-name DEFAULT 'foobar' ##NO_TEXT,
-            p_bname TYPE zags_branches-name DEFAULT 'refs/heads/master' ##NO_TEXT,
+            p_bname TYPE zags_branches-name DEFAULT 'master' ##NO_TEXT,
             p_sha1  TYPE zags_sha1.
 
 PARAMETERS: p_crepo  TYPE c RADIOBUTTON GROUP g1,

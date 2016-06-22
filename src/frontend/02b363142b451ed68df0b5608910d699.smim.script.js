@@ -1,8 +1,12 @@
 const Link = ReactRouter.Link;
 
-function handleError(evt, callback) {
+function handleError(evt, callback, json) {
   if (evt.target.status === 200) {
-    callback(JSON.parse(evt.target.responseText).DATA);
+    if (json === true) {
+      callback(JSON.parse(evt.target.responseText).DATA);
+    } else {
+      callback(evt.target.responseText);
+    }
   } else {
     alert("REST call failed, status: " + evt.target.status);
   }
@@ -12,16 +16,21 @@ class REST {
   static root = "/sap/zgit/rest/";
 
   static listRepositories(callback) {
-    this.get("repositories/", callback);
+    this.get("list/", callback);
   }
 
   static listFiles(repoName, callback) {
-    this.get("repo/" + repoName + "/files/", callback);
+    this.get("repo/" + repoName + "/tree/master", callback);
   }
 
-  static get(folder, callback) {
+  static readBlob(repoName, branch, filename, callback) {
+    const url = "repo/" + repoName + "/blob/master/" + filename;
+    this.get(url, callback, false);
+  }
+
+  static get(folder, callback, json = true) {
     let oReq = new XMLHttpRequest();
-    oReq.addEventListener("load", (evt) => { handleError(evt, callback); });
+    oReq.addEventListener("load", (evt) => { handleError(evt, callback, json); });
     oReq.open("GET", this.root + folder);
     oReq.send();
   }
@@ -38,7 +47,32 @@ class Spinner extends React.Component {
     return(<div className="sk-rotating-plane"></div>);
   }
 }            
-            
+
+class Blob extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = {data: [], spinner: true};
+    REST.readBlob(props.params.repo, 
+                  props.params.branch, 
+                  props.params.splat,
+                  (d) => { this.update(d);});      
+  }
+    
+  update(d) {
+    this.setState({data: d, spinner: false});
+  }
+      
+  render() {
+    return(<div>
+      <h1>Blob {this.props.params.splat}</h1>
+      {this.props.params.branch}<br />
+      <br />
+      {this.state.spinner?<Spinner />:""}
+      {this.state.spinner?"":<pre>{this.state.data}</pre>}             
+      </div>);
+  }
+}               
+           
 class RepoList extends React.Component {
   constructor() {
     super();
@@ -69,7 +103,7 @@ class Repo extends React.Component {
   constructor(props) {
     super(props);
     this.state = {data: [], spinner: true};
-    REST.listFiles(props.params.id, (d) => { this.update(d);});      
+    REST.listFiles(props.params.repo, (d) => { this.update(d);});      
   }
 
   update(d) {
@@ -79,9 +113,13 @@ class Repo extends React.Component {
   render() {
     return (
       <div>
-      <h1>{this.props.params.id}</h1>
+      <h1>{this.props.params.repo}</h1>
       {this.state.spinner?<Spinner />:""}
-      {this.state.data.map((e) => { return (<div>{e.FILENAME}<br /></div>);})}
+      {this.state.data.map((e) => { return (
+        <div>
+        <Link to={this.props.params.repo + "/blob/master"+e.FILENAME}>{e.FILENAME}</Link>
+        <br />
+        </div>);})}
       </div>);
   }
 }                  
@@ -96,18 +134,23 @@ class Router extends React.Component {
 /*
 * FRONTEND folder overview 
 *
-* Folder                 Component Description
-* /                      RepoList  list repositories
-* /create/                         create repository
-* /repo/foobar/          Repo      list files
-* /repo/foobar/edit                edit repo description
-* /repo/foobar/blob/sha1           display blob
+* Folder                 Component       Description
+* /                      RepoList        list repositories
+* /create/                               create repository
+* /repo/(name)/          Repo            list files in master/HEAD branch
+* /repo/(name)/edit                      edit repo description
+* /repo/(name)/blob/(branch)/(filename)  display blob
 */
     return (
       <ReactRouter.Router history={history} >
         <ReactRouter.Route path="/">
           <ReactRouter.IndexRoute component={RepoList} />
-          <ReactRouter.Route path=":id" component={Repo} />
+          <ReactRouter.Route path=":repo">
+            <ReactRouter.IndexRoute component={Repo} />
+            <ReactRouter.Route path="blob">
+              <ReactRouter.Route path=":branch/*" component={Blob} />
+            </ReactRouter.Route>
+          </ReactRouter.Route>
         </ReactRouter.Route>
         <ReactRouter.Route path="*" component={NoMatch} />
       </ReactRouter.Router>);

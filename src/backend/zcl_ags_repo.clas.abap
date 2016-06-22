@@ -84,7 +84,7 @@ CLASS ZCL_AGS_REPO IMPLEMENTATION.
 
     ls_repo-repo = zcl_ags_util=>uuid( ).
     ls_repo-name = iv_name.
-    ls_repo-head = 'refs/heads/master' ##NO_TEXT.
+    ls_repo-head = 'master' ##NO_TEXT.
 
     INSERT zags_repos FROM ls_repo.
     ASSERT sy-subrc = 0.
