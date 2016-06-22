@@ -13,6 +13,35 @@ function handleError(evt, callback, json) {
   }
 }
 
+class Time {
+  static ago(date) {
+    var seconds = Math.floor((new Date() - date) / 1000);
+
+    var interval = Math.floor(seconds / 31536000);
+
+    if (interval > 1) {
+      return interval + " years ago";
+    }
+    interval = Math.floor(seconds / 2592000);
+    if (interval > 1) {
+      return interval + " months ago";
+    }
+    interval = Math.floor(seconds / 86400);
+    if (interval > 1) {
+      return interval + " days ago";
+    }
+    interval = Math.floor(seconds / 3600);
+    if (interval > 1) {
+      return interval + " hours ago";
+    }
+    interval = Math.floor(seconds / 60);
+    if (interval > 1) {
+      return interval + " minutes ago";
+    }
+    return Math.floor(seconds) + " seconds ago";
+  }
+}
+
 class REST {
   static root = base + "/rest/";
 
@@ -57,12 +86,13 @@ class CommitList extends React.Component {
   }
 
   update(d) {
-    console.log(d);
     this.setState({data: d, spinner: false});
   }    
 
   commit(e) {
-    return (<div>{e.SHA1} {e.COMMITTER} {e.BODY}</div>);
+    let date = new Date(parseInt(e.COMMITTER.substr(e.COMMITTER.indexOf(">") + 1)) * 1000);
+    let ago = Time.ago(date);
+    return (<div>{e.SHA1} {e.COMMITTER} {e.BODY} {ago}</div>);
   }
     
   render() {
