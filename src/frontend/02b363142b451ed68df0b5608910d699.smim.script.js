@@ -51,24 +51,35 @@ class Spinner extends React.Component {
 class Blob extends React.Component {
   constructor(props) {
     super(props);
-    this.state = {data: [], spinner: true};
+    this.state = {data: [], spinner: true };
     REST.readBlob(props.params.repo, 
                   props.params.branch, 
                   props.params.splat,
                   (d) => { this.update(d);});      
   }
-    
+  
+  determineLanguage() {
+    if (/.(xml|html)$/i.test(this.props.params.splat)) {
+      return "language-markup";
+    } else if (/.(abap)$/i.test(this.props.params.splat)) {
+      return "language-abap";
+    } else {
+      return "language-unknown";
+    }      
+  }
+      
   update(d) {
     this.setState({data: d, spinner: false});
+    Prism.highlightAll();
   }
       
   render() {
+    let lang = this.determineLanguage();
     return(<div>
       <h1>Blob {this.props.params.splat}</h1>
       {this.props.params.branch}<br />
       <br />
-      {this.state.spinner?<Spinner />:""}
-      {this.state.spinner?"":<pre>{this.state.data}</pre>}             
+      {this.state.spinner?<Spinner />:<pre><code className={lang}>{this.state.data}</code></pre>}             
       </div>);
   }
 }               
