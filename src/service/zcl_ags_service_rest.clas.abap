@@ -14,13 +14,16 @@ CLASS zcl_ags_service_rest DEFINITION
 
     TYPES:
       BEGIN OF ty_file,
-        filename TYPE string,
-        sha1     TYPE zags_sha1,
-      END OF ty_file .
+        filename    TYPE string,
+        sha1        TYPE zags_sha1,
+        comment     TYPE string,
+        commit_sha1 TYPE zags_sha1,
+        time        TYPE zags_unix_time,
+      END OF ty_file.
     TYPES:
-      ty_files_tt TYPE STANDARD TABLE OF ty_file WITH DEFAULT KEY .
+      ty_files_tt TYPE STANDARD TABLE OF ty_file WITH DEFAULT KEY.
 
-    DATA mi_server TYPE REF TO if_http_server .
+    DATA mi_server TYPE REF TO if_http_server.
 
     METHODS list_commits
       IMPORTING
@@ -29,19 +32,19 @@ CLASS zcl_ags_service_rest DEFINITION
       RETURNING
         VALUE(rt_commits) TYPE zcl_ags_obj_commit=>ty_pretty_tt
       RAISING
-        zcx_ags_error .
+        zcx_ags_error.
     METHODS list_files
       IMPORTING
-        !iv_name        TYPE zags_repo_name
+        !iv_commit      TYPE zags_sha1
       RETURNING
         VALUE(rt_files) TYPE ty_files_tt
       RAISING
-        zcx_ags_error .
+        zcx_ags_error.
     METHODS list_repos
       RETURNING
         VALUE(rt_list) TYPE zcl_ags_repo=>ty_repos_tt
       RAISING
-        zcx_ags_error .
+        zcx_ags_error.
     METHODS read_blob
       IMPORTING
         !iv_repo           TYPE zags_repo_name
@@ -50,19 +53,19 @@ CLASS zcl_ags_service_rest DEFINITION
       RETURNING
         VALUE(rv_contents) TYPE xstring
       RAISING
-        zcx_ags_error .
+        zcx_ags_error.
     METHODS read_commit
       IMPORTING
         !iv_sha1       TYPE zags_sha1
       RETURNING
         VALUE(rs_data) TYPE zcl_ags_obj_commit=>ty_pretty
       RAISING
-        zcx_ags_error .
+        zcx_ags_error.
     METHODS to_json
       IMPORTING
         !ig_data       TYPE any
       RETURNING
-        VALUE(rv_json) TYPE xstring .
+        VALUE(rv_json) TYPE xstring.
 ENDCLASS.
 
 
@@ -93,9 +96,7 @@ CLASS ZCL_AGS_SERVICE_REST IMPLEMENTATION.
 
 
   METHOD list_files.
-* todo, unit test this method
-* todo, move this method to somewhere else?
-* todo, read specific branch
+
     TYPES: BEGIN OF ty_tree,
              sha1 TYPE zags_sha1,
              base TYPE string,
@@ -103,9 +104,7 @@ CLASS ZCL_AGS_SERVICE_REST IMPLEMENTATION.
 
     DATA: lt_trees TYPE STANDARD TABLE OF ty_tree WITH DEFAULT KEY.
 
-    DATA(lo_repo) = NEW zcl_ags_repo( iv_name ).
-    DATA(lo_branch) = lo_repo->get_branch( lo_repo->get_data( )-head ).
-    DATA(lo_commit) = NEW zcl_ags_obj_commit( lo_branch->get_data( )-sha1 ).
+    DATA(lo_commit) = NEW zcl_ags_obj_commit( iv_commit ).
     APPEND VALUE #( sha1 = lo_commit->get( )-tree base = '/' ) TO lt_trees.
 
     LOOP AT lt_trees ASSIGNING FIELD-SYMBOL(<ls_tree>).
@@ -127,6 +126,31 @@ CLASS ZCL_AGS_SERVICE_REST IMPLEMENTATION.
       ENDLOOP.
     ENDLOOP.
 
+* todo, at some point in time this recursion will break
+* due to the number of commits
+    IF NOT lo_commit->get( )-parent IS INITIAL.
+      DATA(lt_old) = list_files( lo_commit->get( )-parent ).
+      LOOP AT rt_files ASSIGNING FIELD-SYMBOL(<ls_output>).
+        READ TABLE lt_old ASSIGNING FIELD-SYMBOL(<ls_old>)
+          WITH KEY filename = <ls_output>-filename.
+        IF sy-subrc <> 0 OR <ls_old>-sha1 <> <ls_output>-sha1.
+          <ls_output>-comment     = lo_commit->get_pretty( )-text.
+          <ls_output>-commit_sha1 = lo_commit->sha1( ).
+          <ls_output>-time        = lo_commit->get_pretty( )-committer-time.
+        ELSE.
+          <ls_output>-comment     = <ls_old>-comment.
+          <ls_output>-commit_sha1 = <ls_old>-commit_sha1.
+          <ls_output>-time        = <ls_old>-time.
+        ENDIF.
+      ENDLOOP.
+    ELSE.
+      LOOP AT rt_files ASSIGNING <ls_output>.
+        <ls_output>-comment     = lo_commit->get_pretty( )-text.
+        <ls_output>-commit_sha1 = lo_commit->sha1( ).
+        <ls_output>-time        = lo_commit->get_pretty( )-committer-time.
+      ENDLOOP.
+    ENDIF.
+
   ENDMETHOD.
 
 
@@ -139,9 +163,12 @@ CLASS ZCL_AGS_SERVICE_REST IMPLEMENTATION.
 
   METHOD read_blob.
 
-    DATA(lt_files) = list_files( iv_repo ).
+    DATA(lo_repo) = NEW zcl_ags_repo( iv_repo ).
+    DATA(lv_commit) = lo_repo->get_branch( CONV #( iv_branch ) )->get_data( )-sha1.
+    DATA(lt_files) = list_files( lv_commit ).
 
-    READ TABLE lt_files ASSIGNING FIELD-SYMBOL(<ls_file>) WITH KEY filename = iv_filename.
+    READ TABLE lt_files ASSIGNING FIELD-SYMBOL(<ls_file>)
+      WITH KEY filename = iv_filename.
     IF sy-subrc <> 0.
       RAISE EXCEPTION TYPE zcx_ags_error
         EXPORTING
@@ -208,7 +235,9 @@ CLASS ZCL_AGS_SERVICE_REST IMPLEMENTATION.
     IF lv_path CP lv_base && '/list/'.
       mi_server->response->set_data( to_json( list_repos( ) ) ).
     ELSEIF lv_path CP lv_base && '/repo/*/tree/*'.
-      mi_server->response->set_data( to_json( list_files( lv_name ) ) ).
+      DATA(lo_repo) = NEW zcl_ags_repo( lv_name ).
+      DATA(lv_commit) = lo_repo->get_branch( CONV #( lv_last ) )->get_data( )-sha1.
+      mi_server->response->set_data( to_json( list_files( lv_commit ) ) ).
     ELSEIF lv_path CP lv_base && '/repo/*/blob/*'.
       FIND REGEX '/blob/(\w+)(/.*)$'
         IN lv_path

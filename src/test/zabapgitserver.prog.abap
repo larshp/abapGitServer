@@ -46,7 +46,6 @@ ENDCLASS.
 CLASS lcl_app IMPLEMENTATION.
 
   METHOD run.
-
     TRY.
         CASE abap_true.
           WHEN p_crepo.

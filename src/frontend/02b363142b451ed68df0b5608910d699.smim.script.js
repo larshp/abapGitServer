@@ -14,6 +14,10 @@ function handleError(evt, callback, json) {
 }
 
 class Time {
+  static parse(time) {
+    return new Date(parseInt(time) * 1000);
+  }
+  
   static ago(date) {
     var seconds = Math.floor((new Date() - date) / 1000);
 
@@ -95,8 +99,7 @@ class CommitList extends React.Component {
   }    
 
   commit(e) {
-    let date = new Date(parseInt(e.COMMITTER.TIME) * 1000);
-    let ago = Time.ago(date);
+    let ago = Time.ago(Time.parse(e.COMMITTER.TIME));
     return (<div>
             <hr />
             Key: <Link to={this.props.params.repo + "/commit/" + e.SHA1}>{e.SHA1}</Link><br />
@@ -325,22 +328,30 @@ class FilesList extends React.Component {
   }
   
   file(e) {
+    let url = this.props.params.repo + "/" + this.props.params.branch + "/blob" + e.FILENAME;
+    let commit = this.props.params.repo + "/commit/" + e.COMMIT_SHA1;
     return (
-      <div>
-      <Link to={this.props.params.repo + "/" + this.props.params.branch + "/blob" + e.FILENAME}>{e.FILENAME}</Link>
-      <br />
-      </div>);
+      <tr>
+      <td><Link to={url}>{e.FILENAME}</Link></td>
+      <td><Link to={commit}>{e.COMMENT}</Link></td>
+      <td>{Time.ago(Time.parse(e.TIME))}</td>
+      </tr>);
   }
                            
   render() {
+    let clone = window.location.origin + base + "/git/" + this.props.params.repo + ".git";
+    let list = this.props.params.repo + "/" + this.props.params.branch + "/commits";
+      
     return (
       <div>
       <Breadcrumb routes={this.props.routes} params={this.props.params} />
       <h1>{this.props.params.repo}</h1>
-      Clone URL: {window.location.origin}{base}/git/{this.props.params.repo}.git<br />
-      <Link to={this.props.params.repo + "/" + this.props.params.branch + "/commits"}>list commits</Link><br />
+      Clone URL: {clone}<br />
+      <Link to={list}>list commits</Link><br />
       <br />
+      <table>
       {this.state.spinner?<Spinner />:this.state.data.map(this.file.bind(this))}
+      </table>
       </div>);
   }
 }                  
@@ -361,7 +372,7 @@ class Router extends React.Component {
 * /(name)/(branch)/                 FilesList       list files in branch 
 * /(name)/(branch)/commits          CommitList      list commits
 * /(name)/(branch)/blob/(filename)  Blob            display blob
-* /(name)/commit/(sha1)             Commit            display commit
+* /(name)/commit/(sha1)             Commit          display commit
 */
 
     return (

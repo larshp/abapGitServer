@@ -21,7 +21,7 @@ CLASS zcl_ags_obj_commit DEFINITION
       BEGIN OF ty_userfield,
         name  TYPE string,
         email TYPE string,
-        time  TYPE string,
+        time  TYPE zags_unix_time,
       END OF ty_userfield.
     TYPES:
       BEGIN OF ty_pretty,
@@ -142,16 +142,20 @@ CLASS ZCL_AGS_OBJ_COMMIT IMPLEMENTATION.
 
   METHOD parse_userfield.
 
-    FIND REGEX '^(\w+) <(.*)> (\d{10} .\d{4})$' IN iv_field
+    DATA: lv_time TYPE string.
+
+    FIND REGEX '^(\w+) <(.*)> (\d{10}) .\d{4}$' IN iv_field
       SUBMATCHES
       rs_userfield-name
       rs_userfield-email
-      rs_userfield-time ##NO_TEXT.
+      lv_time ##NO_TEXT.
     IF sy-subrc <> 0.
       RAISE EXCEPTION TYPE zcx_ags_error
         EXPORTING
           textid = zcx_ags_error=>m012.
     ENDIF.
+
+    rs_userfield-time = lv_time.
 
   ENDMETHOD.
 

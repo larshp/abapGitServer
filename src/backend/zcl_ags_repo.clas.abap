@@ -1,47 +1,48 @@
-CLASS zcl_ags_repo DEFINITION
-  PUBLIC
-  CREATE PUBLIC.
+class ZCL_AGS_REPO definition
+  public
+  create public .
 
-  PUBLIC SECTION.
+public section.
 
-    TYPES:
-      ty_repos_tt TYPE STANDARD TABLE OF zags_repos WITH DEFAULT KEY.
-    TYPES:
-      ty_branches_tt TYPE STANDARD TABLE OF REF TO zcl_ags_branch WITH DEFAULT KEY.
+  types:
+    ty_repos_tt TYPE STANDARD TABLE OF zags_repos WITH DEFAULT KEY .
+  types:
+    ty_branches_tt TYPE STANDARD TABLE OF REF TO zcl_ags_branch WITH DEFAULT KEY .
 
-    CLASS-METHODS create
-      IMPORTING
-        !iv_name       TYPE zags_repos-name
-      RETURNING
-        VALUE(ro_repo) TYPE REF TO zcl_ags_repo
-      RAISING
-        zcx_ags_error.
-    CLASS-METHODS list
-      RETURNING
-        VALUE(rt_list) TYPE ty_repos_tt.
-    METHODS constructor
-      IMPORTING
-        !iv_name TYPE zags_repos-name
-      RAISING
-        zcx_ags_error.
-    METHODS delete
-      RAISING
-        zcx_ags_error.
-    METHODS get_data
-      RETURNING
-        VALUE(rs_data) TYPE zags_repos.
-    METHODS list_branches
-      RETURNING
-        VALUE(rt_list) TYPE ty_branches_tt
-      RAISING
-        zcx_ags_error.
-    METHODS get_branch
-      IMPORTING
-        !iv_branch_name  TYPE zags_branch_name
-      RETURNING
-        VALUE(ro_branch) TYPE REF TO zcl_ags_branch
-      RAISING
-        zcx_ags_error.
+  class-methods CREATE
+    importing
+      !IV_NAME type ZAGS_REPOS-NAME
+      !IV_DESCRIPTION type ZAGS_REPOS-DESCRIPTION
+    returning
+      value(RO_REPO) type ref to ZCL_AGS_REPO
+    raising
+      ZCX_AGS_ERROR .
+  class-methods LIST
+    returning
+      value(RT_LIST) type TY_REPOS_TT .
+  methods CONSTRUCTOR
+    importing
+      !IV_NAME type ZAGS_REPOS-NAME
+    raising
+      ZCX_AGS_ERROR .
+  methods DELETE
+    raising
+      ZCX_AGS_ERROR .
+  methods GET_DATA
+    returning
+      value(RS_DATA) type ZAGS_REPOS .
+  methods LIST_BRANCHES
+    returning
+      value(RT_LIST) type TY_BRANCHES_TT
+    raising
+      ZCX_AGS_ERROR .
+  methods GET_BRANCH
+    importing
+      !IV_BRANCH_NAME type ZAGS_BRANCH_NAME
+    returning
+      value(RO_BRANCH) type ref to ZCL_AGS_BRANCH
+    raising
+      ZCX_AGS_ERROR .
   PROTECTED SECTION.
   PRIVATE SECTION.
 
@@ -84,6 +85,7 @@ CLASS ZCL_AGS_REPO IMPLEMENTATION.
 
     ls_repo-repo = zcl_ags_util=>uuid( ).
     ls_repo-name = iv_name.
+    ls_repo-description = iv_description.
     ls_repo-head = 'master' ##NO_TEXT.
 
     INSERT zags_repos FROM ls_repo.
