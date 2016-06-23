@@ -62,6 +62,11 @@ class REST {
     this.get(url, callback, false);
   }
 
+  static readCommit(repoName, sha1, callback) {
+    const url = "repo/" + repoName + "/commit/" + sha1;
+    this.get(url, callback);
+  }
+
   static get(folder, callback, json = true) {
     let oReq = new XMLHttpRequest();
     oReq.addEventListener("load", (evt) => { handleError(evt, callback, json); });
@@ -94,7 +99,7 @@ class CommitList extends React.Component {
     let ago = Time.ago(date);
     return (<div>
             <hr />
-            Key: {e.SHA1}<br />
+            Key: <Link to={this.props.params.repo + "/commit/" + e.SHA1}>{e.SHA1}</Link><br />
             Name: {e.COMMITTER.NAME}<br />
             Description: {e.TEXT}<br />
             Time: {ago}
@@ -105,7 +110,7 @@ class CommitList extends React.Component {
     return (<div>
       <Breadcrumb routes={this.props.routes} params={this.props.params} />
       <h1>Commits</h1>
-      {this.state.spinner?<Spinner />:this.state.data.map(this.commit)}
+      {this.state.spinner?<Spinner />:this.state.data.map(this.commit.bind(this))}
       </div>);
   }
 }
@@ -118,9 +123,55 @@ class Spinner extends React.Component {
            
 class Create extends React.Component {
   render() {
-    return(<div>create</div>);
+    return(<div>
+           <Breadcrumb routes={this.props.routes} params={this.props.params} />
+           <h1>Create</h1>
+           todo
+           </div>);
   }
 }         
+
+class Commit extends React.Component {
+  constructor(props) {
+    super(props);
+    this.init(props);    
+  }
+      
+  componentWillReceiveProps(props) {
+    this.init(props);
+  }      
+
+  init(props) {
+    this.state = {data: undefined, spinner: true };
+    REST.readCommit(props.params.repo, 
+                    props.params.sha1, 
+                    (d) => { this.update(d);}); 
+  }      
+      
+  update(d) {
+    this.setState({data: d, spinner: false});
+  }      
+
+  renderCommit() {
+    return (<div>
+            Name: {this.state.data.COMMITTER.NAME}<br />
+            Description: {this.state.data.TEXT}<br />
+            Parent: 
+            <Link to={this.props.params.repo + "/commit/" + this.state.data.PARENT}>
+            {this.state.data.PARENT}</Link><br />
+            <br />
+            todo, more information
+            </div>);
+  }      
+      
+  render() {
+    return(<div>
+           <Breadcrumb routes={this.props.routes} params={this.props.params} />
+           <h1>Commit {this.props.params.sha1}</h1>
+           {this.state.spinner?<Spinner />:this.renderCommit()}             
+           </div>);
+  }
+}            
            
 class BranchList extends React.Component {
   render() {
@@ -168,13 +219,17 @@ class Blob extends React.Component {
 }               
 
 class Breadcrumb extends React.Component {
-  bread = [];
-  path = "";
+  bread;
+  path;
            
   constructor(props) {
     super(props);
-    this.build();      
+    this.build(props);
   }
+      
+  componentWillReceiveProps(props) {
+    this.build(props);
+  }         
     
   lookupParam(p) {
     if (p === "*") {
@@ -186,8 +241,8 @@ class Breadcrumb extends React.Component {
     
   route(e) {
     let name = "";
-    if (e.name) {
-      name = e.name;
+    if (e.bread) {
+      name = e.bread;
       this.path = this.path + e.path;
       if (e.path !== "/") {
         this.path = this.path + "/";
@@ -203,8 +258,11 @@ class Breadcrumb extends React.Component {
     }
   }
   
-  build() {
-    this.props.routes.forEach(this.route.bind(this));
+  build(props) {
+    this.bread = [];
+    this.path = "";    
+    
+    props.routes.forEach(this.route.bind(this));
 // remove link for last breadcrumb    
     this.bread[this.bread.length - 1] = {name: this.bread[this.bread.length - 1].name};
   }              
@@ -250,6 +308,7 @@ class RepoList extends React.Component {
       <div>
       <h1>abapGitServer</h1>
       {this.state.spinner?<Spinner />:this.state.data.map(this.repo)}
+      <Link to="/create">Create new</Link>
       </div>);
   }
 }
@@ -302,18 +361,22 @@ class Router extends React.Component {
 * /(name)/(branch)/                 FilesList       list files in branch 
 * /(name)/(branch)/commits          CommitList      list commits
 * /(name)/(branch)/blob/(filename)  Blob            display blob
+* /(name)/commit/(sha1)             Commit            display commit
 */
 
     return (
       <ReactRouter.Router history={history} >
-        <ReactRouter.Route path="/" name="abapGitServer">
+        <ReactRouter.Route path="/" bread="abapGitServer">
           <ReactRouter.IndexRoute component={RepoList} />
-          <ReactRouter.Route path="create" component={Create} />
+          <ReactRouter.Route path="create" component={Create} bread="Create" />
           <ReactRouter.Route path=":repo">
             <ReactRouter.IndexRoute component={BranchList} />
+            <ReactRouter.Route path="commit">
+              <ReactRouter.Route path=":sha1" component={Commit}  />
+            </ReactRouter.Route>
             <ReactRouter.Route path=":branch">
               <ReactRouter.IndexRoute component={FilesList} />
-              <ReactRouter.Route path="commits" component={CommitList} name="Commits" />
+              <ReactRouter.Route path="commits" component={CommitList} bread="Commits" />
               <ReactRouter.Route path="blob">
                 <ReactRouter.Route path="*" component={Blob} />
               </ReactRouter.Route>      

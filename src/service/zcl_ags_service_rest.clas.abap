@@ -10,52 +10,59 @@ CLASS zcl_ags_service_rest DEFINITION
       IMPORTING
         !ii_server TYPE REF TO if_http_server.
   PROTECTED SECTION.
-private section.
+  PRIVATE SECTION.
 
-  types:
-    BEGIN OF ty_file,
+    TYPES:
+      BEGIN OF ty_file,
         filename TYPE string,
         sha1     TYPE zags_sha1,
       END OF ty_file .
-  types:
-    ty_files_tt TYPE STANDARD TABLE OF ty_file WITH DEFAULT KEY .
+    TYPES:
+      ty_files_tt TYPE STANDARD TABLE OF ty_file WITH DEFAULT KEY .
 
-  data MI_SERVER type ref to IF_HTTP_SERVER .
+    DATA mi_server TYPE REF TO if_http_server .
 
-  methods LIST_COMMITS
-    importing
-      !IV_NAME type ZAGS_REPO_NAME
-      !IV_BRANCH type ZAGS_BRANCH_NAME
-    returning
-      value(RT_COMMITS) type ZCL_AGS_OBJ_COMMIT=>TY_PRETTY_TT
-    raising
-      ZCX_AGS_ERROR .
-  methods LIST_REPOS
-    returning
-      value(RT_LIST) type ZCL_AGS_REPO=>TY_REPOS_TT
-    raising
-      ZCX_AGS_ERROR .
-  methods READ_BLOB
-    importing
-      !IV_REPO type ZAGS_REPO_NAME
-      !IV_BRANCH type STRING
-      !IV_FILENAME type STRING
-    returning
-      value(RV_CONTENTS) type XSTRING
-    raising
-      ZCX_AGS_ERROR .
-  methods LIST_FILES
-    importing
-      !IV_NAME type ZAGS_REPO_NAME
-    returning
-      value(RT_FILES) type TY_FILES_TT
-    raising
-      ZCX_AGS_ERROR .
-  methods TO_JSON
-    importing
-      !IG_DATA type ANY
-    returning
-      value(RV_JSON) type XSTRING .
+    METHODS list_commits
+      IMPORTING
+        !iv_name          TYPE zags_repo_name
+        !iv_branch        TYPE zags_branch_name
+      RETURNING
+        VALUE(rt_commits) TYPE zcl_ags_obj_commit=>ty_pretty_tt
+      RAISING
+        zcx_ags_error .
+    METHODS list_files
+      IMPORTING
+        !iv_name        TYPE zags_repo_name
+      RETURNING
+        VALUE(rt_files) TYPE ty_files_tt
+      RAISING
+        zcx_ags_error .
+    METHODS list_repos
+      RETURNING
+        VALUE(rt_list) TYPE zcl_ags_repo=>ty_repos_tt
+      RAISING
+        zcx_ags_error .
+    METHODS read_blob
+      IMPORTING
+        !iv_repo           TYPE zags_repo_name
+        !iv_branch         TYPE string
+        !iv_filename       TYPE string
+      RETURNING
+        VALUE(rv_contents) TYPE xstring
+      RAISING
+        zcx_ags_error .
+    METHODS read_commit
+      IMPORTING
+        !iv_sha1       TYPE zags_sha1
+      RETURNING
+        VALUE(rs_data) TYPE zcl_ags_obj_commit=>ty_pretty
+      RAISING
+        zcx_ags_error .
+    METHODS to_json
+      IMPORTING
+        !ig_data       TYPE any
+      RETURNING
+        VALUE(rv_json) TYPE xstring .
 ENDCLASS.
 
 
@@ -147,6 +154,14 @@ CLASS ZCL_AGS_SERVICE_REST IMPLEMENTATION.
   ENDMETHOD.
 
 
+  METHOD read_commit.
+
+    DATA(lo_commit) = NEW zcl_ags_obj_commit( iv_sha1 ).
+    rs_data = lo_commit->get_pretty( ).
+
+  ENDMETHOD.
+
+
   METHOD to_json.
 
     DATA: lo_writer TYPE REF TO cl_sxml_string_writer.
@@ -203,7 +218,7 @@ CLASS ZCL_AGS_SERVICE_REST IMPLEMENTATION.
         iv_branch   = lv_branch
         iv_filename = lv_filename ) ).
     ELSEIF lv_path CP lv_base && '/repo/*/commit/*'.
-* todo
+      mi_server->response->set_data( to_json( read_commit( CONV #( lv_last ) ) ) ).
     ELSEIF lv_path CP lv_base && '/repo/*/commits/*'.
       mi_server->response->set_data( to_json(
         list_commits( iv_name   = lv_name

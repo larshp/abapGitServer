@@ -92,9 +92,9 @@ CLASS lcl_app IMPLEMENTATION.
 
   METHOD delete_everything.
 * todo, remove this method when the code gets more stable
-    DELETE FROM zags_branches.
-    DELETE FROM zags_objects.
-    DELETE FROM zags_repos.
+    DELETE FROM zags_branches.                          "#EC CI_NOWHERE
+    DELETE FROM zags_objects.                           "#EC CI_NOWHERE
+    DELETE FROM zags_repos.                             "#EC CI_NOWHERE
     WRITE: / 'Done'(007).
   ENDMETHOD.
 
