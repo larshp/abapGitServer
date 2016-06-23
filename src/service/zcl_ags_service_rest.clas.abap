@@ -27,6 +27,7 @@ PRIVATE SECTION.
       name   TYPE zags_branch_name,
       time   TYPE zags_unix_time,
       commit TYPE zags_sha1,
+      head   TYPE abap_bool,
     END OF ty_branch.
   TYPES:
     ty_branches_tt TYPE STANDARD TABLE OF ty_branch WITH DEFAULT KEY.
@@ -141,6 +142,7 @@ CLASS ZCL_AGS_SERVICE_REST IMPLEMENTATION.
   METHOD list_branches.
 
     DATA(lo_repo) = NEW zcl_ags_repo( iv_name ).
+    DATA(lv_head) = lo_repo->get_data( )-head.
     DATA(lt_branches) = lo_repo->list_branches( ).
 
     LOOP AT lt_branches ASSIGNING FIELD-SYMBOL(<lo_branch>).
@@ -150,6 +152,9 @@ CLASS ZCL_AGS_SERVICE_REST IMPLEMENTATION.
       DATA(lo_commit) = NEW zcl_ags_obj_commit( <lo_branch>->get_data( )-sha1 ).
       <ls_output>-time = lo_commit->get_pretty( )-committer-time.
       <ls_output>-commit = lo_commit->sha1( ).
+      IF <ls_output>-name = lv_head.
+        <ls_output>-head = abap_true.
+      ENDIF.
     ENDLOOP.
 
   ENDMETHOD.
