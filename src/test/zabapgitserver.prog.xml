@@ -100,6 +100,13 @@
      <SPLIT/>
     </item>
     <item>
+     <ID>I</ID>
+     <KEY>007</KEY>
+     <ENTRY>Done</ENTRY>
+     <LENGTH>14</LENGTH>
+     <SPLIT/>
+    </item>
+    <item>
      <ID>R</ID>
      <KEY/>
      <ENTRY>abapGitServer</ENTRY>
@@ -117,7 +124,7 @@
      <ID>S</ID>
      <KEY>P_BNAME</KEY>
      <ENTRY>.</ENTRY>
-     <LENGTH>25</LENGTH>
+     <LENGTH>19</LENGTH>
      <SPLIT>D</SPLIT>
     </item>
     <item>
@@ -143,6 +150,13 @@
     </item>
     <item>
      <ID>S</ID>
+     <KEY>P_DEVERY</KEY>
+     <ENTRY>Delete everything</ENTRY>
+     <LENGTH>25</LENGTH>
+     <SPLIT/>
+    </item>
+    <item>
+     <ID>S</ID>
      <KEY>P_LISTB</KEY>
      <ENTRY>List Branches</ENTRY>
      <LENGTH>21</LENGTH>
@@ -159,7 +173,7 @@
      <ID>S</ID>
      <KEY>P_RNAME</KEY>
      <ENTRY>.</ENTRY>
-     <LENGTH>18</LENGTH>
+     <LENGTH>23</LENGTH>
      <SPLIT>D</SPLIT>
     </item>
     <item>

@@ -27,7 +27,7 @@ private section.
       !IV_NAME type ZAGS_REPO_NAME
       !IV_BRANCH type ZAGS_BRANCH_NAME
     returning
-      value(RT_COMMITS) type ZCL_AGS_OBJ_COMMIT=>TY_COMMITS_TT
+      value(RT_COMMITS) type ZCL_AGS_OBJ_COMMIT=>TY_PRETTY_TT
     raising
       ZCX_AGS_ERROR .
   methods LIST_REPOS
@@ -76,10 +76,10 @@ CLASS ZCL_AGS_SERVICE_REST IMPLEMENTATION.
     DATA(lo_branch) = lo_repo->get_branch( iv_branch ).
     DATA(lo_commit) = NEW zcl_ags_obj_commit( lo_branch->get_data( )-sha1 ).
 
-    APPEND lo_commit->get( ) TO rt_commits.
+    APPEND lo_commit->get_pretty( ) TO rt_commits.
     WHILE NOT lo_commit->get( )-parent IS INITIAL.
       lo_commit = NEW zcl_ags_obj_commit( lo_commit->get( )-parent ).
-      APPEND lo_commit->get( ) TO rt_commits.
+      APPEND lo_commit->get_pretty( ) TO rt_commits.
     ENDWHILE.
 
   ENDMETHOD.

@@ -1,3 +1,5 @@
+CONSTANTS: gc_field TYPE string VALUE 'Foobar <foo@bar.com> 1466596513 +0000' ##NO_TEXT.
+
 
 CLASS ltcl_test DEFINITION FOR TESTING
   DURATION SHORT
@@ -24,9 +26,9 @@ CLASS ltcl_test IMPLEMENTATION.
 
 
     CREATE OBJECT lo_old.
-    lo_old->set_author( 'author' ).
+    lo_old->set_author( gc_field ).
     lo_old->set_body( 'body' ).
-    lo_old->set_committer( 'committer' ).
+    lo_old->set_committer( gc_field ).
     lo_old->set_parent( c_sha1 ).
     lo_old->set_tree( c_sha1 ).
     lv_xstr = lo_old->zif_ags_object~serialize( ).
@@ -53,6 +55,60 @@ CLASS ltcl_test IMPLEMENTATION.
     cl_abap_unit_assert=>assert_equals(
         act = lo_new->get( )-tree
         exp = lo_old->get( )-tree ).
+
+  ENDMETHOD.
+
+ENDCLASS.
+
+CLASS ltcl_userfield DEFINITION DEFERRED.
+CLASS zcl_ags_obj_commit DEFINITION LOCAL FRIENDS ltcl_userfield.
+
+CLASS ltcl_userfield DEFINITION FOR TESTING
+    DURATION SHORT
+    RISK LEVEL HARMLESS
+    FINAL.
+
+  PRIVATE SECTION.
+    DATA: mo_commit TYPE REF TO zcl_ags_obj_commit.
+
+    METHODS:
+      setup
+        RAISING zcx_ags_error,
+      parse_userfield FOR TESTING
+        RAISING zcx_ags_error,
+      error FOR TESTING.
+
+ENDCLASS.       "ltcl_Userfield
+
+CLASS ltcl_userfield IMPLEMENTATION.
+
+  METHOD setup.
+    CREATE OBJECT mo_commit.
+  ENDMETHOD.
+
+  METHOD parse_userfield.
+
+    DATA(ls_field) = mo_commit->parse_userfield( gc_field ).
+
+    cl_abap_unit_assert=>assert_not_initial( ls_field ).
+
+    cl_abap_unit_assert=>assert_equals(
+        act = ls_field-email
+        exp = 'foo@bar.com' ).
+
+    cl_abap_unit_assert=>assert_equals(
+        act = ls_field-name
+        exp = 'Foobar' ).
+
+  ENDMETHOD.
+
+  METHOD error.
+
+    TRY.
+        mo_commit->parse_userfield( 'something' ).
+        cl_abap_unit_assert=>fail( ).
+      CATCH zcx_ags_error ##NO_HANDLER.
+    ENDTRY.
 
   ENDMETHOD.
 

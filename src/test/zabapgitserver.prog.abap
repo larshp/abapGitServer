@@ -12,7 +12,8 @@ PARAMETERS: p_crepo  TYPE c RADIOBUTTON GROUP g1,
             p_delete TYPE c RADIOBUTTON GROUP g1,
             p_blob   TYPE c RADIOBUTTON GROUP g1,
             p_commit TYPE c RADIOBUTTON GROUP g1,
-            p_tree   TYPE c RADIOBUTTON GROUP g1.
+            p_tree   TYPE c RADIOBUTTON GROUP g1,
+            p_devery TYPE c RADIOBUTTON GROUP g1.
 SELECTION-SCREEN END OF BLOCK b1.
 
 
@@ -34,6 +35,8 @@ CLASS lcl_app DEFINITION FINAL.
       create_repository
         RAISING zcx_ags_error,
       list_branches
+        RAISING zcx_ags_error,
+      delete_everything
         RAISING zcx_ags_error,
       list_branch_files
         RAISING zcx_ags_error.
@@ -60,6 +63,8 @@ CLASS lcl_app IMPLEMENTATION.
             display_tree( ).
           WHEN p_listbf.
             list_branch_files( ).
+          WHEN p_devery.
+            delete_everything( ).
           WHEN OTHERS.
             ASSERT 1 = 2.
         ENDCASE.
@@ -83,6 +88,14 @@ CLASS lcl_app IMPLEMENTATION.
       WRITE: / <ls_file>-name.
     ENDLOOP.
 
+  ENDMETHOD.
+
+  METHOD delete_everything.
+* todo, remove this method when the code gets more stable
+    DELETE FROM zags_branches.
+    DELETE FROM zags_objects.
+    DELETE FROM zags_repos.
+    WRITE: / 'Done'(007).
   ENDMETHOD.
 
   METHOD display_blob.

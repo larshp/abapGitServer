@@ -1,71 +1,96 @@
-class ZCL_AGS_OBJ_COMMIT definition
-  public
-  create public .
+CLASS zcl_ags_obj_commit DEFINITION
+  PUBLIC
+  CREATE PUBLIC.
 
-public section.
+  PUBLIC SECTION.
 
-  interfaces ZIF_AGS_OBJECT .
+    INTERFACES zif_ags_object.
 
-  aliases C_NEWLINE
-    for ZIF_AGS_OBJECT~C_NEWLINE .
-  aliases DESERIALIZE
-    for ZIF_AGS_OBJECT~DESERIALIZE .
-  aliases SAVE
-    for ZIF_AGS_OBJECT~SAVE .
-  aliases SERIALIZE
-    for ZIF_AGS_OBJECT~SERIALIZE .
-  aliases SHA1
-    for ZIF_AGS_OBJECT~SHA1 .
+    ALIASES c_newline
+      FOR zif_ags_object~c_newline.
+    ALIASES deserialize
+      FOR zif_ags_object~deserialize.
+    ALIASES save
+      FOR zif_ags_object~save.
+    ALIASES serialize
+      FOR zif_ags_object~serialize.
+    ALIASES sha1
+      FOR zif_ags_object~sha1.
 
-  types:
-    BEGIN OF ty_commit,
+    TYPES:
+      BEGIN OF ty_userfield,
+        name  TYPE string,
+        email TYPE string,
+        time  TYPE string,
+      END OF ty_userfield.
+    TYPES:
+      BEGIN OF ty_pretty,
+        sha1      TYPE zags_sha1,
+        tree      TYPE zags_sha1,
+        parent    TYPE zags_sha1,
+        author    TYPE ty_userfield,
+        committer TYPE ty_userfield,
+        text      TYPE string,
+        body      TYPE string,
+      END OF ty_pretty.
+    TYPES:
+      ty_pretty_tt TYPE STANDARD TABLE OF ty_pretty WITH DEFAULT KEY.
+    TYPES:
+      BEGIN OF ty_commit,
         tree      TYPE zags_sha1,
         parent    TYPE zags_sha1,
         author    TYPE string,
         committer TYPE string,
         body      TYPE string,
-      END OF ty_commit .
-  types:
-    ty_commits_tt TYPE STANDARD TABLE OF ty_commit WITH DEFAULT KEY .
+      END OF ty_commit.
+    TYPES:
+      ty_commits_tt TYPE STANDARD TABLE OF ty_commit WITH DEFAULT KEY.
 
-  methods GET
-    returning
-      value(RS_DATA) type TY_COMMIT .
-  methods SET_TREE
-    importing
-      !IV_TREE type ZAGS_SHA1 .
-  methods SET_PARENT
-    importing
-      !IV_PARENT type TY_COMMIT-PARENT .
-  methods SET_AUTHOR
-    importing
-      !IV_AUTHOR type TY_COMMIT-AUTHOR
-    raising
-      ZCX_AGS_ERROR .
-  methods SET_COMMITTER
-    importing
-      !IV_COMMITTER type TY_COMMIT-COMMITTER
-    raising
-      ZCX_AGS_ERROR .
-  methods SET_BODY
-    importing
-      !IV_BODY type TY_COMMIT-BODY .
-  methods CONSTRUCTOR
-    importing
-      !IV_SHA1 type ZAGS_SHA1 optional
-    raising
-      ZCX_AGS_ERROR .
+    METHODS constructor
+      IMPORTING
+        !iv_sha1 TYPE zags_sha1 OPTIONAL
+      RAISING
+        zcx_ags_error.
+    METHODS get
+      RETURNING
+        VALUE(rs_data) TYPE ty_commit.
+    METHODS get_pretty
+      RETURNING
+        VALUE(rs_data) TYPE ty_pretty
+      RAISING
+        zcx_ags_error.
+    METHODS set_author
+      IMPORTING
+        !iv_author TYPE ty_commit-author
+      RAISING
+        zcx_ags_error.
+    METHODS set_body
+      IMPORTING
+        !iv_body TYPE ty_commit-body.
+    METHODS set_committer
+      IMPORTING
+        !iv_committer TYPE ty_commit-committer
+      RAISING
+        zcx_ags_error.
+    METHODS set_parent
+      IMPORTING
+        !iv_parent TYPE ty_commit-parent.
+    METHODS set_tree
+      IMPORTING
+        !iv_tree TYPE zags_sha1.
   PROTECTED SECTION.
   PRIVATE SECTION.
 
-    DATA ms_data TYPE ty_commit .
-    DATA mv_new TYPE abap_bool .
+    DATA ms_data TYPE ty_commit.
+    DATA mv_new TYPE abap_bool.
 
-    METHODS validate_userfield
+    METHODS parse_userfield
       IMPORTING
-        !iv_data TYPE string
+        !iv_field           TYPE string
+      RETURNING
+        VALUE(rs_userfield) TYPE ty_userfield
       RAISING
-        zcx_ags_error .
+        zcx_ags_error.
 ENDCLASS.
 
 
@@ -92,9 +117,48 @@ CLASS ZCL_AGS_OBJ_COMMIT IMPLEMENTATION.
   ENDMETHOD.
 
 
+  METHOD get_pretty.
+
+    DATA: lt_body TYPE TABLE OF string.
+
+
+    DATA(ls_data) = get( ).
+
+    rs_data-sha1      = sha1( ).
+    rs_data-tree      = ls_data-tree.
+    rs_data-parent    = ls_data-parent.
+    rs_data-author    = parse_userfield( ls_data-author ).
+    rs_data-committer = parse_userfield( ls_data-committer ).
+
+    SPLIT ls_data-body AT cl_abap_char_utilities=>newline INTO TABLE lt_body.
+    rs_data-text = lt_body[ 1 ].
+    DELETE lt_body INDEX 1.
+    CONCATENATE LINES OF lt_body
+      INTO rs_data-body
+      SEPARATED BY cl_abap_char_utilities=>newline.
+
+  ENDMETHOD.
+
+
+  METHOD parse_userfield.
+
+    FIND REGEX '^(\w+) <(.*)> (\d{10} .\d{4})$' IN iv_field
+      SUBMATCHES
+      rs_userfield-name
+      rs_userfield-email
+      rs_userfield-time ##NO_TEXT.
+    IF sy-subrc <> 0.
+      RAISE EXCEPTION TYPE zcx_ags_error
+        EXPORTING
+          textid = zcx_ags_error=>m012.
+    ENDIF.
+
+  ENDMETHOD.
+
+
   METHOD set_author.
 
-    validate_userfield( iv_author ).
+    parse_userfield( iv_author ).
 
     ms_data-author = iv_author.
 
@@ -110,7 +174,7 @@ CLASS ZCL_AGS_OBJ_COMMIT IMPLEMENTATION.
 
   METHOD set_committer.
 
-    validate_userfield( iv_committer ).
+    parse_userfield( iv_committer ).
 
     ms_data-committer = iv_committer.
 
@@ -127,18 +191,6 @@ CLASS ZCL_AGS_OBJ_COMMIT IMPLEMENTATION.
   METHOD set_tree.
 
     ms_data-tree = iv_tree.
-
-  ENDMETHOD.
-
-
-  METHOD validate_userfield.
-
-    FIND REGEX '^\w+ <.*> \d{10} .\d{4}$' IN iv_data.
-    IF sy-subrc <> 0.
-      RAISE EXCEPTION TYPE zcx_ags_error
-        EXPORTING
-          textid = zcx_ags_error=>m012.
-    ENDIF.
 
   ENDMETHOD.
 

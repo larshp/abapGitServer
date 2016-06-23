@@ -90,18 +90,21 @@ class CommitList extends React.Component {
   }    
 
   commit(e) {
-    let date = new Date(parseInt(e.COMMITTER.substr(e.COMMITTER.indexOf(">") + 1)) * 1000);
+    let date = new Date(parseInt(e.COMMITTER.TIME) * 1000);
     let ago = Time.ago(date);
-    return (<div>{e.SHA1} {e.COMMITTER} {e.BODY} {ago}</div>);
+    return (<div>
+            <hr />
+            Key: {e.SHA1}<br />
+            Name: {e.COMMITTER.NAME}<br />
+            Description: {e.TEXT}<br />
+            Time: {ago}
+            </div>);
   }
     
   render() {
     return (<div>
       <Breadcrumb routes={this.props.routes} params={this.props.params} />
-      <h1>commit list</h1>
-      {this.props.params.repo}<br />
-      {this.props.params.branch}<br />
-      <br />
+      <h1>Commits</h1>
       {this.state.spinner?<Spinner />:this.state.data.map(this.commit)}
       </div>);
   }

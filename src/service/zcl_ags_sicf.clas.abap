@@ -40,10 +40,10 @@ CLASS ZCL_AGS_SICF IMPLEMENTATION.
         COMMIT WORK.
       CATCH zcx_ags_error INTO DATA(lx_error).
         ROLLBACK WORK.
-
+        DATA(lv_text) = lx_error->if_message~get_text( ).
         server->response->set_status( code   = 500
                                       reason = 'Error' ) ##NO_TEXT.
-        server->response->set_cdata( lx_error->if_message~get_text( ) ).
+        server->response->set_cdata( lv_text ).
     ENDTRY.
 
   ENDMETHOD.
