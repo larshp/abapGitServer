@@ -65,7 +65,7 @@ CLASS ZCL_AGS_SERVICE_STATIC IMPLEMENTATION.
       SUBMATCHES lv_name ##NO_TEXT.
 
     IF lv_name IS INITIAL.
-      lv_name = 'index.html'.
+      lv_name = 'index.html' ##NO_TEXT.
     ENDIF.
 
     mi_server->response->set_data( read_mime( lv_name ) ) ##NO_TEXT.

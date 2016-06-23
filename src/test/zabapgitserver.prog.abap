@@ -145,7 +145,9 @@ CLASS lcl_app IMPLEMENTATION.
 
   METHOD create_repository.
 
-    zcl_ags_repo=>create( p_rname ).
+    zcl_ags_repo=>create(
+      iv_name        = p_rname
+      iv_description = 'description' ) ##NO_TEXT.
 
   ENDMETHOD.
 

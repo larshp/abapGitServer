@@ -1,18 +1,6 @@
 const base = '/sap/zgit';
 const Link = ReactRouter.Link;
 
-function handleError(evt, callback, json) {
-  if (evt.target.status === 200) {
-    if (json === true) {
-      callback(JSON.parse(evt.target.responseText).DATA);
-    } else {
-      callback(evt.target.responseText);
-    }
-  } else {
-    alert("REST call failed, status: " + evt.target.status);
-  }
-}
-
 class Time {
   static parse(time) {
     return new Date(parseInt(time) * 1000);
@@ -46,11 +34,27 @@ class Time {
   }
 }
 
+function handleError(evt, callback, json) {
+  if (evt.target.status === 200) {
+    if (json === true) {
+      callback(JSON.parse(evt.target.responseText).DATA);
+    } else {
+      callback(evt.target.responseText);
+    }
+  } else {
+    alert("REST call failed, status: " + evt.target.status);
+  }
+}
+
 class REST {
   static root = base + "/rest/";
 
   static listRepositories(callback) {
     this.get("list/", callback);
+  }
+
+  static createRepository(data, callback) {
+    this.post("create/", callback, data);
   }
 
   static listFiles(repoName, callback) {
@@ -76,6 +80,13 @@ class REST {
     oReq.addEventListener("load", (evt) => { handleError(evt, callback, json); });
     oReq.open("GET", this.root + folder);
     oReq.send();
+  }
+
+  static post(folder, callback, data) {
+    let oReq = new XMLHttpRequest();
+    oReq.addEventListener("load", (evt) => { handleError(evt, callback, false); });
+    oReq.open("POST", this.root + folder);
+    oReq.send(JSON.stringify(data));
   }
 }
 
@@ -125,12 +136,56 @@ class Spinner extends React.Component {
 }  
            
 class Create extends React.Component {
+  constructor() {
+    super();
+    this.state = {name: "", description: ""};
+  }
+    
+  callback(d) {
+    alert("Done");
+  }
+    
+  click(e) {
+//    console.log(JSON.stringify(this.state));
+    REST.createRepository(this.state, this.callback.bind(this));
+    e.preventDefault();
+  }           
+         
+  changeName(e) {
+    this.setState({name: e.target.value, description: this.state.description});
+  }
+    
+  changeDesc(e) {
+    this.setState({name: this.state.name, description: e.target.value});
+  }
+    
   render() {
-    return(<div>
-           <Breadcrumb routes={this.props.routes} params={this.props.params} />
-           <h1>Create</h1>
-           todo
-           </div>);
+    return(
+      <div>
+      <Breadcrumb routes={this.props.routes} params={this.props.params} />
+      <h1>Create</h1>
+      <table border="1">
+      <form>
+      <tr>
+      <td>Name: </td>
+      <td>
+      <input type="text" value={this.state.name} onChange={this.changeName.bind(this)} />
+      </td>
+      </tr>
+      <tr>
+      <td>Description:</td> 
+      <td>
+      <input type="text" value={this.state.description} onChange={this.changeDesc.bind(this)} />
+      </td>
+      </tr>
+      <tr>
+      <td colspan="2">
+      <input type="submit" value="Create" onClick={this.click.bind(this)}/>
+      </td>
+      </tr>
+      </form>
+      </table>
+      </div>);
   }
 }         
 

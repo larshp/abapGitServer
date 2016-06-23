@@ -1,8 +1,8 @@
-interface ZIF_AGS_SERVICE
-  public .
+INTERFACE zif_ags_service
+  PUBLIC.
 
 
-  methods RUN
-    raising
-      ZCX_AGS_ERROR .
-endinterface.
+  METHODS run
+    RAISING
+      zcx_ags_error.
+ENDINTERFACE.

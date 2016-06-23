@@ -45,8 +45,6 @@ CLASS ltcl_explode DEFINITION FOR TESTING
   PRIVATE SECTION.
     METHODS:
       test1 FOR TESTING
-        RAISING zcx_ags_error,
-      from_database FOR TESTING
         RAISING zcx_ags_error.
 
 ENDCLASS.       "ltcl_Encode
@@ -61,16 +59,6 @@ CLASS ltcl_explode IMPLEMENTATION.
     CREATE OBJECT lo_blob.
 
     DATA(lt_result) = zcl_ags_pack=>explode( lo_blob ).
-
-    cl_abap_unit_assert=>assert_not_initial( lt_result ).
-
-  ENDMETHOD.
-
-  METHOD from_database.
-
-    DATA(lo_commit) = NEW zcl_ags_obj_commit( 'fd2e54319fe7f91aa12866863d2e828399aacb8e' ).
-
-    DATA(lt_result) = zcl_ags_pack=>explode( lo_commit ).
 
     cl_abap_unit_assert=>assert_not_initial( lt_result ).
 

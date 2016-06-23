@@ -25,6 +25,12 @@ CLASS zcl_ags_service_rest DEFINITION
 
     DATA mi_server TYPE REF TO if_http_server.
 
+    METHODS create_repo
+      RAISING
+        zcx_ags_error.
+    METHODS json_upper
+      RETURNING
+        VALUE(rv_json) TYPE xstring.
     METHODS list_commits
       IMPORTING
         !iv_name          TYPE zags_repo_name
@@ -76,6 +82,43 @@ CLASS ZCL_AGS_SERVICE_REST IMPLEMENTATION.
   METHOD constructor.
 
     mi_server = ii_server.
+
+  ENDMETHOD.
+
+
+  METHOD create_repo.
+
+    DATA: lv_name        TYPE zags_repos-name,
+          lv_description TYPE zags_repos-description.
+
+
+    DATA(lv_json) = json_upper( ).
+
+    CALL TRANSFORMATION id
+      SOURCE XML lv_json
+      RESULT name = lv_name
+      description = lv_description.
+
+    zcl_ags_repo=>create(
+      iv_name        = lv_name
+      iv_description = lv_description ).
+
+    mi_server->response->set_cdata( 'ok' ).
+
+  ENDMETHOD.
+
+
+  METHOD json_upper.
+
+    DATA(lv_json) = mi_server->request->get_cdata( ).
+
+    DATA(lo_writer) = cl_sxml_string_writer=>create( type = if_sxml=>co_xt_json ).
+
+    CALL TRANSFORMATION demo_json_xml_to_upper
+      SOURCE XML lv_json
+      RESULT XML lo_writer.
+
+    rv_json = lo_writer->get_output( ).
 
   ENDMETHOD.
 
@@ -215,6 +258,7 @@ CLASS ZCL_AGS_SERVICE_REST IMPLEMENTATION.
 
 *****************************
 * /list/
+* /create/
 *
 * /repo/(repo)/blob/(commit/branch)/(filename)
 * /repo/(repo)/tree/(branch/sha1)
@@ -234,6 +278,8 @@ CLASS ZCL_AGS_SERVICE_REST IMPLEMENTATION.
 
     IF lv_path CP lv_base && '/list/'.
       mi_server->response->set_data( to_json( list_repos( ) ) ).
+    ELSEIF lv_path CP lv_base && '/create/'.
+      create_repo( ).
     ELSEIF lv_path CP lv_base && '/repo/*/tree/*'.
       DATA(lo_repo) = NEW zcl_ags_repo( lv_name ).
       DATA(lv_commit) = lo_repo->get_branch( CONV #( lv_last ) )->get_data( )-sha1.
