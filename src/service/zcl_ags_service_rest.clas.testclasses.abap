@@ -1,23 +1,31 @@
-CLASS ltcl_list_files DEFINITION DEFERRED.
-CLASS zcl_ags_service_rest DEFINITION LOCAL FRIENDS ltcl_list_files.
+CLASS ltcl_rest DEFINITION DEFERRED.
+CLASS zcl_ags_service_rest DEFINITION LOCAL FRIENDS ltcl_rest.
 
-CLASS ltcl_list_files DEFINITION FOR TESTING
+CLASS ltcl_rest DEFINITION FOR TESTING
   DURATION SHORT
   RISK LEVEL HARMLESS
   FINAL.
 
   PRIVATE SECTION.
-    DATA: mo_rest TYPE REF TO zcl_ags_service_rest.
+    CONSTANTS:
+      c_name        TYPE zags_repos-name VALUE 'unit_test',
+      c_description TYPE zags_repos-description VALUE 'description, foobar'.
+
+    DATA: mo_rest TYPE REF TO zcl_ags_service_rest,
+          mo_repo TYPE REF TO zcl_ags_repo.
 
     METHODS:
-      setup,
+      setup
+        RAISING zcx_ags_error,
       teardown,
       list_files FOR TESTING
+        RAISING zcx_ags_error,
+      list_branches FOR TESTING
         RAISING zcx_ags_error.
 
 ENDCLASS.       "ltcl_List_Files
 
-CLASS ltcl_list_files IMPLEMENTATION.
+CLASS ltcl_rest IMPLEMENTATION.
 
   METHOD setup.
     DATA: li_server TYPE REF TO if_http_server.
@@ -25,6 +33,10 @@ CLASS ltcl_list_files IMPLEMENTATION.
     CREATE OBJECT mo_rest
       EXPORTING
         ii_server = li_server.
+
+    mo_repo = zcl_ags_repo=>create(
+      iv_name        = c_name
+      iv_description = c_description ).
   ENDMETHOD.
 
   METHOD teardown.
@@ -33,14 +45,19 @@ CLASS ltcl_list_files IMPLEMENTATION.
 
   METHOD list_files.
 
-    DATA(lo_repo) = zcl_ags_repo=>create(
-      iv_name        = 'unit_test'
-      iv_description = 'foobar' ).
-    DATA(lo_branch) = lo_repo->get_branch( lo_repo->get_data( )-head ).
+    DATA(lo_branch) = mo_repo->get_branch( mo_repo->get_data( )-head ).
 
     DATA(lt_files) = mo_rest->list_files( lo_branch->get_data( )-sha1 ).
 
     cl_abap_unit_assert=>assert_not_initial( lt_files ).
+
+  ENDMETHOD.
+
+  METHOD list_branches.
+
+    DATA(lt_branches) = mo_rest->list_branches( c_name ).
+
+    cl_abap_unit_assert=>assert_not_initial( lt_branches ).
 
   ENDMETHOD.
 

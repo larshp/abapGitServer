@@ -10,68 +10,83 @@ CLASS zcl_ags_service_rest DEFINITION
       IMPORTING
         !ii_server TYPE REF TO if_http_server.
   PROTECTED SECTION.
-  PRIVATE SECTION.
+PRIVATE SECTION.
 
-    TYPES:
-      BEGIN OF ty_file,
-        filename    TYPE string,
-        sha1        TYPE zags_sha1,
-        comment     TYPE string,
-        commit_sha1 TYPE zags_sha1,
-        time        TYPE zags_unix_time,
-      END OF ty_file.
-    TYPES:
-      ty_files_tt TYPE STANDARD TABLE OF ty_file WITH DEFAULT KEY.
+  TYPES:
+    BEGIN OF ty_file,
+      filename    TYPE string,
+      sha1        TYPE zags_sha1,
+      comment     TYPE string,
+      commit_sha1 TYPE zags_sha1,
+      time        TYPE zags_unix_time,
+    END OF ty_file.
+  TYPES:
+    ty_files_tt TYPE STANDARD TABLE OF ty_file WITH DEFAULT KEY.
+  TYPES:
+    BEGIN OF ty_branch,
+      name   TYPE zags_branch_name,
+      time   TYPE zags_unix_time,
+      commit TYPE zags_sha1,
+    END OF ty_branch.
+  TYPES:
+    ty_branches_tt TYPE STANDARD TABLE OF ty_branch WITH DEFAULT KEY.
 
-    DATA mi_server TYPE REF TO if_http_server.
+  DATA mi_server TYPE REF TO if_http_server.
 
-    METHODS create_repo
-      RAISING
-        zcx_ags_error.
-    METHODS json_upper
-      RETURNING
-        VALUE(rv_json) TYPE xstring.
-    METHODS list_commits
-      IMPORTING
-        !iv_name          TYPE zags_repo_name
-        !iv_branch        TYPE zags_branch_name
-      RETURNING
-        VALUE(rt_commits) TYPE zcl_ags_obj_commit=>ty_pretty_tt
-      RAISING
-        zcx_ags_error.
-    METHODS list_files
-      IMPORTING
-        !iv_commit      TYPE zags_sha1
-      RETURNING
-        VALUE(rt_files) TYPE ty_files_tt
-      RAISING
-        zcx_ags_error.
-    METHODS list_repos
-      RETURNING
-        VALUE(rt_list) TYPE zcl_ags_repo=>ty_repos_tt
-      RAISING
-        zcx_ags_error.
-    METHODS read_blob
-      IMPORTING
-        !iv_repo           TYPE zags_repo_name
-        !iv_branch         TYPE string
-        !iv_filename       TYPE string
-      RETURNING
-        VALUE(rv_contents) TYPE xstring
-      RAISING
-        zcx_ags_error.
-    METHODS read_commit
-      IMPORTING
-        !iv_sha1       TYPE zags_sha1
-      RETURNING
-        VALUE(rs_data) TYPE zcl_ags_obj_commit=>ty_pretty
-      RAISING
-        zcx_ags_error.
-    METHODS to_json
-      IMPORTING
-        !ig_data       TYPE any
-      RETURNING
-        VALUE(rv_json) TYPE xstring.
+  METHODS list_branches
+    IMPORTING
+      !iv_name           TYPE zags_repo_name
+    RETURNING
+      VALUE(rt_branches) TYPE ty_branches_tt
+    RAISING
+      zcx_ags_error.
+  METHODS create_repo
+    RAISING
+      zcx_ags_error.
+  METHODS json_upper
+    RETURNING
+      VALUE(rv_json) TYPE xstring.
+  METHODS list_commits
+    IMPORTING
+      !iv_name          TYPE zags_repo_name
+      !iv_branch        TYPE zags_branch_name
+    RETURNING
+      VALUE(rt_commits) TYPE zcl_ags_obj_commit=>ty_pretty_tt
+    RAISING
+      zcx_ags_error.
+  METHODS list_files
+    IMPORTING
+      !iv_commit      TYPE zags_sha1
+    RETURNING
+      VALUE(rt_files) TYPE ty_files_tt
+    RAISING
+      zcx_ags_error.
+  METHODS list_repos
+    RETURNING
+      VALUE(rt_list) TYPE zcl_ags_repo=>ty_repos_tt
+    RAISING
+      zcx_ags_error.
+  METHODS read_blob
+    IMPORTING
+      !iv_repo           TYPE zags_repo_name
+      !iv_branch         TYPE string
+      !iv_filename       TYPE string
+    RETURNING
+      VALUE(rv_contents) TYPE xstring
+    RAISING
+      zcx_ags_error.
+  METHODS read_commit
+    IMPORTING
+      !iv_sha1       TYPE zags_sha1
+    RETURNING
+      VALUE(rs_data) TYPE zcl_ags_obj_commit=>ty_pretty
+    RAISING
+      zcx_ags_error.
+  METHODS to_json
+    IMPORTING
+      !ig_data       TYPE any
+    RETURNING
+      VALUE(rv_json) TYPE xstring.
 ENDCLASS.
 
 
@@ -109,7 +124,7 @@ CLASS ZCL_AGS_SERVICE_REST IMPLEMENTATION.
 
 
   METHOD json_upper.
-
+* todo, create lcl_json class instead of methods JSON_UPPER and TO_JSON?
     DATA(lv_json) = mi_server->request->get_cdata( ).
 
     DATA(lo_writer) = cl_sxml_string_writer=>create( type = if_sxml=>co_xt_json ).
@@ -119,6 +134,23 @@ CLASS ZCL_AGS_SERVICE_REST IMPLEMENTATION.
       RESULT XML lo_writer.
 
     rv_json = lo_writer->get_output( ).
+
+  ENDMETHOD.
+
+
+  METHOD list_branches.
+
+    DATA(lo_repo) = NEW zcl_ags_repo( iv_name ).
+    DATA(lt_branches) = lo_repo->list_branches( ).
+
+    LOOP AT lt_branches ASSIGNING FIELD-SYMBOL(<lo_branch>).
+      APPEND INITIAL LINE TO rt_branches ASSIGNING FIELD-SYMBOL(<ls_output>).
+      <ls_output>-name = <lo_branch>->get_data( )-name.
+
+      DATA(lo_commit) = NEW zcl_ags_obj_commit( <lo_branch>->get_data( )-sha1 ).
+      <ls_output>-time = lo_commit->get_pretty( )-committer-time.
+      <ls_output>-commit = lo_commit->sha1( ).
+    ENDLOOP.
 
   ENDMETHOD.
 
@@ -260,6 +292,7 @@ CLASS ZCL_AGS_SERVICE_REST IMPLEMENTATION.
 * /list/
 * /create/
 *
+* /repo/(repo)/branches
 * /repo/(repo)/blob/(commit/branch)/(filename)
 * /repo/(repo)/tree/(branch/sha1)
 * /repo/(repo)/commits/(branch)
@@ -280,6 +313,8 @@ CLASS ZCL_AGS_SERVICE_REST IMPLEMENTATION.
       mi_server->response->set_data( to_json( list_repos( ) ) ).
     ELSEIF lv_path CP lv_base && '/create/'.
       create_repo( ).
+    ELSEIF lv_path CP lv_base && '/repo/*/branches'.
+      mi_server->response->set_data( to_json( list_branches( lv_name ) ) ).
     ELSEIF lv_path CP lv_base && '/repo/*/tree/*'.
       DATA(lo_repo) = NEW zcl_ags_repo( lv_name ).
       DATA(lv_commit) = lo_repo->get_branch( CONV #( lv_last ) )->get_data( )-sha1.

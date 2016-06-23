@@ -57,7 +57,12 @@ class REST {
     this.post("create/", callback, data);
   }
 
+  static listBranches(repoName, callback) {
+    this.get("repo/" + repoName + "/branches", callback);    
+  }
+  
   static listFiles(repoName, callback) {
+// todo, branch as input    
     this.get("repo/" + repoName + "/tree/master", callback);
   }
 
@@ -232,12 +237,40 @@ class Commit extends React.Component {
 }            
            
 class BranchList extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = {data: [], spinner: true };
+    REST.listBranches(props.params.repo, 
+                      (d) => { this.update(d);});      
+  }
+  
+  update(d) {
+    this.setState({data: d, spinner: false});
+  }
+  
+  single(e) {
+    return (<tr>
+      <td>
+      <Link to={this.props.params.repo + "/" + e.NAME}>
+      {e.NAME}
+      </Link>
+      </td>
+      <td>
+      {Time.ago(Time.parse(e.TIME))}
+      </td>
+      </tr>);
+  }
+  
+  list() {
+    return (<table>{this.state.data.map(this.single.bind(this))}</table>);
+  }
+  
   render() {
     return(<div>
-           <Breadcrumb routes={this.props.routes} params={this.props.params} />
-           <h1>Branch list</h1>
-           <Link to={this.props.params.repo + "/master"}>master</Link>
-           </div>);
+      <Breadcrumb routes={this.props.routes} params={this.props.params} />
+      <h1>Branch list</h1>
+      {this.state.spinner?<Spinner />:this.list()}                      
+      </div>);
   }
 }              
 
