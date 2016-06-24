@@ -61,9 +61,8 @@ class REST {
     this.get("repo/" + repoName + "/branches", callback);    
   }
   
-  static listFiles(repoName, callback) {
-// todo, branch as input    
-    this.get("repo/" + repoName + "/tree/master", callback);
+  static listFiles(repoName, branch, callback) {
+    this.get("repo/" + repoName + "/tree/" + branch, callback);
   }
 
   static listCommits(repoName, branch, callback) {
@@ -107,7 +106,7 @@ class CommitList extends React.Component {
     this.state = {data: [], spinner: true };
     REST.listCommits(props.params.repo, 
                      props.params.branch, 
-                     (d) => { this.update(d);});      
+                     this.update.bind(this));      
   }
 
   update(d) {
@@ -208,7 +207,7 @@ class Commit extends React.Component {
     this.state = {data: undefined, spinner: true };
     REST.readCommit(props.params.repo, 
                     props.params.sha1, 
-                    (d) => { this.update(d);}); 
+                    this.update.bind(this)); 
   }      
       
   update(d) {
@@ -241,7 +240,7 @@ class BranchList extends React.Component {
     super(props);
     this.state = {data: [], spinner: true };
     REST.listBranches(props.params.repo, 
-                      (d) => { this.update(d);});      
+                      this.update.bind(this));
   }
   
   update(d) {
@@ -287,7 +286,7 @@ class Blob extends React.Component {
     REST.readBlob(props.params.repo, 
                   props.params.branch, 
                   props.params.splat,
-                  (d) => { this.update(d);});      
+                  this.update.bind(this));
   }
   
   determineLanguage() {
@@ -384,7 +383,7 @@ class RepoList extends React.Component {
   constructor() {
     super();
     this.state = {data: [], spinner: true};
-    REST.listRepositories((d) => { this.update(d);});      
+    REST.listRepositories(this.update.bind(this));
   }
     
   update(d) {
@@ -414,7 +413,7 @@ class FilesList extends React.Component {
   constructor(props) {
     super(props);
     this.state = {data: [], spinner: true};
-    REST.listFiles(props.params.repo, (d) => { this.update(d);});      
+    REST.listFiles(props.params.repo, props.params.branch, this.update.bind(this));      
   }
 
   update(d) {
