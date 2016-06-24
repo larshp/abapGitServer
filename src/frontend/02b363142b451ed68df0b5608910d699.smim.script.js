@@ -1,6 +1,28 @@
 const base = '/sap/zgit';
 const Link = ReactRouter.Link;
 
+class Octicons {
+  static branch() {
+    return (<span className="octicon octicon-git-branch"></span>);
+  }
+            
+  static repo() {
+    return (<span className="octicon octicon-repo"></span>);
+  }    
+
+  static file() {
+    return (<span className="octicon octicon-file-code"></span>);
+  }       
+            
+  static commit() {
+    return (<span className="octicon octicon-git-commit"></span>);
+  }   
+            
+  static plus() {
+    return (<span className="octicon octicon-plus"></span>);
+  }             
+}
+
 class Time {
   static parse(time) {
     return new Date(parseInt(time) * 1000);
@@ -215,6 +237,7 @@ class Commit extends React.Component {
   }      
 
   renderCommit() {
+// todo, jsdiff?    
     return (<div>
             Name: {this.state.data.COMMITTER.NAME}<br />
             Description: {this.state.data.TEXT}<br />
@@ -222,7 +245,7 @@ class Commit extends React.Component {
             <Link to={this.props.params.repo + "/commit/" + this.state.data.PARENT}>
             {this.state.data.PARENT}</Link><br />
             <br />
-            todo, more information
+            todo, diff information
             </div>);
   }      
       
@@ -255,6 +278,7 @@ class BranchList extends React.Component {
     }
     
     return (<tr>
+      <td>{Octicons.branch()}</td>
       <td>
       <Link className={cla} to={this.props.params.repo + "/" + e.NAME}>
       {e.NAME}
@@ -271,9 +295,13 @@ class BranchList extends React.Component {
   }
   
   render() {
+    let clone = window.location.origin + base + "/git/" + this.props.params.repo + ".git";
+      
     return(<div>
       <Breadcrumb routes={this.props.routes} params={this.props.params} />
       <h1>Branch list</h1>
+      Clone URL: {clone}<br />
+      <br />
       {this.state.spinner?<Spinner />:this.list()}                      
       </div>);
   }
@@ -392,19 +420,22 @@ class RepoList extends React.Component {
 
   repo(e) {
     return (
-        <div>
-          <Link to={e.NAME+"/"}>{e.NAME}</Link><br />
-          {e.DESCRIPTION}<br />
-          <br />
-        </div>);
-  }    
-    
+        <tr>
+        <td>{Octicons.repo()}</td>
+        <td><Link to={e.NAME+"/"}>{e.NAME}</Link></td>
+        <td>{e.DESCRIPTION}</td>
+        </tr>);
+  }          
+      
   render() {
     return (
       <div>
       <h1>abapGitServer</h1>
+      <table>
       {this.state.spinner?<Spinner />:this.state.data.map(this.repo)}
-      <Link to="/create">Create new</Link>
+      </table>
+      <br />
+      {Octicons.plus()} <Link to="/create">Create new</Link>
       </div>);
   }
 }
@@ -425,6 +456,7 @@ class FilesList extends React.Component {
     let commit = this.props.params.repo + "/commit/" + e.COMMIT_SHA1;
     return (
       <tr>
+      <td>{Octicons.file()}</td>
       <td><Link to={url}>{e.FILENAME}</Link></td>
       <td><Link to={commit}>{e.COMMENT}</Link></td>
       <td>{Time.ago(Time.parse(e.TIME))}</td>
@@ -432,15 +464,13 @@ class FilesList extends React.Component {
   }
                            
   render() {
-    let clone = window.location.origin + base + "/git/" + this.props.params.repo + ".git";
     let list = this.props.params.repo + "/" + this.props.params.branch + "/commits";
       
     return (
       <div>
       <Breadcrumb routes={this.props.routes} params={this.props.params} />
       <h1>{this.props.params.repo}</h1>
-      Clone URL: {clone}<br />
-      <Link to={list}>list commits</Link><br />
+      {Octicons.commit()} <Link to={list}>list commits</Link><br />
       <br />
       <table>
       {this.state.spinner?<Spinner />:this.state.data.map(this.file.bind(this))}
@@ -459,7 +489,7 @@ class Router extends React.Component {
 *
 * FOLDER                            COMPONENT       DESCRIPTION
 * /                                 RepoList        list repositories
-* /create/                                          create repository
+* /create/                          Create          create repository
 * /edit/(name)                                      edit repo description
 * /(name)/                          BranchList      list branches
 * /(name)/(branch)/                 FilesList       list files in branch 
