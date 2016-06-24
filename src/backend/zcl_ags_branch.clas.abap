@@ -10,8 +10,9 @@ CLASS zcl_ags_branch DEFINITION
         VALUE(rs_data) TYPE zags_branches.
     CLASS-METHODS create
       IMPORTING
-        !io_repo TYPE REF TO zcl_ags_repo
-        !iv_name TYPE zags_branches-name
+        !io_repo   TYPE REF TO zcl_ags_repo
+        !iv_name   TYPE zags_branches-name
+        !iv_commit TYPE zags_sha1
       RAISING
         zcx_ags_error.
     METHODS constructor
@@ -52,33 +53,14 @@ CLASS ZCL_AGS_BRANCH IMPLEMENTATION.
 
   METHOD create.
 
-    DATA: ls_branch TYPE zags_branches,
-          lv_user   TYPE string.
+    DATA: ls_branch TYPE zags_branches.
 
-
-    DATA(lo_blob) = NEW zcl_ags_obj_blob( ).
-    lo_blob->set_data( zcl_ags_util=>string_to_xstring_utf8( 'test' ) ) ##NO_TEXT.
-    lo_blob->save( ).
-
-    DATA(lo_tree) = NEW zcl_ags_obj_tree( ).
-    lo_tree->add_file( iv_chmod = zcl_ags_obj_tree=>c_chmod-file
-                       iv_name  = 'test.txt'
-                       iv_sha1  = lo_blob->sha1( ) ) ##NO_TEXT.
-    lo_tree->save( ).
-
-    lv_user = |initial <foo@bar.com> { zcl_ags_util=>get_time( ) }|.
-
-    DATA(lo_commit) = NEW zcl_ags_obj_commit( ).
-    lo_commit->set_tree( lo_tree->sha1( ) ).
-    lo_commit->set_author( lv_user ) ##NO_TEXT.
-    lo_commit->set_committer( lv_user ) ##NO_TEXT.
-    lo_commit->set_body( 'initial' ) ##NO_TEXT.
-    lo_commit->save( ).
+* todo, validate that iv_commit exists?
 
     ls_branch-repo   = io_repo->get_data( )-repo.
     ls_branch-branch = zcl_ags_util=>uuid( ).
     ls_branch-name   = iv_name.
-    ls_branch-sha1   = lo_commit->sha1( ).
+    ls_branch-sha1   = iv_commit.
 
     INSERT zags_branches FROM ls_branch.
     ASSERT sy-subrc = 0.

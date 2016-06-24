@@ -249,9 +249,15 @@ class BranchList extends React.Component {
   }
   
   single(e) {
+    let cla = "";
+    if (e.HEAD === "X") {
+      console.log("bold");
+      cla = "bold";
+    }
+    
     return (<tr>
       <td>
-      <Link to={this.props.params.repo + "/" + e.NAME}>
+      <Link className={cla} to={this.props.params.repo + "/" + e.NAME}>
       {e.NAME}
       </Link>
       </td>
