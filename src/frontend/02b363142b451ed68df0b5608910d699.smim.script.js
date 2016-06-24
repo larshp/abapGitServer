@@ -20,7 +20,11 @@ class Octicons {
             
   static plus() {
     return (<span className="octicon octicon-plus"></span>);
-  }             
+  }    
+            
+  static pencil() {
+    return (<span className="octicon octicon-pencil"></span>);
+  }               
 }
 
 class Time {
@@ -160,6 +164,21 @@ class Spinner extends React.Component {
     return(<div className="sk-rotating-plane"></div>);
   }
 }  
+           
+class Edit extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = {data: [], spinner: true };
+  }
+    
+  render() {
+    return(<div>
+      <Breadcrumb routes={this.props.routes} params={this.props.params} />
+      <h1>Edit</h1>
+      {this.state.spinner?<Spinner />:"todo"}
+      </div>);
+  }
+}             
            
 class Create extends React.Component {
   constructor() {
@@ -422,8 +441,9 @@ class RepoList extends React.Component {
     return (
         <tr>
         <td>{Octicons.repo()}</td>
-        <td><Link to={e.NAME+"/"}>{e.NAME}</Link></td>
+        <td><Link to={e.NAME + "/"}>{e.NAME}</Link></td>
         <td>{e.DESCRIPTION}</td>
+        <td><Link to={"/edit/" + e.NAME}>{Octicons.pencil()}</Link></td>
         </tr>);
   }          
       
@@ -435,7 +455,7 @@ class RepoList extends React.Component {
       {this.state.spinner?<Spinner />:this.state.data.map(this.repo)}
       </table>
       <br />
-      {Octicons.plus()} <Link to="/create">Create new</Link>
+      {Octicons.plus()} <Link to="/create">Create</Link>
       </div>);
   }
 }
@@ -492,10 +512,10 @@ class Router extends React.Component {
 * /create/                          Create          create repository
 * /edit/(name)                                      edit repo description
 * /(name)/                          BranchList      list branches
+* /(name)/commit/(sha1)             Commit          display commit
 * /(name)/(branch)/                 FilesList       list files in branch 
 * /(name)/(branch)/commits          CommitList      list commits
 * /(name)/(branch)/blob/(filename)  Blob            display blob
-* /(name)/commit/(sha1)             Commit          display commit
 */
 
     return (
@@ -503,6 +523,7 @@ class Router extends React.Component {
         <ReactRouter.Route path="/" bread="abapGitServer">
           <ReactRouter.IndexRoute component={RepoList} />
           <ReactRouter.Route path="create" component={Create} bread="Create" />
+          <ReactRouter.Route path="edit/:branch" component={Edit} bread="Edit" />
           <ReactRouter.Route path=":repo">
             <ReactRouter.IndexRoute component={BranchList} />
             <ReactRouter.Route path="commit">
