@@ -141,13 +141,28 @@ class CommitList extends React.Component {
 
   commit(e) {
     let ago = Time.ago(Time.parse(e.COMMITTER.TIME));
-    return (<div>
-            <hr />
-            Key: <Link to={this.props.params.repo + "/commit/" + e.SHA1}>{e.SHA1}</Link><br />
-            Name: {e.COMMITTER.NAME}<br />
-            Description: {e.TEXT}<br />
-            Time: {ago}
-            </div>);
+    return (
+      <div>
+      <hr />
+      <table>
+      <tr>
+      <td>Key:</td>
+      <td><Link to={this.props.params.repo + "/commit/" + e.SHA1}>{e.SHA1}</Link></td>
+      </tr>
+      <tr>
+      <td>Name:</td>
+      <td>{e.COMMITTER.NAME}</td>
+      </tr>
+      <tr>
+      <td>Description:</td>
+      <td>{e.TEXT}</td>
+      </tr>
+      <tr>
+      <td>Time:</td>
+      <td>{ago}</td>
+      </tr>
+      </table>
+      </div>);
   }
     
   render() {
@@ -168,14 +183,53 @@ class Spinner extends React.Component {
 class Edit extends React.Component {
   constructor(props) {
     super(props);
-    this.state = {data: [], spinner: true };
+    this.state = {description: "", spinner: true };
+    
+    REST.listRepositories(this.update.bind(this));      
   }
+
+  update(d) {
+    for (let repo of d) {
+      if (repo.NAME === this.props.params.repo) {
+        this.setState({description: repo.DESCRIPTION, spinner: false});        
+      }
+    }
+  }        
+
+  click(e) {
+    alert("edit, todo");
+    e.preventDefault();
+  }      
+    
+  changeDesc(e) {
+    this.setState({description: e.target.value, spinner: false});
+  }    
+    
+  edit() {
+    return (<div>
+      <table>
+      <form>
+      <tr>
+      <td>Description:</td>
+      <td>
+      <input type="text" value={this.state.description} onChange={this.changeDesc.bind(this)} />     
+      </td>
+      </tr>
+      <tr>
+      <td colspan="2">
+      <input type="submit" value="Edit" onClick={this.click.bind(this)}/>
+      </td>
+      </tr>
+      </form>
+      </table>
+      </div>);
+  }    
     
   render() {
     return(<div>
       <Breadcrumb routes={this.props.routes} params={this.props.params} />
       <h1>Edit</h1>
-      {this.state.spinner?<Spinner />:"todo"}
+      {this.state.spinner?<Spinner />:this.edit()}
       </div>);
   }
 }             
@@ -191,7 +245,6 @@ class Create extends React.Component {
   }
     
   click(e) {
-//    console.log(JSON.stringify(this.state));
     REST.createRepository(this.state, this.callback.bind(this));
     e.preventDefault();
   }           
@@ -292,7 +345,6 @@ class BranchList extends React.Component {
   single(e) {
     let cla = "";
     if (e.HEAD === "X") {
-      console.log("bold");
       cla = "bold";
     }
     
@@ -510,7 +562,7 @@ class Router extends React.Component {
 * FOLDER                            COMPONENT       DESCRIPTION
 * /                                 RepoList        list repositories
 * /create/                          Create          create repository
-* /edit/(name)                                      edit repo description
+* /edit/(name)                      Edit            edit repo description
 * /(name)/                          BranchList      list branches
 * /(name)/commit/(sha1)             Commit          display commit
 * /(name)/(branch)/                 FilesList       list files in branch 
@@ -523,7 +575,7 @@ class Router extends React.Component {
         <ReactRouter.Route path="/" bread="abapGitServer">
           <ReactRouter.IndexRoute component={RepoList} />
           <ReactRouter.Route path="create" component={Create} bread="Create" />
-          <ReactRouter.Route path="edit/:branch" component={Edit} bread="Edit" />
+          <ReactRouter.Route path="edit/:repo" component={Edit} bread="Edit" />
           <ReactRouter.Route path=":repo">
             <ReactRouter.IndexRoute component={BranchList} />
             <ReactRouter.Route path="commit">
