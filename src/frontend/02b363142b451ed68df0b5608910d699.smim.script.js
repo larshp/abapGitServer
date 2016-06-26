@@ -508,6 +508,9 @@ class RepoList extends React.Component {
       </table>
       <br />
       {Octicons.plus()} <Link to="/create">Create</Link>
+      <br />
+      <br />
+      <a href="rest/swagger.html">swagger</a>
       </div>);
   }
 }

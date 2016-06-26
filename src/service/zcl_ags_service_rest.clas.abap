@@ -5,89 +5,92 @@ CLASS zcl_ags_service_rest DEFINITION
   PUBLIC SECTION.
 
     INTERFACES zif_ags_service.
+    INTERFACES zif_swag_handler.
+
+    TYPES:
+      BEGIN OF ty_branch,
+        name   TYPE zags_branch_name,
+        time   TYPE zags_unix_time,
+        commit TYPE zags_sha1,
+        head   TYPE abap_bool,
+      END OF ty_branch.
+    TYPES:
+      ty_branches_tt TYPE STANDARD TABLE OF ty_branch WITH DEFAULT KEY.
 
     METHODS constructor
       IMPORTING
         !ii_server TYPE REF TO if_http_server.
+    METHODS list_branches
+      IMPORTING
+        !iv_name           TYPE zags_repo_name
+      RETURNING
+        VALUE(rt_branches) TYPE ty_branches_tt
+      RAISING
+        zcx_ags_error.
+    METHODS list_repos
+      RETURNING
+        VALUE(rt_list) TYPE zcl_ags_repo=>ty_repos_tt
+      RAISING
+        zcx_ags_error.
   PROTECTED SECTION.
-PRIVATE SECTION.
+  PRIVATE SECTION.
 
-  TYPES:
-    BEGIN OF ty_file,
-      filename    TYPE string,
-      sha1        TYPE zags_sha1,
-      comment     TYPE string,
-      commit_sha1 TYPE zags_sha1,
-      time        TYPE zags_unix_time,
-    END OF ty_file.
-  TYPES:
-    ty_files_tt TYPE STANDARD TABLE OF ty_file WITH DEFAULT KEY.
-  TYPES:
-    BEGIN OF ty_branch,
-      name   TYPE zags_branch_name,
-      time   TYPE zags_unix_time,
-      commit TYPE zags_sha1,
-      head   TYPE abap_bool,
-    END OF ty_branch.
-  TYPES:
-    ty_branches_tt TYPE STANDARD TABLE OF ty_branch WITH DEFAULT KEY.
+    TYPES:
+      BEGIN OF ty_file,
+        filename    TYPE string,
+        sha1        TYPE zags_sha1,
+        comment     TYPE string,
+        commit_sha1 TYPE zags_sha1,
+        time        TYPE zags_unix_time,
+      END OF ty_file.
+    TYPES:
+      ty_files_tt TYPE STANDARD TABLE OF ty_file WITH DEFAULT KEY.
 
-  DATA mi_server TYPE REF TO if_http_server.
+    DATA mi_server TYPE REF TO if_http_server.
+    DATA c_base TYPE string VALUE '/sap/zgit/rest' ##NO_TEXT.
 
-  METHODS list_branches
-    IMPORTING
-      !iv_name           TYPE zags_repo_name
-    RETURNING
-      VALUE(rt_branches) TYPE ty_branches_tt
-    RAISING
-      zcx_ags_error.
-  METHODS create_repo
-    RAISING
-      zcx_ags_error.
-  METHODS json_upper
-    RETURNING
-      VALUE(rv_json) TYPE xstring.
-  METHODS list_commits
-    IMPORTING
-      !iv_name          TYPE zags_repo_name
-      !iv_branch        TYPE zags_branch_name
-    RETURNING
-      VALUE(rt_commits) TYPE zcl_ags_obj_commit=>ty_pretty_tt
-    RAISING
-      zcx_ags_error.
-  METHODS list_files
-    IMPORTING
-      !iv_commit      TYPE zags_sha1
-    RETURNING
-      VALUE(rt_files) TYPE ty_files_tt
-    RAISING
-      zcx_ags_error.
-  METHODS list_repos
-    RETURNING
-      VALUE(rt_list) TYPE zcl_ags_repo=>ty_repos_tt
-    RAISING
-      zcx_ags_error.
-  METHODS read_blob
-    IMPORTING
-      !iv_repo           TYPE zags_repo_name
-      !iv_branch         TYPE string
-      !iv_filename       TYPE string
-    RETURNING
-      VALUE(rv_contents) TYPE xstring
-    RAISING
-      zcx_ags_error.
-  METHODS read_commit
-    IMPORTING
-      !iv_sha1       TYPE zags_sha1
-    RETURNING
-      VALUE(rs_data) TYPE zcl_ags_obj_commit=>ty_pretty
-    RAISING
-      zcx_ags_error.
-  METHODS to_json
-    IMPORTING
-      !ig_data       TYPE any
-    RETURNING
-      VALUE(rv_json) TYPE xstring.
+    METHODS create_repo
+      RAISING
+        zcx_ags_error.
+    METHODS json_upper
+      RETURNING
+        VALUE(rv_json) TYPE xstring.
+    METHODS list_commits
+      IMPORTING
+        !iv_name          TYPE zags_repo_name
+        !iv_branch        TYPE zags_branch_name
+      RETURNING
+        VALUE(rt_commits) TYPE zcl_ags_obj_commit=>ty_pretty_tt
+      RAISING
+        zcx_ags_error.
+    METHODS list_files
+      IMPORTING
+        !iv_commit      TYPE zags_sha1
+      RETURNING
+        VALUE(rt_files) TYPE ty_files_tt
+      RAISING
+        zcx_ags_error.
+    METHODS read_blob
+      IMPORTING
+        !iv_repo           TYPE zags_repo_name
+        !iv_branch         TYPE string
+        !iv_filename       TYPE string
+      RETURNING
+        VALUE(rv_contents) TYPE xstring
+      RAISING
+        zcx_ags_error.
+    METHODS read_commit
+      IMPORTING
+        !iv_sha1       TYPE zags_sha1
+      RETURNING
+        VALUE(rs_data) TYPE zcl_ags_obj_commit=>ty_pretty
+      RAISING
+        zcx_ags_error.
+    METHODS to_json
+      IMPORTING
+        !ig_data       TYPE any
+      RETURNING
+        VALUE(rv_json) TYPE xstring.
 ENDCLASS.
 
 
@@ -304,45 +307,76 @@ CLASS ZCL_AGS_SERVICE_REST IMPLEMENTATION.
 * /repo/(repo)/commit/(sha1)
 *****************************
 
-    DATA(lv_base) = '/sap/zgit/rest'.
+*    FIND REGEX lv_base && '/repo/(\w*)/'
+*      IN lv_path
+*      SUBMATCHES lv_name ##NO_TEXT.
+*
+*    FIND REGEX '/(\w*)$'
+*      IN lv_path
+*      SUBMATCHES lv_last ##NO_TEXT.
 
-    FIND REGEX lv_base && '/repo/(\w*)/'
-      IN lv_path
-      SUBMATCHES lv_name ##NO_TEXT.
+    DATA(lo_swag) = NEW zcl_swag( mi_server ).
+    lo_swag->register( me ).
 
-    FIND REGEX '/(\w*)$'
-      IN lv_path
-      SUBMATCHES lv_last ##NO_TEXT.
-
-    IF lv_path CP lv_base && '/list/'.
-      mi_server->response->set_data( to_json( list_repos( ) ) ).
-    ELSEIF lv_path CP lv_base && '/create/'.
-      create_repo( ).
-    ELSEIF lv_path CP lv_base && '/repo/*/branches'.
-      mi_server->response->set_data( to_json( list_branches( lv_name ) ) ).
-    ELSEIF lv_path CP lv_base && '/repo/*/tree/*'.
-      DATA(lo_repo) = NEW zcl_ags_repo( lv_name ).
-      DATA(lv_commit) = lo_repo->get_branch( CONV #( lv_last ) )->get_data( )-sha1.
-      mi_server->response->set_data( to_json( list_files( lv_commit ) ) ).
-    ELSEIF lv_path CP lv_base && '/repo/*/blob/*'.
-      FIND REGEX '/blob/(\w+)(/.*)$'
-        IN lv_path
-        SUBMATCHES lv_branch lv_filename ##NO_TEXT.
-      mi_server->response->set_data( read_blob(
-        iv_repo     = lv_name
-        iv_branch   = lv_branch
-        iv_filename = lv_filename ) ).
-    ELSEIF lv_path CP lv_base && '/repo/*/commit/*'.
-      mi_server->response->set_data( to_json( read_commit( CONV #( lv_last ) ) ) ).
-    ELSEIF lv_path CP lv_base && '/repo/*/commits/*'.
-      mi_server->response->set_data( to_json(
-        list_commits( iv_name   = lv_name
-                      iv_branch = CONV #( lv_last ) ) ) ).
+    IF lv_path = c_base && '/swagger.html'.
+      lo_swag->generate_ui( c_base && '/swagger.json' ).
+    ELSEIF lv_path = c_base && '/swagger.json'.
+      lo_swag->generate_spec( ).
     ELSE.
-      RAISE EXCEPTION TYPE zcx_ags_error
-        EXPORTING
-          textid = zcx_ags_error=>m010.
+      lo_swag->run( ).
     ENDIF.
+
+* todo
+
+*    ELSEIF lv_path CP lv_base && '/list/'.
+*      mi_server->response->set_data( to_json( list_repos( ) ) ).
+*    ELSEIF lv_path CP lv_base && '/create/'.
+*      create_repo( ).
+*    ELSEIF lv_path CP lv_base && '/repo/*/branches'.
+*      mi_server->response->set_data( to_json( list_branches( lv_name ) ) ).
+*    ELSEIF lv_path CP lv_base && '/repo/*/tree/*'.
+*      DATA(lo_repo) = NEW zcl_ags_repo( lv_name ).
+*      DATA(lv_commit) = lo_repo->get_branch( CONV #( lv_last ) )->get_data( )-sha1.
+*      mi_server->response->set_data( to_json( list_files( lv_commit ) ) ).
+*    ELSEIF lv_path CP lv_base && '/repo/*/blob/*'.
+*      FIND REGEX '/blob/(\w+)(/.*)$'
+*        IN lv_path
+*        SUBMATCHES lv_branch lv_filename ##NO_TEXT.
+*      mi_server->response->set_data( read_blob(
+*        iv_repo     = lv_name
+*        iv_branch   = lv_branch
+*        iv_filename = lv_filename ) ).
+*    ELSEIF lv_path CP lv_base && '/repo/*/commit/*'.
+*      mi_server->response->set_data( to_json( read_commit( CONV #( lv_last ) ) ) ).
+*    ELSEIF lv_path CP lv_base && '/repo/*/commits/*'.
+*      mi_server->response->set_data( to_json(
+*        list_commits( iv_name   = lv_name
+*                      iv_branch = CONV #( lv_last ) ) ) ).
+*    ELSE.
+*      RAISE EXCEPTION TYPE zcx_ags_error
+*        EXPORTING
+*          textid = zcx_ags_error=>m010.
+*    ENDIF.
+
+  ENDMETHOD.
+
+
+  METHOD zif_swag_handler~meta.
+
+    FIELD-SYMBOLS: <ls_meta> LIKE LINE OF rt_meta.
+
+    APPEND INITIAL LINE TO rt_meta ASSIGNING <ls_meta>.
+    <ls_meta>-description = 'List Repositories'.
+    <ls_meta>-url-regex   = c_base && '/list/?$'.
+    <ls_meta>-method      = 'GET'.
+    <ls_meta>-handler     = 'LIST_REPOS'.
+
+    APPEND INITIAL LINE TO rt_meta ASSIGNING <ls_meta>.
+    <ls_meta>-description = 'List Branches'.
+    <ls_meta>-url-regex   = c_base && '/repo/(\w*)/branches/?$'.
+    APPEND 'IV_NAME' TO <ls_meta>-url-group_names.
+    <ls_meta>-method      = 'GET'.
+    <ls_meta>-handler     = 'LIST_BRANCHES'.
 
   ENDMETHOD.
 ENDCLASS.
