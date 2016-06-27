@@ -6,6 +6,9 @@ CLASS ltcl_rest DEFINITION FOR TESTING
     RISK LEVEL HARMLESS
     FINAL.
 
+  PUBLIC SECTION.
+    INTERFACES: if_http_server PARTIALLY IMPLEMENTED.
+
   PRIVATE SECTION.
     CONSTANTS:
       c_name        TYPE zags_repos-name VALUE 'unit_test' ##NO_TEXT,
@@ -28,26 +31,26 @@ ENDCLASS.       "ltcl_List_Files
 CLASS ltcl_rest IMPLEMENTATION.
 
   METHOD setup.
-    DATA: li_server TYPE REF TO if_http_server.
 
     CREATE OBJECT mo_rest
       EXPORTING
-        ii_server = li_server.
+        ii_server = me.
 
     mo_repo = zcl_ags_repo=>create(
       iv_name        = c_name
       iv_description = c_description ).
+
   ENDMETHOD.
 
   METHOD teardown.
-    ROLLBACK WORK.
+    ROLLBACK WORK.                                     "#EC CI_ROLLBACK
   ENDMETHOD.
 
   METHOD list_files.
 
     DATA(lo_branch) = mo_repo->get_branch( mo_repo->get_data( )-head ).
 
-    DATA(lt_files) = mo_rest->list_files( lo_branch->get_data( )-sha1 ).
+    DATA(lt_files) = mo_rest->list_files_commit( lo_branch->get_data( )-sha1 ).
 
     cl_abap_unit_assert=>assert_not_initial( lt_files ).
 

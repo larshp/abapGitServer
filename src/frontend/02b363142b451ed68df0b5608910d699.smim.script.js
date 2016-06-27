@@ -76,32 +76,32 @@ class REST {
   static root = base + "/rest/";
 
   static listRepositories(callback) {
-    this.get("list/", callback);
+    this.get("list", callback);
   }
 
   static createRepository(data, callback) {
-    this.post("create/", callback, data);
+    this.post("create", callback, data);
   }
 
   static listBranches(repoName, callback) {
-    this.get("repo/" + repoName + "/branches", callback);    
+    this.get("branches/" + repoName, callback);    
   }
   
   static listFiles(repoName, branch, callback) {
-    this.get("repo/" + repoName + "/tree/" + branch, callback);
+    this.get("tree/" + repoName + "/" + branch, callback);
   }
 
   static listCommits(repoName, branch, callback) {
-    this.get("repo/" + repoName + "/commits/" + branch, callback);
+    this.get("commits/" + repoName + "/" + branch, callback);
   }
 
   static readBlob(repoName, branch, filename, callback) {
-    const url = "repo/" + repoName + "/blob/master/" + filename;
+    const url = "blob/" + repoName + "/" + branch + "/" + filename;
     this.get(url, callback, false);
   }
 
   static readCommit(repoName, sha1, callback) {
-    const url = "repo/" + repoName + "/commit/" + sha1;
+    const url = "commit/" + sha1;
     this.get(url, callback);
   }
 
@@ -510,7 +510,7 @@ class RepoList extends React.Component {
       {Octicons.plus()} <Link to="/create">Create</Link>
       <br />
       <br />
-      <a href="rest/swagger.html">swagger</a>
+      <a href="/sap/zgit/rest/swagger.html">swagger</a>
       </div>);
   }
 }

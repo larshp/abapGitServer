@@ -44,7 +44,57 @@
     <RISK_LEVEL>0</RISK_LEVEL>
     <WITHIN_PACKAGE/>
    </VSEOCLASS>
-   <TPOOL/>
+   <TPOOL>
+    <item>
+     <ID>I</ID>
+     <KEY>001</KEY>
+     <ENTRY>List Repositories</ENTRY>
+     <LENGTH>27</LENGTH>
+     <SPLIT/>
+    </item>
+    <item>
+     <ID>I</ID>
+     <KEY>002</KEY>
+     <ENTRY>List Branches</ENTRY>
+     <LENGTH>23</LENGTH>
+     <SPLIT/>
+    </item>
+    <item>
+     <ID>I</ID>
+     <KEY>003</KEY>
+     <ENTRY>Create repository</ENTRY>
+     <LENGTH>27</LENGTH>
+     <SPLIT/>
+    </item>
+    <item>
+     <ID>I</ID>
+     <KEY>004</KEY>
+     <ENTRY>List files</ENTRY>
+     <LENGTH>20</LENGTH>
+     <SPLIT/>
+    </item>
+    <item>
+     <ID>I</ID>
+     <KEY>005</KEY>
+     <ENTRY>Read blob</ENTRY>
+     <LENGTH>19</LENGTH>
+     <SPLIT/>
+    </item>
+    <item>
+     <ID>I</ID>
+     <KEY>006</KEY>
+     <ENTRY>Read commit</ENTRY>
+     <LENGTH>21</LENGTH>
+     <SPLIT/>
+    </item>
+    <item>
+     <ID>I</ID>
+     <KEY>007</KEY>
+     <ENTRY>List commits</ENTRY>
+     <LENGTH>22</LENGTH>
+     <SPLIT/>
+    </item>
+   </TPOOL>
   </asx:values>
  </asx:abap>
 </abapGit>
