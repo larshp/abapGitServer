@@ -115,6 +115,13 @@
      <LENGTH>23</LENGTH>
      <SPLIT/>
     </item>
+    <item>
+     <ID>I</ID>
+     <KEY>011</KEY>
+     <ENTRY>Edit repository description</ENTRY>
+     <LENGTH>54</LENGTH>
+     <SPLIT/>
+    </item>
    </TPOOL>
   </asx:values>
  </asx:abap>

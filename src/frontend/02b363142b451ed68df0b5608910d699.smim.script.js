@@ -241,11 +241,15 @@ class Create extends React.Component {
   }
     
   callback(d) {
+    this.setState({done: true});
     alert("Done");
   }
     
   click(e) {
-    REST.createRepository(this.state, this.callback.bind(this));
+    REST.createRepository(
+      {name: this.state.name, description: this.state.description}, 
+      this.callback.bind(this));
+    this.setState({running: true});
     e.preventDefault();
   }           
          
@@ -256,13 +260,14 @@ class Create extends React.Component {
   changeDesc(e) {
     this.setState({name: this.state.name, description: e.target.value});
   }
-    
-  render() {
-    return(
-      <div>
-      <Breadcrumb routes={this.props.routes} params={this.props.params} />
-      <h1>Create</h1>
-      <table border="1">
+  
+  contents() {
+    if (this.state.done) {
+      return (<div>done</div>);  
+    } else if (this.state.running) {
+      return (<div>running</div>);
+    } else {    
+      return (<table border="1">
       <form>
       <tr>
       <td>Name: </td>
@@ -282,7 +287,16 @@ class Create extends React.Component {
       </td>
       </tr>
       </form>
-      </table>
+      </table>);
+    }      
+  }
+  
+  render() {
+    return(
+      <div>
+      <Breadcrumb routes={this.props.routes} params={this.props.params} />
+      <h1>Create</h1>
+      {this.contents()}
       </div>);
   }
 }         
