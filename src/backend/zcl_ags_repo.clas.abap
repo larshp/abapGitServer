@@ -178,7 +178,8 @@ CLASS ZCL_AGS_REPO IMPLEMENTATION.
   METHOD list.
 
     SELECT * FROM zags_repos
-      INTO TABLE rt_list.                               "#EC CI_NOWHERE
+      INTO TABLE rt_list
+      ORDER BY name ASCENDING.                          "#EC CI_NOWHERE
 
   ENDMETHOD.
 

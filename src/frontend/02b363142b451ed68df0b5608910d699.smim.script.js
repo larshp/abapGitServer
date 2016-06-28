@@ -82,6 +82,10 @@ class REST {
   static createRepository(data, callback) {
     this.post("create", callback, data);
   }
+      
+  static editRepository(data, callback) {
+    this.put("edit", callback, data);
+  }      
 
   static listBranches(repoName, callback) {
     this.get("branches/" + repoName, callback);    
@@ -118,6 +122,13 @@ class REST {
     oReq.open("POST", this.root + folder);
     oReq.send(JSON.stringify(data));
   }
+      
+  static put(folder, callback, data) {
+    let oReq = new XMLHttpRequest();
+    oReq.addEventListener("load", (evt) => { handleError(evt, callback, false); });
+    oReq.open("PUT", this.root + folder);
+    oReq.send(JSON.stringify(data));
+  }      
 }
 
 class NoMatch extends React.Component {
@@ -184,7 +195,7 @@ class Edit extends React.Component {
   constructor(props) {
     super(props);
     this.state = {description: "", spinner: true };
-    
+
     REST.listRepositories(this.update.bind(this));      
   }
 
@@ -196,10 +207,17 @@ class Edit extends React.Component {
     }
   }        
 
+  callback(d) {
+    this.setState({done: true});
+  }
+    
   click(e) {
-    alert("edit, todo");
+    REST.editRepository(
+      {name: this.props.params.repo, description: this.state.description}, 
+      this.callback.bind(this));
+    this.setState({running: true});
     e.preventDefault();
-  }      
+  }       
     
   changeDesc(e) {
     this.setState({description: e.target.value, spinner: false});
@@ -225,11 +243,23 @@ class Edit extends React.Component {
       </div>);
   }    
     
+  contents() {
+    if (this.state.done) {
+      return (<div>done</div>);  
+    } else if (this.state.running) {
+      return (<div>running</div>);
+    } else if (this.state.spinner) {
+      return (<Spinner />);              
+    } else { 
+      return this.edit();
+    }        
+  }
+  
   render() {
     return(<div>
       <Breadcrumb routes={this.props.routes} params={this.props.params} />
       <h1>Edit</h1>
-      {this.state.spinner?<Spinner />:this.edit()}
+      {this.contents()}
       </div>);
   }
 }             
@@ -242,7 +272,6 @@ class Create extends React.Component {
     
   callback(d) {
     this.setState({done: true});
-    alert("Done");
   }
     
   click(e) {
