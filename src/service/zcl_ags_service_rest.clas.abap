@@ -8,6 +8,11 @@ CLASS zcl_ags_service_rest DEFINITION
     INTERFACES zif_swag_handler.
 
     TYPES:
+      BEGIN OF ty_create,
+        name        TYPE zags_repos-name,
+        description TYPE zags_repos-description,
+      END OF ty_create.
+    TYPES:
       BEGIN OF ty_branch,
         name   TYPE zags_branch_name,
         time   TYPE zags_unix_time,
@@ -32,8 +37,7 @@ CLASS zcl_ags_service_rest DEFINITION
         !ii_server TYPE REF TO if_http_server.
     METHODS create_repo
       IMPORTING
-        !iv_name        TYPE zags_repos-name
-        !iv_description TYPE zags_repos-description
+        !is_data TYPE ty_create
       RAISING
         zcx_ags_error.
     METHODS list_branches
@@ -110,8 +114,8 @@ CLASS ZCL_AGS_SERVICE_REST IMPLEMENTATION.
   METHOD create_repo.
 
     zcl_ags_repo=>create(
-      iv_name        = iv_name
-      iv_description = iv_description ).
+      iv_name        = is_data-name
+      iv_description = is_data-description ).
 
   ENDMETHOD.
 
@@ -268,13 +272,17 @@ CLASS ZCL_AGS_SERVICE_REST IMPLEMENTATION.
       iv_base   = c_base ).
     lo_swag->register( me ).
 
+    DATA(lv_json_url) = c_base && '/swagger.json'.
+
     lv_path = mi_server->request->get_header_field( '~path' ).
     IF lv_path = c_base && '/swagger.html'.
-      lo_swag->generate_ui( c_base && '/swagger.json' ).
-    ELSEIF lv_path = c_base && '/swagger.json'.
+      lo_swag->generate_ui(
+        iv_json_url = lv_json_url
+        iv_title    = 'abapGitServer - Swagger'(008) ).
+    ELSEIF lv_path = lv_json_url.
       lo_swag->generate_spec(
-        iv_title       = 'abapGitServer'
-        iv_description = 'abapGitServer REST functions' ) ##NO_TEXT.
+        iv_title       = 'abapGitServer'(010)
+        iv_description = 'abapGitServer REST functions'(009) ).
     ELSE.
       lo_swag->run( ).
     ENDIF.
@@ -289,20 +297,20 @@ CLASS ZCL_AGS_SERVICE_REST IMPLEMENTATION.
     APPEND INITIAL LINE TO rt_meta ASSIGNING <ls_meta>.
     <ls_meta>-summary   = 'List Repositories'(001).
     <ls_meta>-url-regex = '/list$'.
-    <ls_meta>-method    = 'GET'.
+    <ls_meta>-method    = zcl_swag=>c_method-get.
     <ls_meta>-handler   = 'LIST_REPOS'.
 
     APPEND INITIAL LINE TO rt_meta ASSIGNING <ls_meta>.
     <ls_meta>-summary   = 'List Branches'(002).
     <ls_meta>-url-regex = '/branches/(\w*)$'.
     APPEND 'IV_REPO' TO <ls_meta>-url-group_names.
-    <ls_meta>-method    = 'GET'.
+    <ls_meta>-method    = zcl_swag=>c_method-get.
     <ls_meta>-handler   = 'LIST_BRANCHES'.
 
     APPEND INITIAL LINE TO rt_meta ASSIGNING <ls_meta>.
     <ls_meta>-summary   = 'Create repository'(003).
     <ls_meta>-url-regex = '/create$'.
-    <ls_meta>-method    = 'POST'.
+    <ls_meta>-method    = zcl_swag=>c_method-post.
     <ls_meta>-handler   = 'CREATE_REPO'.
 
     APPEND INITIAL LINE TO rt_meta ASSIGNING <ls_meta>.
@@ -310,7 +318,7 @@ CLASS ZCL_AGS_SERVICE_REST IMPLEMENTATION.
     <ls_meta>-url-regex = '/tree/(\w*)/(\w*)$'.
     APPEND 'IV_REPO' TO <ls_meta>-url-group_names.
     APPEND 'IV_BRANCH' TO <ls_meta>-url-group_names.
-    <ls_meta>-method    = 'GET'.
+    <ls_meta>-method    = zcl_swag=>c_method-get.
     <ls_meta>-handler   = 'LIST_FILES'.
 
     APPEND INITIAL LINE TO rt_meta ASSIGNING <ls_meta>.
@@ -319,7 +327,7 @@ CLASS ZCL_AGS_SERVICE_REST IMPLEMENTATION.
     APPEND 'IV_REPO' TO <ls_meta>-url-group_names.
     APPEND 'IV_BRANCH' TO <ls_meta>-url-group_names.
     APPEND 'IV_FILENAME' TO <ls_meta>-url-group_names.
-    <ls_meta>-method    = 'GET'.
+    <ls_meta>-method    = zcl_swag=>c_method-get.
     <ls_meta>-produce   = zcl_swag=>c_content_type-text_plain.
     <ls_meta>-handler   = 'READ_BLOB'.
 
@@ -327,7 +335,7 @@ CLASS ZCL_AGS_SERVICE_REST IMPLEMENTATION.
     <ls_meta>-summary   = 'Read commit'(006).
     <ls_meta>-url-regex = '/commit/(\w+)$'.
     APPEND 'IV_COMMIT' TO <ls_meta>-url-group_names.
-    <ls_meta>-method    = 'GET'.
+    <ls_meta>-method    = zcl_swag=>c_method-get.
     <ls_meta>-handler   = 'READ_COMMIT'.
 
     APPEND INITIAL LINE TO rt_meta ASSIGNING <ls_meta>.
@@ -335,7 +343,7 @@ CLASS ZCL_AGS_SERVICE_REST IMPLEMENTATION.
     <ls_meta>-url-regex = '/commits/(\w+)/(\w+)$'.
     APPEND 'IV_REPO' TO <ls_meta>-url-group_names.
     APPEND 'IV_BRANCH' TO <ls_meta>-url-group_names.
-    <ls_meta>-method    = 'GET'.
+    <ls_meta>-method    = zcl_swag=>c_method-get.
     <ls_meta>-handler   = 'LIST_COMMITS'.
 
   ENDMETHOD.

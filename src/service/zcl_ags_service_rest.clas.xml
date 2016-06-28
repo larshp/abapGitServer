@@ -94,6 +94,27 @@
      <LENGTH>22</LENGTH>
      <SPLIT/>
     </item>
+    <item>
+     <ID>I</ID>
+     <KEY>008</KEY>
+     <ENTRY>abapGitServer - Swagger</ENTRY>
+     <LENGTH>46</LENGTH>
+     <SPLIT/>
+    </item>
+    <item>
+     <ID>I</ID>
+     <KEY>009</KEY>
+     <ENTRY>abapGitServer REST functions</ENTRY>
+     <LENGTH>56</LENGTH>
+     <SPLIT/>
+    </item>
+    <item>
+     <ID>I</ID>
+     <KEY>010</KEY>
+     <ENTRY>abapGitServer</ENTRY>
+     <LENGTH>23</LENGTH>
+     <SPLIT/>
+    </item>
    </TPOOL>
   </asx:values>
  </asx:abap>
