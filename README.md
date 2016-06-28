@@ -18,3 +18,7 @@ Scope:
 - A lot of code from abapGit can be reused
 - Currently 7.50 is required, backport is planned
 - Only tested with abapGit as client, support for normal git clients is planned
+
+Use cases:
+- Automatic backup of objects
+- Increased visibility over changes in system
