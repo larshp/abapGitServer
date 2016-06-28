@@ -50,7 +50,7 @@ CLASS ltcl_rest IMPLEMENTATION.
 
     DATA(lo_branch) = mo_repo->get_branch( mo_repo->get_data( )-head ).
 
-    DATA(lt_files) = mo_rest->list_files_commit( lo_branch->get_data( )-sha1 ).
+    DATA(lt_files) = mo_rest->list_files_extra( lo_branch->get_data( )-sha1 ).
 
     cl_abap_unit_assert=>assert_not_initial( lt_files ).
 

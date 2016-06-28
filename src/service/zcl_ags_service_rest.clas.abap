@@ -1,107 +1,131 @@
-class ZCL_AGS_SERVICE_REST definition
-  public
-  create public .
+CLASS zcl_ags_service_rest DEFINITION
+  PUBLIC
+  CREATE PUBLIC.
 
-public section.
+  PUBLIC SECTION.
 
-  interfaces ZIF_AGS_SERVICE .
-  interfaces ZIF_SWAG_HANDLER .
+    INTERFACES zif_ags_service .
+    INTERFACES zif_swag_handler .
 
-  types:
-    BEGIN OF ty_create,
+    TYPES:
+      BEGIN OF ty_create,
         name        TYPE zags_repos-name,
         description TYPE zags_repos-description,
       END OF ty_create .
-  types:
-    BEGIN OF ty_branch,
+    TYPES:
+      BEGIN OF ty_branch,
         name   TYPE zags_branch_name,
         time   TYPE zags_unix_time,
         commit TYPE zags_sha1,
         head   TYPE abap_bool,
       END OF ty_branch .
-  types:
-    BEGIN OF ty_file,
+    TYPES: BEGIN OF ty_changed_file,
+             filename TYPE string,
+             updkz    TYPE c LENGTH 1,
+           END OF ty_changed_file.
+    TYPES: ty_changed_files_tt TYPE STANDARD TABLE OF ty_changed_file WITH DEFAULT KEY.
+    TYPES: BEGIN OF ty_commit.
+        INCLUDE TYPE zcl_ags_obj_commit=>ty_pretty.
+    TYPES: files TYPE ty_changed_files_tt,
+           END OF ty_commit.
+    TYPES:
+      BEGIN OF ty_file,
         filename    TYPE string,
         sha1        TYPE zags_sha1,
         comment     TYPE string,
         commit_sha1 TYPE zags_sha1,
         time        TYPE zags_unix_time,
       END OF ty_file .
-  types:
-    ty_branches_tt TYPE STANDARD TABLE OF ty_branch WITH DEFAULT KEY .
-  types:
-    ty_files_tt TYPE STANDARD TABLE OF ty_file WITH DEFAULT KEY .
+    TYPES:
+      ty_branches_tt TYPE STANDARD TABLE OF ty_branch WITH DEFAULT KEY .
+    TYPES:
+      ty_files_tt TYPE STANDARD TABLE OF ty_file WITH DEFAULT KEY .
 
-  methods CONSTRUCTOR
+    METHODS constructor
+      IMPORTING
+        !ii_server TYPE REF TO if_http_server .
+    METHODS edit_repo
+      IMPORTING
+        !is_data TYPE ty_create
+      RAISING
+        zcx_ags_error .
+    METHODS create_repo
+      IMPORTING
+        !is_data TYPE ty_create
+      RAISING
+        zcx_ags_error .
+    METHODS list_branches
+      IMPORTING
+        !iv_repo           TYPE zags_repo_name
+      RETURNING
+        VALUE(rt_branches) TYPE ty_branches_tt
+      RAISING
+        zcx_ags_error .
+    METHODS list_commits
+      IMPORTING
+        !iv_repo          TYPE zags_repo_name
+        !iv_branch        TYPE zags_branch_name
+      RETURNING
+        VALUE(rt_commits) TYPE zcl_ags_obj_commit=>ty_pretty_tt
+      RAISING
+        zcx_ags_error .
+    METHODS list_repos
+      RETURNING
+        VALUE(rt_list) TYPE zcl_ags_repo=>ty_repos_tt
+      RAISING
+        zcx_ags_error .
+    METHODS list_files
+      IMPORTING
+        !iv_repo        TYPE zags_repo_name
+        !iv_branch      TYPE zags_branch_name
+      RETURNING
+        VALUE(rt_files) TYPE ty_files_tt
+      RAISING
+        zcx_ags_error .
+    METHODS read_blob
+      IMPORTING
+        !iv_repo           TYPE zags_repo_name
+        !iv_branch         TYPE string
+        !iv_filename       TYPE string
+      RETURNING
+        VALUE(rv_contents) TYPE xstring
+      RAISING
+        zcx_ags_error .
+    METHODS read_commit
+      IMPORTING
+        !iv_commit     TYPE zags_sha1
+      RETURNING
+        VALUE(rs_data) TYPE ty_commit
+      RAISING
+        zcx_ags_error .
+  PROTECTED SECTION.
+private section.
+
+  data MI_SERVER type ref to IF_HTTP_SERVER .
+  constants C_BASE type STRING value '/sap/zgit/rest' ##NO_TEXT.
+
+  methods LIST_CHANGES
     importing
-      !II_SERVER type ref to IF_HTTP_SERVER .
-  methods EDIT_REPO
-    importing
-      !IS_DATA type TY_CREATE
-    raising
-      ZCX_AGS_ERROR .
-  methods CREATE_REPO
-    importing
-      !IS_DATA type TY_CREATE
-    raising
-      ZCX_AGS_ERROR .
-  methods LIST_BRANCHES
-    importing
-      !IV_REPO type ZAGS_REPO_NAME
+      !IV_NEW type ZAGS_SHA1
+      !IV_OLD type ZAGS_SHA1
     returning
-      value(RT_BRANCHES) type TY_BRANCHES_TT
+      value(RT_FILES) type TY_CHANGED_FILES_TT
     raising
       ZCX_AGS_ERROR .
-  methods LIST_COMMITS
+  methods LIST_FILES_EXTRA
     importing
-      !IV_REPO type ZAGS_REPO_NAME
-      !IV_BRANCH type ZAGS_BRANCH_NAME
-    returning
-      value(RT_COMMITS) type ZCL_AGS_OBJ_COMMIT=>TY_PRETTY_TT
-    raising
-      ZCX_AGS_ERROR .
-  methods LIST_REPOS
-    returning
-      value(RT_LIST) type ZCL_AGS_REPO=>TY_REPOS_TT
-    raising
-      ZCX_AGS_ERROR .
-  methods LIST_FILES
-    importing
-      !IV_REPO type ZAGS_REPO_NAME
-      !IV_BRANCH type ZAGS_BRANCH_NAME
+      !IV_COMMIT type ZAGS_SHA1
     returning
       value(RT_FILES) type TY_FILES_TT
     raising
       ZCX_AGS_ERROR .
-  methods READ_BLOB
-    importing
-      !IV_REPO type ZAGS_REPO_NAME
-      !IV_BRANCH type STRING
-      !IV_FILENAME type STRING
-    returning
-      value(RV_CONTENTS) type XSTRING
-    raising
-      ZCX_AGS_ERROR .
-  methods READ_COMMIT
+  methods LIST_FILES_SIMPLE
     importing
       !IV_COMMIT type ZAGS_SHA1
     returning
-      value(RS_DATA) type ZCL_AGS_OBJ_COMMIT=>TY_PRETTY
+      value(RT_FILES) type TY_FILES_TT
     raising
       ZCX_AGS_ERROR .
-  PROTECTED SECTION.
-  PRIVATE SECTION.
-
-    DATA mi_server TYPE REF TO if_http_server.
-    CONSTANTS c_base TYPE string VALUE '/sap/zgit/rest' ##NO_TEXT.
-
-    METHODS list_files_commit
-      IMPORTING
-        !iv_commit      TYPE zags_sha1
-      RETURNING
-        VALUE(rt_files) TYPE ty_files_tt
-      RAISING
-        zcx_ags_error.
 ENDCLASS.
 
 
@@ -160,6 +184,58 @@ CLASS ZCL_AGS_SERVICE_REST IMPLEMENTATION.
   ENDMETHOD.
 
 
+  METHOD list_changes.
+
+    CONSTANTS: BEGIN OF lc_updkz,
+                 update TYPE c LENGTH 1 VALUE 'U',
+                 delete TYPE c LENGTH 1 VALUE 'D',
+                 insert TYPE c LENGTH 1 VALUE 'I',
+               END OF lc_updkz.
+
+    FIELD-SYMBOLS: <ls_file> LIKE LINE OF rt_files.
+
+
+    DATA(lt_new) = list_files_simple( iv_new ).
+    IF NOT iv_old IS INITIAL AND NOT iv_old CO '0'.
+      DATA(lt_old) = list_files_simple( iv_old ).
+    ENDIF.
+
+    LOOP AT lt_new INTO DATA(ls_new).
+* remove unchanged
+      DELETE lt_old WHERE filename = ls_new-filename AND sha1 = ls_new-sha1.
+      IF sy-subrc = 0.
+        DELETE lt_new WHERE filename = ls_new-filename AND sha1 = ls_new-sha1.
+        CONTINUE.
+      ENDIF.
+
+* find changed
+      READ TABLE lt_old INTO DATA(ls_old) WITH KEY filename = ls_new-filename.
+      IF sy-subrc = 0.
+        DELETE lt_new WHERE filename = ls_new-filename.
+        DELETE lt_old WHERE filename = ls_new-filename.
+
+        APPEND INITIAL LINE TO rt_files ASSIGNING <ls_file>.
+        <ls_file>-filename = ls_new-filename.
+        <ls_file>-updkz = lc_updkz-update.
+        CONTINUE.
+      ENDIF.
+
+* find new
+      APPEND INITIAL LINE TO rt_files ASSIGNING <ls_file>.
+      <ls_file>-filename = ls_new-filename.
+      <ls_file>-updkz = lc_updkz-insert.
+    ENDLOOP.
+
+* find deleted
+    LOOP AT lt_old INTO ls_old.
+      APPEND INITIAL LINE TO rt_files ASSIGNING <ls_file>.
+      <ls_file>-filename = ls_old-filename.
+      <ls_file>-updkz = lc_updkz-delete.
+    ENDLOOP.
+
+  ENDMETHOD.
+
+
   METHOD list_commits.
 
     DATA(lo_repo) = NEW zcl_ags_repo( iv_repo ).
@@ -180,12 +256,47 @@ CLASS ZCL_AGS_SERVICE_REST IMPLEMENTATION.
     DATA(lo_repo) = NEW zcl_ags_repo( iv_repo ).
     DATA(lv_commit) = lo_repo->get_branch( iv_branch )->get_data( )-sha1.
 
-    rt_files = list_files_commit( lv_commit ).
+    rt_files = list_files_extra( lv_commit ).
 
   ENDMETHOD.
 
 
-  METHOD list_files_commit.
+  METHOD list_files_extra.
+
+    rt_files = list_files_simple( iv_commit ).
+
+    DATA(lo_commit) = NEW zcl_ags_obj_commit( iv_commit ).
+
+* todo, at some point in time this recursion will break
+* due to the number of commits
+    IF NOT lo_commit->get( )-parent IS INITIAL.
+      DATA(lt_old) = list_files_extra( lo_commit->get( )-parent ).
+      LOOP AT rt_files ASSIGNING FIELD-SYMBOL(<ls_output>).
+        READ TABLE lt_old ASSIGNING FIELD-SYMBOL(<ls_old>)
+          WITH KEY filename = <ls_output>-filename.
+        IF sy-subrc <> 0
+            OR <ls_old>-sha1 <> <ls_output>-sha1.
+          <ls_output>-comment     = lo_commit->get_pretty( )-text.
+          <ls_output>-commit_sha1 = lo_commit->sha1( ).
+          <ls_output>-time        = lo_commit->get_pretty( )-committer-time.
+        ELSE.
+          <ls_output>-comment     = <ls_old>-comment.
+          <ls_output>-commit_sha1 = <ls_old>-commit_sha1.
+          <ls_output>-time        = <ls_old>-time.
+        ENDIF.
+      ENDLOOP.
+    ELSE.
+      LOOP AT rt_files ASSIGNING <ls_output>.
+        <ls_output>-comment     = lo_commit->get_pretty( )-text.
+        <ls_output>-commit_sha1 = lo_commit->sha1( ).
+        <ls_output>-time        = lo_commit->get_pretty( )-committer-time.
+      ENDLOOP.
+    ENDIF.
+
+  ENDMETHOD.
+
+
+  METHOD list_files_simple.
 
     TYPES: BEGIN OF ty_tree,
              sha1 TYPE zags_sha1,
@@ -217,32 +328,6 @@ CLASS ZCL_AGS_SERVICE_REST IMPLEMENTATION.
       ENDLOOP.
     ENDLOOP.
 
-* todo, at some point in time this recursion will break
-* due to the number of commits
-    IF NOT lo_commit->get( )-parent IS INITIAL.
-      DATA(lt_old) = list_files_commit( lo_commit->get( )-parent ).
-      LOOP AT rt_files ASSIGNING FIELD-SYMBOL(<ls_output>).
-        READ TABLE lt_old ASSIGNING FIELD-SYMBOL(<ls_old>)
-          WITH KEY filename = <ls_output>-filename.
-        IF sy-subrc <> 0
-            OR <ls_old>-sha1 <> <ls_output>-sha1.
-          <ls_output>-comment     = lo_commit->get_pretty( )-text.
-          <ls_output>-commit_sha1 = lo_commit->sha1( ).
-          <ls_output>-time        = lo_commit->get_pretty( )-committer-time.
-        ELSE.
-          <ls_output>-comment     = <ls_old>-comment.
-          <ls_output>-commit_sha1 = <ls_old>-commit_sha1.
-          <ls_output>-time        = <ls_old>-time.
-        ENDIF.
-      ENDLOOP.
-    ELSE.
-      LOOP AT rt_files ASSIGNING <ls_output>.
-        <ls_output>-comment     = lo_commit->get_pretty( )-text.
-        <ls_output>-commit_sha1 = lo_commit->sha1( ).
-        <ls_output>-time        = lo_commit->get_pretty( )-committer-time.
-      ENDLOOP.
-    ENDIF.
-
   ENDMETHOD.
 
 
@@ -257,7 +342,7 @@ CLASS ZCL_AGS_SERVICE_REST IMPLEMENTATION.
 
     DATA(lo_repo) = NEW zcl_ags_repo( iv_repo ).
     DATA(lv_commit) = lo_repo->get_branch( CONV #( iv_branch ) )->get_data( )-sha1.
-    DATA(lt_files) = list_files_commit( lv_commit ).
+    DATA(lt_files) = list_files_simple( lv_commit ).
 
     READ TABLE lt_files ASSIGNING FIELD-SYMBOL(<ls_file>)
       WITH KEY filename = '/' && iv_filename.
@@ -276,7 +361,11 @@ CLASS ZCL_AGS_SERVICE_REST IMPLEMENTATION.
   METHOD read_commit.
 
     DATA(lo_commit) = NEW zcl_ags_obj_commit( iv_commit ).
-    rs_data = lo_commit->get_pretty( ).
+    MOVE-CORRESPONDING lo_commit->get_pretty( ) TO rs_data.
+
+    rs_data-files = list_changes(
+      iv_new = iv_commit
+      iv_old = rs_data-parent ).
 
   ENDMETHOD.
 

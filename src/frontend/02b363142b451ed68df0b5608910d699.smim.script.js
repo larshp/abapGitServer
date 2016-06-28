@@ -350,18 +350,43 @@ class Commit extends React.Component {
   update(d) {
     this.setState({data: d, spinner: false});
   }      
-
+ 
+  single(e) {
+    return (<tr>
+      <td>{ e.FILENAME }</td>
+      <td>{ e.UPDKZ }</td>
+      </tr>);
+  }
+  
+  diff() {
+    return (<table>{this.state.data.FILES.map(this.single)}</table>);
+// https://github.com/cemerick/jsdifflib      
+// https://github.com/kpdecker/jsdiff               
+  }
+  
   renderCommit() {
-// todo, jsdiff?    
-    return (<div>
-            Name: {this.state.data.COMMITTER.NAME}<br />
-            Description: {this.state.data.TEXT}<br />
-            Parent: 
-            <Link to={this.props.params.repo + "/commit/" + this.state.data.PARENT}>
-            {this.state.data.PARENT}</Link><br />
-            <br />
-            todo, diff information
-            </div>);
+    return (
+      <div>
+      <table>
+      <tr>
+      <td>Name:</td>
+      <td>{this.state.data.COMMITTER.NAME}</td>
+      </tr>
+      <tr>
+      <td>Description:</td>
+      <td>{this.state.data.TEXT}</td>
+      </tr>
+      <tr>
+      <td>Parent:</td>
+      <td>
+      <Link to={this.props.params.repo + "/commit/" + this.state.data.PARENT}>
+      {this.state.data.PARENT}</Link>
+      </td>
+      </tr>
+      </table>
+      <br />
+      {this.diff()}
+      </div>);
   }      
       
   render() {
