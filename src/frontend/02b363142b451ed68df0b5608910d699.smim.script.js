@@ -103,6 +103,11 @@ class REST {
     const url = "blob/" + repoName + "/" + branch + "/" + filename;
     this.get(url, callback, false);
   }
+      
+  static readBlobSHA1(sha1, callback) {
+    const url = "blob/" + sha1;
+    this.get(url, callback, false);
+  }      
 
   static readCommit(repoName, sha1, callback) {
     const url = "commit/" + sha1;
@@ -234,7 +239,7 @@ class Edit extends React.Component {
       </td>
       </tr>
       <tr>
-      <td colspan="2">
+      <td colSpan="2">
       <input type="submit" value="Edit" onClick={this.click.bind(this)}/>
       </td>
       </tr>
@@ -311,7 +316,7 @@ class Create extends React.Component {
       </td>
       </tr>
       <tr>
-      <td colspan="2">
+      <td colSpan="2">
       <input type="submit" value="Create" onClick={this.click.bind(this)}/>
       </td>
       </tr>
@@ -330,6 +335,65 @@ class Create extends React.Component {
   }
 }         
 
+// todo, rewrite most of this class with diff2html
+// see https://github.com/larshp/abapGitServer/issues/21      
+class RenderDiff extends React.Component {
+  old;
+  new;
+  
+  constructor(props) {
+    super(props);
+
+    this.state = {diff: null};
+    if (props.old === "") {
+      this.old = "";
+    } else {
+      this.old = null;
+      REST.readBlobSHA1(props.old,
+                        this.oldd.bind(this));
+    }
+    if (props.new === "") {
+      this.new = "";
+    } else {
+      this.new = null;
+      REST.readBlobSHA1(props.new,
+                        this.newd.bind(this));     
+    }     
+  }
+  
+  runDiff() {
+    if (this.old !== null && this.new !== null) {
+      let diff = JsDiff.createTwoFilesPatch(
+        this.props.filename, this.props.filename, this.old, this.new);
+      this.setState({diff});
+    }
+  }
+  
+  oldd(d) {
+    this.old = d;
+    this.runDiff();
+  }
+  
+  newd(d) {
+    this.new = d;
+    this.runDiff();
+  }
+
+  renderDiff() {
+    if (this.state.diff !== null) {
+      return (<pre>{this.state.diff}</pre>);
+    } else {
+      return (<Spinner />)
+    }    
+  }
+    
+  render() {  
+    return (<div>
+      {this.renderDiff()}
+      </div>);
+  }
+}      
+      
 class Commit extends React.Component {
   constructor(props) {
     super(props);
@@ -352,16 +416,21 @@ class Commit extends React.Component {
   }      
  
   single(e) {
-    return (<tr>
+    return (<table>
+      <tr>
       <td>{ e.FILENAME }</td>
       <td>{ e.UPDKZ }</td>
-      </tr>);
+      </tr>
+      <tr>
+      <td colSpan="2">
+      <RenderDiff filename={e.FILENAME} old={ e.OLD_BLOB } new={ e.NEW_BLOB } />
+      </td>
+      </tr>
+      </table>);
   }
   
   diff() {
-    return (<table>{this.state.data.FILES.map(this.single)}</table>);
-// https://github.com/cemerick/jsdifflib      
-// https://github.com/kpdecker/jsdiff               
+    return (<div>{this.state.data.FILES.map(this.single)}</div>);             
   }
   
   renderCommit() {

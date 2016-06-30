@@ -122,6 +122,13 @@
      <LENGTH>54</LENGTH>
      <SPLIT/>
     </item>
+    <item>
+     <ID>I</ID>
+     <KEY>012</KEY>
+     <ENTRY>Read blob via SHA1</ENTRY>
+     <LENGTH>28</LENGTH>
+     <SPLIT/>
+    </item>
    </TPOOL>
   </asx:values>
  </asx:abap>

@@ -4,27 +4,32 @@ CLASS zcl_ags_service_rest DEFINITION
 
   PUBLIC SECTION.
 
-    INTERFACES zif_ags_service .
-    INTERFACES zif_swag_handler .
+    INTERFACES zif_ags_service.
+    INTERFACES zif_swag_handler.
 
     TYPES:
       BEGIN OF ty_create,
         name        TYPE zags_repos-name,
         description TYPE zags_repos-description,
-      END OF ty_create .
+      END OF ty_create.
     TYPES:
       BEGIN OF ty_branch,
         name   TYPE zags_branch_name,
         time   TYPE zags_unix_time,
         commit TYPE zags_sha1,
         head   TYPE abap_bool,
-      END OF ty_branch .
-    TYPES: BEGIN OF ty_changed_file,
-             filename TYPE string,
-             updkz    TYPE c LENGTH 1,
-           END OF ty_changed_file.
-    TYPES: ty_changed_files_tt TYPE STANDARD TABLE OF ty_changed_file WITH DEFAULT KEY.
-    TYPES: BEGIN OF ty_commit.
+      END OF ty_branch.
+    TYPES:
+      BEGIN OF ty_changed_file,
+        filename TYPE string,
+        updkz    TYPE c LENGTH 1,
+        old_blob TYPE zags_sha1,
+        new_blob TYPE zags_sha1,
+      END OF ty_changed_file.
+    TYPES:
+      ty_changed_files_tt TYPE STANDARD TABLE OF ty_changed_file WITH DEFAULT KEY.
+    TYPES:
+      BEGIN OF ty_commit.
         INCLUDE TYPE zcl_ags_obj_commit=>ty_pretty.
     TYPES: files TYPE ty_changed_files_tt,
            END OF ty_commit.
@@ -35,32 +40,32 @@ CLASS zcl_ags_service_rest DEFINITION
         comment     TYPE string,
         commit_sha1 TYPE zags_sha1,
         time        TYPE zags_unix_time,
-      END OF ty_file .
+      END OF ty_file.
     TYPES:
-      ty_branches_tt TYPE STANDARD TABLE OF ty_branch WITH DEFAULT KEY .
+      ty_branches_tt TYPE STANDARD TABLE OF ty_branch WITH DEFAULT KEY.
     TYPES:
-      ty_files_tt TYPE STANDARD TABLE OF ty_file WITH DEFAULT KEY .
+      ty_files_tt TYPE STANDARD TABLE OF ty_file WITH DEFAULT KEY.
 
     METHODS constructor
       IMPORTING
-        !ii_server TYPE REF TO if_http_server .
-    METHODS edit_repo
-      IMPORTING
-        !is_data TYPE ty_create
-      RAISING
-        zcx_ags_error .
+        !ii_server TYPE REF TO if_http_server.
     METHODS create_repo
       IMPORTING
         !is_data TYPE ty_create
       RAISING
-        zcx_ags_error .
+        zcx_ags_error.
+    METHODS edit_repo
+      IMPORTING
+        !is_data TYPE ty_create
+      RAISING
+        zcx_ags_error.
     METHODS list_branches
       IMPORTING
         !iv_repo           TYPE zags_repo_name
       RETURNING
         VALUE(rt_branches) TYPE ty_branches_tt
       RAISING
-        zcx_ags_error .
+        zcx_ags_error.
     METHODS list_commits
       IMPORTING
         !iv_repo          TYPE zags_repo_name
@@ -68,12 +73,7 @@ CLASS zcl_ags_service_rest DEFINITION
       RETURNING
         VALUE(rt_commits) TYPE zcl_ags_obj_commit=>ty_pretty_tt
       RAISING
-        zcx_ags_error .
-    METHODS list_repos
-      RETURNING
-        VALUE(rt_list) TYPE zcl_ags_repo=>ty_repos_tt
-      RAISING
-        zcx_ags_error .
+        zcx_ags_error.
     METHODS list_files
       IMPORTING
         !iv_repo        TYPE zags_repo_name
@@ -81,7 +81,12 @@ CLASS zcl_ags_service_rest DEFINITION
       RETURNING
         VALUE(rt_files) TYPE ty_files_tt
       RAISING
-        zcx_ags_error .
+        zcx_ags_error.
+    METHODS list_repos
+      RETURNING
+        VALUE(rt_list) TYPE zcl_ags_repo=>ty_repos_tt
+      RAISING
+        zcx_ags_error.
     METHODS read_blob
       IMPORTING
         !iv_repo           TYPE zags_repo_name
@@ -90,42 +95,49 @@ CLASS zcl_ags_service_rest DEFINITION
       RETURNING
         VALUE(rv_contents) TYPE xstring
       RAISING
-        zcx_ags_error .
+        zcx_ags_error.
+    METHODS read_blob_sha1
+      IMPORTING
+        !iv_sha1           TYPE zags_sha1
+      RETURNING
+        VALUE(rv_contents) TYPE xstring
+      RAISING
+        zcx_ags_error.
     METHODS read_commit
       IMPORTING
         !iv_commit     TYPE zags_sha1
       RETURNING
         VALUE(rs_data) TYPE ty_commit
       RAISING
-        zcx_ags_error .
+        zcx_ags_error.
   PROTECTED SECTION.
-private section.
+  PRIVATE SECTION.
 
-  data MI_SERVER type ref to IF_HTTP_SERVER .
-  constants C_BASE type STRING value '/sap/zgit/rest' ##NO_TEXT.
+    DATA mi_server TYPE REF TO if_http_server.
+    CONSTANTS c_base TYPE string VALUE '/sap/zgit/rest' ##NO_TEXT.
 
-  methods LIST_CHANGES
-    importing
-      !IV_NEW type ZAGS_SHA1
-      !IV_OLD type ZAGS_SHA1
-    returning
-      value(RT_FILES) type TY_CHANGED_FILES_TT
-    raising
-      ZCX_AGS_ERROR .
-  methods LIST_FILES_EXTRA
-    importing
-      !IV_COMMIT type ZAGS_SHA1
-    returning
-      value(RT_FILES) type TY_FILES_TT
-    raising
-      ZCX_AGS_ERROR .
-  methods LIST_FILES_SIMPLE
-    importing
-      !IV_COMMIT type ZAGS_SHA1
-    returning
-      value(RT_FILES) type TY_FILES_TT
-    raising
-      ZCX_AGS_ERROR .
+    METHODS list_changes
+      IMPORTING
+        !iv_new         TYPE zags_sha1
+        !iv_old         TYPE zags_sha1
+      RETURNING
+        VALUE(rt_files) TYPE ty_changed_files_tt
+      RAISING
+        zcx_ags_error.
+    METHODS list_files_extra
+      IMPORTING
+        !iv_commit      TYPE zags_sha1
+      RETURNING
+        VALUE(rt_files) TYPE ty_files_tt
+      RAISING
+        zcx_ags_error.
+    METHODS list_files_simple
+      IMPORTING
+        !iv_commit      TYPE zags_sha1
+      RETURNING
+        VALUE(rt_files) TYPE ty_files_tt
+      RAISING
+        zcx_ags_error.
 ENDCLASS.
 
 
@@ -205,6 +217,7 @@ CLASS ZCL_AGS_SERVICE_REST IMPLEMENTATION.
       DELETE lt_old WHERE filename = ls_new-filename AND sha1 = ls_new-sha1.
       IF sy-subrc = 0.
         DELETE lt_new WHERE filename = ls_new-filename AND sha1 = ls_new-sha1.
+        ASSERT sy-subrc = 0.
         CONTINUE.
       ENDIF.
 
@@ -212,25 +225,31 @@ CLASS ZCL_AGS_SERVICE_REST IMPLEMENTATION.
       READ TABLE lt_old INTO DATA(ls_old) WITH KEY filename = ls_new-filename.
       IF sy-subrc = 0.
         DELETE lt_new WHERE filename = ls_new-filename.
+        ASSERT sy-subrc = 0.
         DELETE lt_old WHERE filename = ls_new-filename.
+        ASSERT sy-subrc = 0.
 
         APPEND INITIAL LINE TO rt_files ASSIGNING <ls_file>.
         <ls_file>-filename = ls_new-filename.
-        <ls_file>-updkz = lc_updkz-update.
+        <ls_file>-updkz    = lc_updkz-update.
+        <ls_file>-old_blob = ls_old-sha1.
+        <ls_file>-new_blob = ls_new-sha1.
         CONTINUE.
       ENDIF.
 
 * find new
       APPEND INITIAL LINE TO rt_files ASSIGNING <ls_file>.
       <ls_file>-filename = ls_new-filename.
-      <ls_file>-updkz = lc_updkz-insert.
+      <ls_file>-updkz    = lc_updkz-insert.
+      <ls_file>-new_blob = ls_new-sha1.
     ENDLOOP.
 
 * find deleted
     LOOP AT lt_old INTO ls_old.
       APPEND INITIAL LINE TO rt_files ASSIGNING <ls_file>.
       <ls_file>-filename = ls_old-filename.
-      <ls_file>-updkz = lc_updkz-delete.
+      <ls_file>-updkz    = lc_updkz-delete.
+      <ls_file>-old_blob = ls_old-sha1.
     ENDLOOP.
 
   ENDMETHOD.
@@ -358,6 +377,14 @@ CLASS ZCL_AGS_SERVICE_REST IMPLEMENTATION.
   ENDMETHOD.
 
 
+  METHOD read_blob_sha1.
+
+    DATA(lo_blob) = NEW zcl_ags_obj_blob( iv_sha1 ).
+    rv_contents = lo_blob->get_data( ).
+
+  ENDMETHOD.
+
+
   METHOD read_commit.
 
     DATA(lo_commit) = NEW zcl_ags_obj_commit( iv_commit ).
@@ -444,6 +471,14 @@ CLASS ZCL_AGS_SERVICE_REST IMPLEMENTATION.
     <ls_meta>-method    = zcl_swag=>c_method-get.
     <ls_meta>-produce   = zcl_swag=>c_content_type-text_plain.
     <ls_meta>-handler   = 'READ_BLOB'.
+
+    APPEND INITIAL LINE TO rt_meta ASSIGNING <ls_meta>.
+    <ls_meta>-summary   = 'Read blob via SHA1'(012).
+    <ls_meta>-url-regex = '/blob/(\w+)$'.
+    APPEND 'IV_SHA1' TO <ls_meta>-url-group_names.
+    <ls_meta>-method    = zcl_swag=>c_method-get.
+    <ls_meta>-produce   = zcl_swag=>c_content_type-text_plain.
+    <ls_meta>-handler   = 'READ_BLOB_SHA1'.
 
     APPEND INITIAL LINE TO rt_meta ASSIGNING <ls_meta>.
     <ls_meta>-summary   = 'Read commit'(006).
