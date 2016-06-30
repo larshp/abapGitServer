@@ -314,9 +314,15 @@ CLASS ZCL_AGS_SERVICE_REST IMPLEMENTATION.
 
     DATA: lt_trees TYPE STANDARD TABLE OF ty_tree WITH DEFAULT KEY.
 
+    FIELD-SYMBOLS: <ls_file> LIKE LINE OF rt_files,
+                   <ls_tree> LIKE LINE OF lt_trees.
+
 
     DATA(lo_commit) = NEW zcl_ags_obj_commit( iv_commit ).
-    APPEND VALUE #( sha1 = lo_commit->get( )-tree base = '/' ) TO lt_trees.
+
+    APPEND INITIAL LINE TO lt_trees ASSIGNING <ls_tree>.
+    <ls_tree>-sha1 = lo_commit->get( )-tree.
+    <ls_tree>-base = '/'.
 
     LOOP AT lt_trees ASSIGNING FIELD-SYMBOL(<ls_tree>).
       DATA(lo_tree) = NEW zcl_ags_obj_tree( <ls_tree>-sha1 ).
@@ -324,15 +330,13 @@ CLASS ZCL_AGS_SERVICE_REST IMPLEMENTATION.
       LOOP AT lt_files ASSIGNING FIELD-SYMBOL(<ls_file>).
         CASE <ls_file>-chmod.
           WHEN zcl_ags_obj_tree=>c_chmod-dir.
-            APPEND VALUE #(
-              sha1 = <ls_file>-sha1
-              base = <ls_tree>-base && <ls_file>-name && '/' )
-              TO lt_trees.
+            APPEND INITIAL LINE TO lt_trees ASSIGNING <ls_tree>.
+            <ls_tree>-sha1 = <ls_file>-sha1.
+            <ls_tree>-base = <ls_tree>-base && <ls_file>-name && '/'.
           WHEN OTHERS.
-            APPEND VALUE #(
-              filename = <ls_tree>-base && <ls_file>-name
-              sha1 = <ls_file>-sha1 )
-              TO rt_files.
+            APPEND INITIAL LINE TO rt_files ASSIGNING <ls_file>.
+            <ls_file>-filename = <ls_tree>-base && <ls_file>-name.
+            <ls_file>-sha1 = <ls_file>-sha1.
         ENDCASE.
       ENDLOOP.
     ENDLOOP.
