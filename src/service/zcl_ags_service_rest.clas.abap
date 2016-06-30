@@ -22,7 +22,6 @@ CLASS zcl_ags_service_rest DEFINITION
     TYPES:
       BEGIN OF ty_changed_file,
         filename TYPE string,
-        updkz    TYPE c LENGTH 1,
         old_blob TYPE zags_sha1,
         new_blob TYPE zags_sha1,
       END OF ty_changed_file.
@@ -198,12 +197,6 @@ CLASS ZCL_AGS_SERVICE_REST IMPLEMENTATION.
 
   METHOD list_changes.
 
-    CONSTANTS: BEGIN OF lc_updkz,
-                 update TYPE c LENGTH 1 VALUE 'U',
-                 delete TYPE c LENGTH 1 VALUE 'D',
-                 insert TYPE c LENGTH 1 VALUE 'I',
-               END OF lc_updkz.
-
     FIELD-SYMBOLS: <ls_file> LIKE LINE OF rt_files.
 
 
@@ -231,7 +224,6 @@ CLASS ZCL_AGS_SERVICE_REST IMPLEMENTATION.
 
         APPEND INITIAL LINE TO rt_files ASSIGNING <ls_file>.
         <ls_file>-filename = ls_new-filename.
-        <ls_file>-updkz    = lc_updkz-update.
         <ls_file>-old_blob = ls_old-sha1.
         <ls_file>-new_blob = ls_new-sha1.
         CONTINUE.
@@ -240,7 +232,6 @@ CLASS ZCL_AGS_SERVICE_REST IMPLEMENTATION.
 * find new
       APPEND INITIAL LINE TO rt_files ASSIGNING <ls_file>.
       <ls_file>-filename = ls_new-filename.
-      <ls_file>-updkz    = lc_updkz-insert.
       <ls_file>-new_blob = ls_new-sha1.
     ENDLOOP.
 
@@ -248,7 +239,6 @@ CLASS ZCL_AGS_SERVICE_REST IMPLEMENTATION.
     LOOP AT lt_old INTO ls_old.
       APPEND INITIAL LINE TO rt_files ASSIGNING <ls_file>.
       <ls_file>-filename = ls_old-filename.
-      <ls_file>-updkz    = lc_updkz-delete.
       <ls_file>-old_blob = ls_old-sha1.
     ENDLOOP.
 

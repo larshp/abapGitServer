@@ -337,7 +337,7 @@ class Create extends React.Component {
 
 // todo, rewrite most of this class with diff2html
 // see https://github.com/larshp/abapGitServer/issues/21      
-class RenderDiff extends React.Component {
+class Diff extends React.Component {
   old;
   new;
   
@@ -365,6 +365,25 @@ class RenderDiff extends React.Component {
     if (this.old !== null && this.new !== null) {
       let diff = JsDiff.createTwoFilesPatch(
         this.props.filename, this.props.filename, this.old, this.new);
+      
+// hack to make diff2html show added and deleted marker      
+      if (this.props.old === "") {
+        diff = 'diff --git foo bar\n' +
+          'new file mode 100644\n' + 
+          diff;
+      } else if (this.props.new === "") {
+        diff = 'diff --git foo bar\n' +
+          'deleted file mode 100644\n' + 
+          diff;        
+      }        
+
+      var diff2htmlUi = new Diff2HtmlUI({diff});   
+      diff2htmlUi.draw('#line-by-line'+this.props.fileNumber, {
+        inputFormat: 'json',
+//        showFiles: true,
+        matching: 'lines'
+      });      
+
       this.setState({diff});
     }
   }
@@ -378,23 +397,17 @@ class RenderDiff extends React.Component {
     this.new = d;
     this.runDiff();
   }
-
-  renderDiff() {
-    if (this.state.diff !== null) {
-      return (<pre>{this.state.diff}</pre>);
-    } else {
-      return (<Spinner />)
-    }    
-  }
     
   render() {  
     return (<div>
-      {this.renderDiff()}
+      <div id={"line-by-line"+this.props.fileNumber}><Spinner /></div>
       </div>);
   }
 }      
       
 class Commit extends React.Component {
+  i = 0;
+            
   constructor(props) {
     super(props);
     this.init(props);    
@@ -416,21 +429,15 @@ class Commit extends React.Component {
   }      
  
   single(e) {
-    return (<table>
-      <tr>
-      <td>{ e.FILENAME }</td>
-      <td>{ e.UPDKZ }</td>
-      </tr>
-      <tr>
-      <td colSpan="2">
-      <RenderDiff filename={e.FILENAME} old={ e.OLD_BLOB } new={ e.NEW_BLOB } />
-      </td>
-      </tr>
-      </table>);
+    return (<Diff 
+      filename={e.FILENAME} 
+      fileNumber={this.i++} 
+      old={ e.OLD_BLOB } 
+      new={ e.NEW_BLOB } />);
   }
   
   diff() {
-    return (<div>{this.state.data.FILES.map(this.single)}</div>);             
+    return (<div>{this.state.data.FILES.map(this.single.bind(this))}</div>);             
   }
   
   renderCommit() {
@@ -451,6 +458,10 @@ class Commit extends React.Component {
       <Link to={this.props.params.repo + "/commit/" + this.state.data.PARENT}>
       {this.state.data.PARENT}</Link>
       </td>
+      </tr>
+      <tr>
+      <td>Time:</td>
+      <td>{Time.ago(Time.parse(this.state.data.COMMITTER.TIME))}</td>
       </tr>
       </table>
       <br />
