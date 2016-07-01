@@ -46,7 +46,7 @@ CLASS ZCL_AGS_OBJ_BLOB IMPLEMENTATION.
       mv_new = abap_true.
     ELSE.
       mv_new = abap_false.
-      deserialize( zcl_ags_lookup=>read_object( iv_sha1 )-data ).
+      deserialize( zcl_ags_lookup=>read_object( iv_sha1 )-data_raw ).
     ENDIF.
 
   ENDMETHOD.
@@ -81,7 +81,7 @@ CLASS ZCL_AGS_OBJ_BLOB IMPLEMENTATION.
 
     ls_object-sha1 = sha1( ).
     ls_object-type = zif_ags_constants=>c_type-blob.
-    ls_object-data = serialize( ).
+    ls_object-data_raw = serialize( ).
 
     MODIFY zags_objects FROM ls_object.
 
