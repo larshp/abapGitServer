@@ -324,19 +324,19 @@ CLASS ZCL_AGS_SERVICE_REST IMPLEMENTATION.
     <ls_tree>-sha1 = lo_commit->get( )-tree.
     <ls_tree>-base = '/'.
 
-    LOOP AT lt_trees ASSIGNING FIELD-SYMBOL(<ls_tree>).
-      DATA(lo_tree) = NEW zcl_ags_obj_tree( <ls_tree>-sha1 ).
+    LOOP AT lt_trees ASSIGNING FIELD-SYMBOL(<ls_input_tree>).
+      DATA(lo_tree) = NEW zcl_ags_obj_tree( <ls_input_tree>-sha1 ).
       DATA(lt_files) = lo_tree->get_files( ).
-      LOOP AT lt_files ASSIGNING FIELD-SYMBOL(<ls_file>).
-        CASE <ls_file>-chmod.
+      LOOP AT lt_files ASSIGNING FIELD-SYMBOL(<ls_input_file>).
+        CASE <ls_input_file>-chmod.
           WHEN zcl_ags_obj_tree=>c_chmod-dir.
             APPEND INITIAL LINE TO lt_trees ASSIGNING <ls_tree>.
-            <ls_tree>-sha1 = <ls_file>-sha1.
-            <ls_tree>-base = <ls_tree>-base && <ls_file>-name && '/'.
+            <ls_tree>-sha1 = <ls_input_file>-sha1.
+            <ls_tree>-base = <ls_input_tree>-base && <ls_input_file>-name && '/'.
           WHEN OTHERS.
             APPEND INITIAL LINE TO rt_files ASSIGNING <ls_file>.
-            <ls_file>-filename = <ls_tree>-base && <ls_file>-name.
-            <ls_file>-sha1 = <ls_file>-sha1.
+            <ls_file>-filename = <ls_input_tree>-base && <ls_input_file>-name.
+            <ls_file>-sha1 = <ls_input_file>-sha1.
         ENDCASE.
       ENDLOOP.
     ENDLOOP.
