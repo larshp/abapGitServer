@@ -1,4 +1,9 @@
 
+*----------------------------------------------------------------------*
+*       CLASS ltcl_length DEFINITION
+*----------------------------------------------------------------------*
+*
+*----------------------------------------------------------------------*
 CLASS ltcl_length DEFINITION FOR TESTING
   DURATION SHORT
   RISK LEVEL HARMLESS
@@ -10,26 +15,37 @@ CLASS ltcl_length DEFINITION FOR TESTING
 ENDCLASS.       "ltcl_Encode_Length
 
 
+*----------------------------------------------------------------------*
+*       CLASS ltcl_length IMPLEMENTATION
+*----------------------------------------------------------------------*
+*
+*----------------------------------------------------------------------*
 CLASS ltcl_length IMPLEMENTATION.
 
   METHOD encode_length.
 
-    DATA(lv_encoded) = lcl_length=>encode( 100 ).
+    DATA: lv_encoded TYPE zags_hex4.
+
+
+    lv_encoded = lcl_length=>encode( 100 ).
 
     cl_abap_unit_assert=>assert_equals(
       act = lv_encoded
       exp = '30303634' ).
 
-  ENDMETHOD.
+  ENDMETHOD.                    "encode_length
 
   METHOD decode_length.
 
-    DATA(lv_length) = lcl_length=>decode( '0091' ).
+    DATA: lv_length TYPE i.
+
+
+    lv_length = lcl_length=>decode( '0091' ).
 
     cl_abap_unit_assert=>assert_equals(
       act = lv_length
       exp = 145 ).
 
-  ENDMETHOD.
+  ENDMETHOD.                    "decode_length
 
-ENDCLASS.
+ENDCLASS.                    "ltcl_length IMPLEMENTATION

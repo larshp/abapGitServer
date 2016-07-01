@@ -24,6 +24,7 @@ CLASS zcl_ags_branch DEFINITION
     METHODS update_sha1
       IMPORTING
         !iv_sha1 TYPE zags_sha1.
+PROTECTED SECTION.
   PRIVATE SECTION.
 
     DATA ms_data TYPE zags_branches.
@@ -36,8 +37,10 @@ CLASS ZCL_AGS_BRANCH IMPLEMENTATION.
 
   METHOD constructor.
 
-    DATA(lv_repo) = io_repo->get_data( )-repo.
+    DATA: lv_repo TYPE zags_repos.
 
+
+    lv_repo = io_repo->get_data( )-repo.
 
     SELECT SINGLE * FROM zags_branches INTO ms_data
       WHERE name = iv_name

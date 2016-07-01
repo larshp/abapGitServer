@@ -99,12 +99,15 @@ CLASS ZCL_AGS_REPO IMPLEMENTATION.
     ls_repo-repo = zcl_ags_util=>uuid( ).
     ls_repo-name = iv_name.
     ls_repo-description = iv_description.
-    ls_repo-head = 'master' ##NO_TEXT.
+    ls_repo-head = 'master' ##no_text.
 
     INSERT zags_repos FROM ls_repo.
     ASSERT sy-subrc = 0.
 
-    ro_repo = NEW zcl_ags_repo( iv_name ).
+    CREATE OBJECT ro_repo
+      EXPORTING
+        iv_name = iv_name.
+
     zcl_ags_branch=>create(
       io_repo   = ro_repo
       iv_name   = ls_repo-head
@@ -115,8 +118,13 @@ CLASS ZCL_AGS_REPO IMPLEMENTATION.
 
   METHOD delete.
 
-    DATA(lt_branches) = list_branches( ).
-    LOOP AT lt_branches ASSIGNING FIELD-SYMBOL(<lo_branch>).
+    DATA: lt_branches TYPE ty_branches_tt.
+
+    FIELD-SYMBOLS: <lo_branch> LIKE LINE OF lt_branches.
+
+
+    lt_branches = list_branches( ).
+    LOOP AT lt_branches ASSIGNING <lo_branch>.
       <lo_branch>->delete( ).
     ENDLOOP.
 
@@ -128,7 +136,11 @@ CLASS ZCL_AGS_REPO IMPLEMENTATION.
 
   METHOD get_branch.
 
-    LOOP AT list_branches( ) INTO ro_branch.
+    DATA: lt_branches TYPE ty_branches_tt.
+
+
+    lt_branches = list_branches( ).
+    LOOP AT lt_branches INTO ro_branch.
       IF ro_branch->get_data( )-name = iv_branch_name.
         RETURN.
       ENDIF.
@@ -148,26 +160,29 @@ CLASS ZCL_AGS_REPO IMPLEMENTATION.
 
   METHOD initial_commit.
 
-    DATA: lv_user   TYPE string.
+    DATA: lo_blob   TYPE REF TO zcl_ags_obj_blob,
+          lo_commit TYPE REF TO zcl_ags_obj_commit,
+          lo_tree   TYPE REF TO zcl_ags_obj_tree,
+          lv_user   TYPE string.
 
 
-    DATA(lo_blob) = NEW zcl_ags_obj_blob( ).
-    lo_blob->set_data( zcl_ags_util=>string_to_xstring_utf8( 'test' ) ) ##NO_TEXT.
+    CREATE OBJECT lo_blob.
+    lo_blob->set_data( zcl_ags_util=>string_to_xstring_utf8( 'test' ) ) ##no_text.
     lo_blob->save( ).
 
-    DATA(lo_tree) = NEW zcl_ags_obj_tree( ).
+    CREATE OBJECT lo_tree.
     lo_tree->add_file( iv_chmod = zcl_ags_obj_tree=>c_chmod-file
                        iv_name  = 'test.txt'
-                       iv_sha1  = lo_blob->sha1( ) ) ##NO_TEXT.
+                       iv_sha1  = lo_blob->sha1( ) ) ##no_text.
     lo_tree->save( ).
 
     lv_user = |initial <foo@bar.com> { zcl_ags_util=>get_time( ) }|.
 
-    DATA(lo_commit) = NEW zcl_ags_obj_commit( ).
+    CREATE OBJECT lo_commit.
     lo_commit->set_tree( lo_tree->sha1( ) ).
-    lo_commit->set_author( lv_user ) ##NO_TEXT.
-    lo_commit->set_committer( lv_user ) ##NO_TEXT.
-    lo_commit->set_body( 'initial' ) ##NO_TEXT.
+    lo_commit->set_author( lv_user ) ##no_text.
+    lo_commit->set_committer( lv_user ) ##no_text.
+    lo_commit->set_body( 'initial' ) ##no_text.
     lo_commit->save( ).
 
     rv_commit = lo_commit->sha1( ).
@@ -189,13 +204,15 @@ CLASS ZCL_AGS_REPO IMPLEMENTATION.
     DATA: lt_list   TYPE TABLE OF zags_branches-name,
           lo_branch TYPE REF TO zcl_ags_branch.
 
+    FIELD-SYMBOLS: <lv_list> LIKE LINE OF lt_list.
+
 
     SELECT name FROM zags_branches
       INTO TABLE lt_list
       WHERE repo = ms_data-repo
       ORDER BY name ASCENDING.
 
-    LOOP AT lt_list ASSIGNING FIELD-SYMBOL(<lv_list>).
+    LOOP AT lt_list ASSIGNING <lv_list>.
       CREATE OBJECT lo_branch
         EXPORTING
           io_repo = me

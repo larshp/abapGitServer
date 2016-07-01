@@ -119,10 +119,12 @@ CLASS ZCL_AGS_OBJ_COMMIT IMPLEMENTATION.
 
   METHOD get_pretty.
 
-    DATA: lt_body TYPE TABLE OF string.
+    DATA: ls_data TYPE ty_commit,
+          lt_body TYPE TABLE OF string,
+          lv_body LIKE LINE OF lt_body.
 
 
-    DATA(ls_data) = get( ).
+    ls_data = get( ).
 
     rs_data-sha1      = sha1( ).
     rs_data-tree      = ls_data-tree.
@@ -131,7 +133,10 @@ CLASS ZCL_AGS_OBJ_COMMIT IMPLEMENTATION.
     rs_data-committer = parse_userfield( ls_data-committer ).
 
     SPLIT ls_data-body AT cl_abap_char_utilities=>newline INTO TABLE lt_body.
-    rs_data-text = lt_body[ 1 ].
+
+    READ TABLE lt_body INDEX 1 INTO lv_body.
+    rs_data-text = lv_body.
+
     DELETE lt_body INDEX 1.
     CONCATENATE LINES OF lt_body
       INTO rs_data-body
@@ -207,13 +212,15 @@ CLASS ZCL_AGS_OBJ_COMMIT IMPLEMENTATION.
           lv_len    TYPE i,
           lt_string TYPE TABLE OF string.
 
+    FIELD-SYMBOLS: <lv_string> LIKE LINE OF lt_string.
+
 
     lv_string = zcl_ags_util=>xstring_to_string_utf8( iv_data ).
 
     SPLIT lv_string AT c_newline INTO TABLE lt_string.
 
     lv_mode = 'tree'.                                       "#EC NOTEXT
-    LOOP AT lt_string ASSIGNING FIELD-SYMBOL(<lv_string>).
+    LOOP AT lt_string ASSIGNING <lv_string>.
       lv_len = strlen( lv_mode ).
 
       IF NOT lv_mode IS INITIAL AND <lv_string>(lv_len) = lv_mode.

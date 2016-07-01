@@ -63,7 +63,10 @@ CLASS ZCL_AGS_OBJ_TREE IMPLEMENTATION.
 
   METHOD add_file.
 
-    APPEND INITIAL LINE TO mt_data ASSIGNING FIELD-SYMBOL(<ls_data>).
+    FIELD-SYMBOLS: <ls_data> LIKE LINE OF mt_data.
+
+
+    APPEND INITIAL LINE TO mt_data ASSIGNING <ls_data>.
     <ls_data>-chmod = iv_chmod.
     <ls_data>-name = iv_name.
     <ls_data>-sha1 = iv_sha1.
@@ -168,9 +171,11 @@ CLASS ZCL_AGS_OBJ_TREE IMPLEMENTATION.
           lv_hex20   TYPE x LENGTH 20,
           lv_xstring TYPE xstring.
 
+    FIELD-SYMBOLS: <ls_data> LIKE LINE OF mt_data.
+
 * todo, sort tree
 
-    LOOP AT mt_data ASSIGNING FIELD-SYMBOL(<ls_data>).
+    LOOP AT mt_data ASSIGNING <ls_data>.
       ASSERT NOT <ls_data>-chmod IS INITIAL.
       ASSERT NOT <ls_data>-name IS INITIAL.
 

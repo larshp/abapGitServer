@@ -1,6 +1,11 @@
-CONSTANTS: gc_field TYPE string VALUE 'Foobar <foo@bar.com> 1466596513 +0000' ##NO_TEXT.
+CONSTANTS: gc_field TYPE string VALUE 'Foobar <foo@bar.com> 1466596513 +0000' ##no_text.
 
 
+*----------------------------------------------------------------------*
+*       CLASS ltcl_test DEFINITION
+*----------------------------------------------------------------------*
+*
+*----------------------------------------------------------------------*
 CLASS ltcl_test DEFINITION FOR TESTING
   DURATION SHORT
   RISK LEVEL HARMLESS
@@ -16,6 +21,11 @@ CLASS ltcl_test DEFINITION FOR TESTING
 ENDCLASS.       "ltcl_Test
 
 
+*----------------------------------------------------------------------*
+*       CLASS ltcl_test IMPLEMENTATION
+*----------------------------------------------------------------------*
+*
+*----------------------------------------------------------------------*
 CLASS ltcl_test IMPLEMENTATION.
 
   METHOD serialize.
@@ -56,13 +66,18 @@ CLASS ltcl_test IMPLEMENTATION.
         act = lo_new->get( )-tree
         exp = lo_old->get( )-tree ).
 
-  ENDMETHOD.
+  ENDMETHOD.                    "serialize
 
-ENDCLASS.
+ENDCLASS.                    "ltcl_test IMPLEMENTATION
 
 CLASS ltcl_userfield DEFINITION DEFERRED.
 CLASS zcl_ags_obj_commit DEFINITION LOCAL FRIENDS ltcl_userfield.
 
+*----------------------------------------------------------------------*
+*       CLASS ltcl_userfield DEFINITION
+*----------------------------------------------------------------------*
+*
+*----------------------------------------------------------------------*
 CLASS ltcl_userfield DEFINITION FOR TESTING
     DURATION SHORT
     RISK LEVEL HARMLESS
@@ -80,15 +95,23 @@ CLASS ltcl_userfield DEFINITION FOR TESTING
 
 ENDCLASS.       "ltcl_Userfield
 
+*----------------------------------------------------------------------*
+*       CLASS ltcl_userfield IMPLEMENTATION
+*----------------------------------------------------------------------*
+*
+*----------------------------------------------------------------------*
 CLASS ltcl_userfield IMPLEMENTATION.
 
   METHOD setup.
     CREATE OBJECT mo_commit.
-  ENDMETHOD.
+  ENDMETHOD.                    "setup
 
   METHOD parse_userfield.
 
-    DATA(ls_field) = mo_commit->parse_userfield( gc_field ).
+    DATA: ls_field TYPE zcl_ags_obj_commit=>ty_userfield.
+
+
+    ls_field = mo_commit->parse_userfield( gc_field ).
 
     cl_abap_unit_assert=>assert_not_initial( ls_field ).
 
@@ -100,16 +123,16 @@ CLASS ltcl_userfield IMPLEMENTATION.
         act = ls_field-name
         exp = 'Foobar' ).
 
-  ENDMETHOD.
+  ENDMETHOD.                    "parse_userfield
 
   METHOD error.
 
     TRY.
         mo_commit->parse_userfield( 'something' ).
         cl_abap_unit_assert=>fail( ).
-      CATCH zcx_ags_error ##NO_HANDLER.
+      CATCH zcx_ags_error ##no_handler.
     ENDTRY.
 
-  ENDMETHOD.
+  ENDMETHOD.                    "error
 
-ENDCLASS.
+ENDCLASS.                    "ltcl_userfield IMPLEMENTATION

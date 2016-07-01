@@ -71,27 +71,43 @@ CLASS ZCL_AGS_PACK IMPLEMENTATION.
 
   METHOD explode.
 
-    DATA: lo_tree TYPE REF TO zcl_ags_obj_tree.
+    DATA: lo_tree   TYPE REF TO zcl_ags_obj_tree,
+          lt_files  TYPE zcl_ags_obj_tree=>ty_tree_tt,
+          lo_sub    TYPE REF TO zcl_ags_obj_tree,
+          lo_blob   TYPE REF TO zcl_ags_obj_blob,
+          lo_commit TYPE REF TO zcl_ags_obj_commit.
+
+    FIELD-SYMBOLS: <ls_obj>  LIKE LINE OF rt_objects,
+                   <ls_file> LIKE LINE OF lt_files.
 
 
-    APPEND INITIAL LINE TO rt_objects ASSIGNING FIELD-SYMBOL(<ls_obj>).
+    APPEND INITIAL LINE TO rt_objects ASSIGNING <ls_obj>.
     <ls_obj>-sha1 = ii_object->sha1( ).
     <ls_obj>-type = ii_object->type( ).
     <ls_obj>-data = ii_object->serialize( ).
 
 * traverse sub objects
-    CASE TYPE OF ii_object.
-      WHEN TYPE zcl_ags_obj_commit INTO DATA(lo_commit).
-        lo_tree = NEW zcl_ags_obj_tree( lo_commit->get( )-tree ).
+    CASE ii_object->type( ).
+      WHEN zif_ags_constants=>c_type-blob.
+        lo_commit ?= ii_object.
+        CREATE OBJECT lo_tree
+          EXPORTING
+            iv_sha1 = lo_commit->get( )-tree.
         APPEND LINES OF explode( lo_tree ) TO rt_objects.
-      WHEN TYPE zcl_ags_obj_tree INTO lo_tree.
-        LOOP AT lo_tree->get_files( ) ASSIGNING FIELD-SYMBOL(<ls_file>).
+      WHEN zif_ags_constants=>c_type-tree.
+        lo_tree ?= ii_object.
+        lt_files = lo_tree->get_files( ).
+        LOOP AT lt_files ASSIGNING <ls_file>.
           CASE <ls_file>-chmod.
             WHEN zcl_ags_obj_tree=>c_chmod-dir.
-              DATA(lo_sub) = NEW zcl_ags_obj_tree( <ls_file>-sha1 ).
+              CREATE OBJECT lo_sub
+                EXPORTING
+                  iv_sha1 = <ls_file>-sha1.
               APPEND LINES OF explode( lo_sub ) TO rt_objects.
             WHEN OTHERS.
-              DATA(lo_blob) = NEW zcl_ags_obj_blob( <ls_file>-sha1 ).
+              CREATE OBJECT lo_blob
+                EXPORTING
+                  iv_sha1 = <ls_file>-sha1.
               APPEND LINES OF explode( lo_blob ) TO rt_objects.
           ENDCASE.
         ENDLOOP.
@@ -105,17 +121,25 @@ CLASS ZCL_AGS_PACK IMPLEMENTATION.
 
   METHOD save.
 
-    DATA: li_object TYPE REF TO zif_ags_object.
+    DATA: li_object TYPE REF TO zif_ags_object,
+          lo_blob   TYPE REF TO zcl_ags_obj_blob,
+          lo_tree   TYPE REF TO zcl_ags_obj_tree,
+          lo_commit TYPE REF TO zcl_ags_obj_commit.
+
+    FIELD-SYMBOLS: <ls_object> LIKE LINE OF it_objects.
 
 
-    LOOP AT it_objects ASSIGNING FIELD-SYMBOL(<ls_object>).
+    LOOP AT it_objects ASSIGNING <ls_object>.
       CASE <ls_object>-type.
         WHEN zif_ags_constants=>c_type-blob.
-          li_object = NEW zcl_ags_obj_blob( ).
+          CREATE OBJECT lo_blob.
+          li_object = lo_blob.
         WHEN zif_ags_constants=>c_type-tree.
-          li_object = NEW zcl_ags_obj_tree( ).
+          CREATE OBJECT lo_tree.
+          li_object = lo_tree.
         WHEN zif_ags_constants=>c_type-commit.
-          li_object = NEW zcl_ags_obj_commit( ).
+          CREATE OBJECT lo_commit.
+          li_object = lo_commit.
         WHEN OTHERS.
           RAISE EXCEPTION TYPE zcx_ags_error
             EXPORTING

@@ -1,4 +1,9 @@
 
+*----------------------------------------------------------------------*
+*       CLASS ltcl_encode DEFINITION
+*----------------------------------------------------------------------*
+*
+*----------------------------------------------------------------------*
 CLASS ltcl_encode DEFINITION FOR TESTING
   DURATION SHORT
   RISK LEVEL HARMLESS
@@ -10,20 +15,30 @@ CLASS ltcl_encode DEFINITION FOR TESTING
 
 ENDCLASS.       "ltcl_Encode
 
+*----------------------------------------------------------------------*
+*       CLASS ltcl_encode IMPLEMENTATION
+*----------------------------------------------------------------------*
+*
+*----------------------------------------------------------------------*
 CLASS ltcl_encode IMPLEMENTATION.
 
   METHOD test1.
 
     CONSTANTS: lc_data TYPE xstring VALUE '12345'.
 
+    DATA: lo_blob TYPE REF TO zcl_ags_obj_blob,
+          lv_raw TYPE xstring,
+          lt_objects TYPE zcl_ags_pack=>ty_objects_tt,
+          lt_result TYPE zcl_ags_pack=>ty_objects_tt.
 
-    DATA(lo_blob) = NEW zcl_ags_obj_blob( ).
+
+    CREATE OBJECT lo_blob.
     lo_blob->set_data( lc_data ).
 
-    DATA(lt_objects) = zcl_ags_pack=>explode( lo_blob ).
+    lt_objects = zcl_ags_pack=>explode( lo_blob ).
 
-    DATA(lv_raw) = zcl_ags_pack=>encode( lt_objects ).
-    DATA(lt_result) = zcl_ags_pack=>decode( lv_raw ).
+    lv_raw = zcl_ags_pack=>encode( lt_objects ).
+    lt_result = zcl_ags_pack=>decode( lv_raw ).
 
     cl_abap_unit_assert=>assert_not_initial( lv_raw ).
 
@@ -33,10 +48,15 @@ CLASS ltcl_encode IMPLEMENTATION.
       act = lt_result
       exp = lt_objects ).
 
-  ENDMETHOD.
+  ENDMETHOD.                    "test1
 
-ENDCLASS.
+ENDCLASS.                    "ltcl_encode IMPLEMENTATION
 
+*----------------------------------------------------------------------*
+*       CLASS ltcl_explode DEFINITION
+*----------------------------------------------------------------------*
+*
+*----------------------------------------------------------------------*
 CLASS ltcl_explode DEFINITION FOR TESTING
   DURATION SHORT
   RISK LEVEL HARMLESS
@@ -49,19 +69,25 @@ CLASS ltcl_explode DEFINITION FOR TESTING
 
 ENDCLASS.       "ltcl_Encode
 
+*----------------------------------------------------------------------*
+*       CLASS ltcl_explode IMPLEMENTATION
+*----------------------------------------------------------------------*
+*
+*----------------------------------------------------------------------*
 CLASS ltcl_explode IMPLEMENTATION.
 
   METHOD test1.
 
-    DATA: lo_blob TYPE REF TO zcl_ags_obj_blob.
+    DATA: lt_result TYPE zcl_ags_pack=>ty_objects_tt,
+          lo_blob TYPE REF TO zcl_ags_obj_blob.
 
 
     CREATE OBJECT lo_blob.
 
-    DATA(lt_result) = zcl_ags_pack=>explode( lo_blob ).
+    lt_result = zcl_ags_pack=>explode( lo_blob ).
 
     cl_abap_unit_assert=>assert_not_initial( lt_result ).
 
-  ENDMETHOD.
+  ENDMETHOD.                    "test1
 
-ENDCLASS.
+ENDCLASS.                    "ltcl_explode IMPLEMENTATION

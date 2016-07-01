@@ -18,6 +18,9 @@ CLASS ZCL_AGS_SICF IMPLEMENTATION.
 
     DATA: lv_reason  TYPE string,
           lv_path    TYPE string,
+lo_git TYPE REF TO zcl_ags_service_git,
+lo_rest TYPE REF TO zcl_ags_service_rest,
+li_static TYPE REF TO zcl_ags_service_static,
           li_service TYPE REF TO zif_ags_service.
 
 
@@ -25,11 +28,20 @@ CLASS ZCL_AGS_SICF IMPLEMENTATION.
 
     TRY.
         IF lv_path CP '/sap/zgit/git/*'.
-          li_service = NEW zcl_ags_service_git( server ).
+          CREATE OBJECT lo_git
+            EXPORTING
+              ii_server = server.
+          li_service ?= lo_git.
         ELSEIF lv_path CP '/sap/zgit/rest/*'.
-          li_service = NEW zcl_ags_service_rest( server ).
+          CREATE OBJECT lo_rest
+            EXPORTING
+              ii_server = server.
+          li_service ?= lo_rest.
         ELSE.
-          li_service = NEW zcl_ags_service_static( server ).
+          CREATE OBJECT lo_static
+            EXPORTING
+              ii_server = server.
+          li_service ?= lo_static.
         ENDIF.
 
         li_service->run( ).
@@ -38,11 +50,11 @@ CLASS ZCL_AGS_SICF IMPLEMENTATION.
                                       reason = lv_reason ).
 
         COMMIT WORK.
-      CATCH zcx_ags_error INTO DATA(lx_error).
+      CATCH zcx_ags_error INTO data(lx_error).
         ROLLBACK WORK.
-        DATA(lv_text) = lx_error->if_message~get_text( ).
+        data(lv_text) = lx_error->if_message~get_text( ).
         server->response->set_status( code   = 500
-                                      reason = 'Error' ) ##NO_TEXT.
+                                      reason = 'Error' ) ##no_text.
         server->response->set_cdata( lv_text ).
     ENDTRY.
 

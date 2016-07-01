@@ -60,13 +60,22 @@ CLASS ZCL_AGS_SERVICE_GIT IMPLEMENTATION.
   METHOD branch_list.
 
     DEFINE _capability.
-      APPEND &1 TO lt_capabilities ##NO_TEXT.
+      append &1 to lt_capabilities ##no_text.
     END-OF-DEFINITION.
 
     DATA: lv_reply        TYPE string,
           lt_reply        TYPE TABLE OF string,
           lv_length       TYPE xstring,
-          lt_capabilities TYPE TABLE OF string.
+          lv_tmp          TYPE string,
+          lt_capabilities TYPE TABLE OF string,
+          lv_content      TYPE string,
+          lv_utf          TYPE string,
+          lv_name         TYPE zags_repos-name,
+          lv_head         TYPE zags_sha1,
+          lo_repo         TYPE REF TO zcl_ags_repo,
+          lt_branches TYPE zcl_ags_repo=>ty_branches_tt.
+
+    FIELD-SYMBOLS: <lo_branch> LIKE LINE OF lt_branches.
 
 
     _capability 'multi_ack'.
@@ -84,20 +93,27 @@ CLASS ZCL_AGS_SERVICE_GIT IMPLEMENTATION.
 
     CONCATENATE LINES OF lt_capabilities INTO lv_reply SEPARATED BY space.
 
-    DATA(lv_name) = repo_name( ).
-    DATA(lo_repo) = NEW zcl_ags_repo( lv_name ).
-    DATA(lv_head) = lo_repo->get_branch( lo_repo->get_data( )-head )->get_data( )-sha1.
+    lv_name = repo_name( ).
+    CREATE OBJECT lo_repo
+      EXPORTING
+        iv_name = lv_name.
+    lv_head = lo_repo->get_branch( lo_repo->get_data( )-head )->get_data( )-sha1.
 
-    APPEND '001e# service=git-upload-pack' TO lt_reply ##NO_TEXT.
-    APPEND '000000e8' && lv_head && ' HEAD' && get_null( ) && lv_reply TO lt_reply.
+    APPEND '001e# service=git-upload-pack' TO lt_reply ##no_text.
 
-    LOOP AT lo_repo->list_branches( ) ASSIGNING FIELD-SYMBOL(<lo_branch>).
-      DATA(lv_content) = <lo_branch>->get_data( )-sha1
+    lv_tmp = |000000e8{ lv_head } HEAD{ get_null( ) }{ lv_reply }|.
+    APPEND lv_tmp TO lt_reply.
+
+    lt_branches = lo_repo->list_branches( ).
+    LOOP AT lt_branches ASSIGNING <lo_branch>.
+      lv_content = <lo_branch>->get_data( )-sha1
         && ' refs/heads/'
-        && <lo_branch>->get_data( )-name ##NO_TEXT.
+        && <lo_branch>->get_data( )-name ##no_text.
       lv_length = lcl_length=>encode( strlen( lv_content ) + 4 ).
-      DATA(lv_utf) = zcl_ags_util=>xstring_to_string_utf8( lv_length ).
-      APPEND lv_utf && lv_content TO lt_reply.
+      lv_utf = zcl_ags_util=>xstring_to_string_utf8( lv_length ).
+
+      lv_tmp = lv_utf && lv_content.
+      APPEND lv_tmp TO lt_reply.
     ENDLOOP.
 
     APPEND '0000' TO lt_reply.
@@ -119,20 +135,24 @@ CLASS ZCL_AGS_SERVICE_GIT IMPLEMENTATION.
 
   METHOD decode_push.
 
-    DATA: lt_data TYPE TABLE OF string.
+    DATA: lv_first TYPE xstring,
+          lv_utf TYPE string,
+          lv_data TYPE string,
+          lt_data TYPE TABLE OF string.
 
-    DATA(lv_first) = iv_data(4).
-    DATA(lv_utf) = zcl_ags_util=>xstring_to_string_utf8( lv_first ).
+
+    lv_first = iv_data(4).
+    lv_utf = zcl_ags_util=>xstring_to_string_utf8( lv_first ).
     rs_push-length = lcl_length=>decode( lv_utf ).
 
     lv_first = iv_data(rs_push-length).
-    DATA(lv_data) = zcl_ags_util=>xstring_to_string_utf8( lv_first ).
+    lv_data = zcl_ags_util=>xstring_to_string_utf8( lv_first ).
     lv_data = lv_data+4. " skip length, already decoded
 
     SPLIT lv_data AT get_null( ) INTO TABLE lt_data.
     ASSERT lines( lt_data ) > 0.
 
-    lv_data = lt_data[ 1 ].
+    READ TABLE lt_data INDEX 1 INTO lv_data.
 
     rs_push-old  = lv_data.
     rs_push-new  = lv_data+41.
@@ -169,14 +189,20 @@ CLASS ZCL_AGS_SERVICE_GIT IMPLEMENTATION.
     CONSTANTS: lc_band1 TYPE x VALUE '01'.
 
     DATA: lv_response TYPE xstring,
+          lv_branch   TYPE zags_sha1,
+          lo_commit   TYPE REF TO zcl_ags_obj_commit,
+          lv_encoded  TYPE zags_hex4,
+          lv_pack     TYPE xstring,
           lv_length   TYPE i.
 
 
-    DATA(lv_branch) = decode_want( mi_server->request->get_cdata( ) ).
+    lv_branch = decode_want( mi_server->request->get_cdata( ) ).
 
-    DATA(lo_commit) = NEW zcl_ags_obj_commit( lv_branch ).
+    CREATE OBJECT lo_commit
+      EXPORTING
+        iv_sha1 = lv_branch.
 
-    DATA(lv_pack) = zcl_ags_pack=>encode( zcl_ags_pack=>explode( lo_commit ) ).
+    lv_pack = zcl_ags_pack=>encode( zcl_ags_pack=>explode( lo_commit ) ).
 
     WHILE xstrlen( lv_pack ) > 0.
       IF xstrlen( lv_pack ) >= 8196.
@@ -186,7 +212,7 @@ CLASS ZCL_AGS_SERVICE_GIT IMPLEMENTATION.
       ENDIF.
 
 * make sure to include the length encoding itself and band identifier in the length
-      DATA(lv_encoded) = lcl_length=>encode( lv_length + 5 ).
+      lv_encoded = lcl_length=>encode( lv_length + 5 ).
 
       CONCATENATE lv_response lv_encoded lc_band1 lv_pack(lv_length)
         INTO lv_response IN BYTE MODE.
@@ -201,10 +227,12 @@ CLASS ZCL_AGS_SERVICE_GIT IMPLEMENTATION.
 
   METHOD repo_name.
 
-    DATA(lv_path) = mi_server->request->get_header_field( '~path' ).
+    DATA: lv_path TYPE string.
+
+    lv_path = mi_server->request->get_header_field( '~path' ).
     FIND REGEX 'sap/zgit/git/(.*)\.git*'
       IN lv_path
-      SUBMATCHES rv_name ##NO_TEXT.
+      SUBMATCHES rv_name ##no_text.
 
   ENDMETHOD.
 
@@ -213,17 +241,25 @@ CLASS ZCL_AGS_SERVICE_GIT IMPLEMENTATION.
 
     CONSTANTS: lc_utf_0000 TYPE x LENGTH 4 VALUE '30303030'.
 
+    DATA: lv_xstring TYPE xstring,
+          lt_objects TYPE zcl_ags_pack=>ty_objects_tt,
+          lo_repo    TYPE REF TO zcl_ags_repo,
+          lo_branch  TYPE REF TO zcl_ags_branch,
+          ls_push    TYPE ty_push.
 
-    DATA(ls_push) = decode_push( mi_server->request->get_data( ) ).
 
-    DATA(lv_xstring) = mi_server->request->get_data( ).
+    ls_push = decode_push( mi_server->request->get_data( ) ).
+
+    lv_xstring = mi_server->request->get_data( ).
     lv_xstring = lv_xstring+ls_push-length.
     ASSERT lv_xstring(4) = lc_utf_0000.
     lv_xstring = lv_xstring+4.
 
-    DATA(lt_objects) = zcl_ags_pack=>decode( lv_xstring ).
+    lt_objects = zcl_ags_pack=>decode( lv_xstring ).
 
-    DATA(lo_repo) = NEW zcl_ags_repo( repo_name( ) ).
+    CREATE OBJECT lo_repo
+      EXPORTING
+        iv_name = repo_name( ).
 
     IF ls_push-old CO '0'.
 * create branch
@@ -242,7 +278,7 @@ CLASS ZCL_AGS_SERVICE_GIT IMPLEMENTATION.
 * new commit should exist in objects
       ASSERT sy-subrc = 0.
 
-      DATA(lo_branch) = lo_repo->get_branch( ls_push-name ).
+      lo_branch = lo_repo->get_branch( ls_push-name ).
 
       ASSERT lo_branch->get_data( )-sha1 = ls_push-old.
 
@@ -266,9 +302,12 @@ CLASS ZCL_AGS_SERVICE_GIT IMPLEMENTATION.
 
   METHOD zif_ags_service~run.
 
-    DATA(lv_path) = mi_server->request->get_header_field( '~path_info' ).
+    DATA: lv_path TYPE string,
+          lv_xdata TYPE string.
 
-    DATA(lv_xdata) = mi_server->request->get_data( ).
+
+    lv_path = mi_server->request->get_header_field( '~path_info' ).
+    lv_xdata = mi_server->request->get_data( ).
 
     IF lv_xdata IS INITIAL.
       branch_list( ).
