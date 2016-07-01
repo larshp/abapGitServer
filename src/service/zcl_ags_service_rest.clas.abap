@@ -7,6 +7,7 @@ CLASS zcl_ags_service_rest DEFINITION
     INTERFACES zif_ags_service.
     INTERFACES zif_swag_handler.
 
+
     TYPES:
       BEGIN OF ty_create,
         name        TYPE zags_repos-name,
