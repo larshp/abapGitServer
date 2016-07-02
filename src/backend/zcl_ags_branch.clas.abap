@@ -24,7 +24,7 @@ CLASS zcl_ags_branch DEFINITION
     METHODS update_sha1
       IMPORTING
         !iv_sha1 TYPE zags_sha1.
-PROTECTED SECTION.
+  PROTECTED SECTION.
   PRIVATE SECTION.
 
     DATA ms_data TYPE zags_branches.
