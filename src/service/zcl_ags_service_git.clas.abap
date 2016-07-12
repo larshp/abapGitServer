@@ -60,7 +60,7 @@ CLASS ZCL_AGS_SERVICE_GIT IMPLEMENTATION.
   METHOD branch_list.
 
     DEFINE _capability.
-      append &1 to lt_capabilities ##no_text.
+      APPEND &1 TO lt_capabilities ##no_text.
     END-OF-DEFINITION.
 
     DATA: lv_reply        TYPE string,
@@ -73,7 +73,7 @@ CLASS ZCL_AGS_SERVICE_GIT IMPLEMENTATION.
           lv_name         TYPE zags_repos-name,
           lv_head         TYPE zags_sha1,
           lo_repo         TYPE REF TO zcl_ags_repo,
-          lt_branches TYPE zcl_ags_repo=>ty_branches_tt.
+          lt_branches     TYPE zcl_ags_repo=>ty_branches_tt.
 
     FIELD-SYMBOLS: <lo_branch> LIKE LINE OF lt_branches.
 
@@ -99,9 +99,13 @@ CLASS ZCL_AGS_SERVICE_GIT IMPLEMENTATION.
         iv_name = lv_name.
     lv_head = lo_repo->get_branch( lo_repo->get_data( )-head )->get_data( )-sha1.
 
-    APPEND '001e# service=git-upload-pack' TO lt_reply ##no_text.
+    APPEND |001e# service=git-upload-pack| TO lt_reply ##no_text.
 
-    lv_tmp = |000000e8{ lv_head } HEAD{ get_null( ) }{ lv_reply }|.
+    lv_content = |{ lv_head } HEAD{ get_null( ) }{ lv_reply }|.
+    lv_length = lcl_length=>encode( strlen( lv_content ) + 5 ).
+    lv_utf = to_lower( zcl_ags_util=>xstring_to_string_utf8( lv_length ) ).
+
+    lv_tmp = '0000' && lv_utf && lv_content.
     APPEND lv_tmp TO lt_reply.
 
     lt_branches = lo_repo->list_branches( ).
@@ -109,8 +113,9 @@ CLASS ZCL_AGS_SERVICE_GIT IMPLEMENTATION.
       lv_content = <lo_branch>->get_data( )-sha1
         && ' refs/heads/'
         && <lo_branch>->get_data( )-name ##no_text.
-      lv_length = lcl_length=>encode( strlen( lv_content ) + 4 ).
-      lv_utf = zcl_ags_util=>xstring_to_string_utf8( lv_length ).
+
+      lv_length = lcl_length=>encode( strlen( lv_content ) + 5 ).
+      lv_utf = to_lower( zcl_ags_util=>xstring_to_string_utf8( lv_length ) ).
 
       lv_tmp = lv_utf && lv_content.
       APPEND lv_tmp TO lt_reply.
@@ -121,7 +126,15 @@ CLASS ZCL_AGS_SERVICE_GIT IMPLEMENTATION.
     CONCATENATE LINES OF lt_reply INTO lv_reply
       SEPARATED BY cl_abap_char_utilities=>newline.
 
-    mi_server->response->set_cdata( lv_reply ).
+    mi_server->response->set_header_field( name = 'Server'
+                                           value = 'abapGitServer' ).
+    mi_server->response->set_header_field( name = 'Cache-Control'
+                                           value = 'no-cache' ).
+    mi_server->response->set_content_type( 'application/x-git-upload-pack-advertisement' ).
+
+* must be sent as raw, using data will change the content-type of the response
+    DATA(lv_raw) = zcl_ags_util=>string_to_xstring_utf8( lv_reply ).
+    mi_server->response->set_data( lv_raw ).
 
   ENDMETHOD.
 
