@@ -77,7 +77,7 @@ CLASS ZCL_AGS_PACK IMPLEMENTATION.
           lo_sub    TYPE REF TO zcl_ags_obj_tree,
           lo_blob   TYPE REF TO zcl_ags_obj_blob,
           lo_parent TYPE REF TO zcl_ags_obj_commit,
-          lv_deepen TYPE i,
+          lt_lines  LIKE rt_objects,
           lo_commit TYPE REF TO zcl_ags_obj_commit.
 
     FIELD-SYMBOLS: <ls_obj>  LIKE LINE OF rt_objects,
@@ -102,10 +102,10 @@ CLASS ZCL_AGS_PACK IMPLEMENTATION.
           CREATE OBJECT lo_parent
             EXPORTING
               iv_sha1 = lo_commit->get( )-parent.
-          lv_deepen = iv_deepen - 1.
-          APPEND LINES OF explode(
+          lt_lines = explode(
             ii_object = lo_parent
-            iv_deepen = lv_deepen ) TO rt_objects.
+            iv_deepen = iv_deepen - 1 ).
+          APPEND LINES OF lt_lines TO rt_objects.
         ENDIF.
       WHEN zif_ags_constants=>c_type-tree.
         lo_tree ?= ii_object.
