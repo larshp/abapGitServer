@@ -237,6 +237,9 @@ CLASS ZCL_AGS_SERVICE_GIT IMPLEMENTATION.
       lv_pack = lv_pack+lv_length.
     ENDWHILE.
 
+    lv_pack = zcl_ags_util=>string_to_xstring_utf8( '0000' ).
+    CONCATENATE lv_response lv_pack INTO lv_response IN BYTE MODE.
+
     mi_server->response->set_data( lv_response ).
 
   ENDMETHOD.
