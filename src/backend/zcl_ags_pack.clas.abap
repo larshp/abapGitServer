@@ -88,7 +88,7 @@ CLASS ZCL_AGS_PACK IMPLEMENTATION.
 
 * traverse sub objects
     CASE ii_object->type( ).
-      WHEN zif_ags_constants=>c_type-blob.
+      WHEN zif_ags_constants=>c_type-commit.
         lo_commit ?= ii_object.
         CREATE OBJECT lo_tree
           EXPORTING
