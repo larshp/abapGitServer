@@ -211,6 +211,10 @@ CLASS ZCL_AGS_SERVICE_GIT IMPLEMENTATION.
 
     lv_branch = decode_want( mi_server->request->get_cdata( ) ).
 
+    lv_pack = zcl_ags_util=>string_to_xstring_utf8( |NAK\n| ).
+    lv_encoded = lcl_length=>encode( xstrlen( lv_pack ) + 4 ).
+    CONCATENATE lv_response lv_encoded lv_pack INTO lv_response IN BYTE MODE.
+
     CREATE OBJECT lo_commit
       EXPORTING
         iv_sha1 = lv_branch.
