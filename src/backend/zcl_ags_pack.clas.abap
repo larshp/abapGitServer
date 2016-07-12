@@ -34,6 +34,7 @@ CLASS zcl_ags_pack DEFINITION
     CLASS-METHODS explode
       IMPORTING
         !ii_object        TYPE REF TO zif_ags_object
+        !iv_deepen        TYPE i DEFAULT 0
       RETURNING
         VALUE(rt_objects) TYPE ty_objects_tt
       RAISING
@@ -75,6 +76,7 @@ CLASS ZCL_AGS_PACK IMPLEMENTATION.
           lt_files  TYPE zcl_ags_obj_tree=>ty_tree_tt,
           lo_sub    TYPE REF TO zcl_ags_obj_tree,
           lo_blob   TYPE REF TO zcl_ags_obj_blob,
+          lo_parent TYPE REF TO zcl_ags_obj_commit,
           lo_commit TYPE REF TO zcl_ags_obj_commit.
 
     FIELD-SYMBOLS: <ls_obj>  LIKE LINE OF rt_objects,
@@ -94,6 +96,15 @@ CLASS ZCL_AGS_PACK IMPLEMENTATION.
           EXPORTING
             iv_sha1 = lo_commit->get( )-tree.
         APPEND LINES OF explode( lo_tree ) TO rt_objects.
+
+        IF iv_deepen <> 1 AND NOT lo_commit->get( )-parent IS INITIAL.
+          CREATE OBJECT lo_parent
+            EXPORTING
+              iv_sha1 = lo_commit->get( )-parent.
+          APPEND LINES OF explode(
+            ii_object = lo_parent
+            iv_deepen = iv_deepen - 1 ) TO rt_objects.
+        ENDIF.
       WHEN zif_ags_constants=>c_type-tree.
         lo_tree ?= ii_object.
         lt_files = lo_tree->get_files( ).

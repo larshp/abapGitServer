@@ -37,7 +37,7 @@ CLASS ZCL_AGS_BRANCH IMPLEMENTATION.
 
   METHOD constructor.
 
-    DATA: lv_repo TYPE zags_repos.
+    DATA: lv_repo TYPE zags_repos-repo.
 
 
     lv_repo = io_repo->get_data( )-repo.

@@ -134,7 +134,7 @@ CLASS ZCL_AGS_OBJ_COMMIT IMPLEMENTATION.
 
     SPLIT ls_data-body AT cl_abap_char_utilities=>newline INTO TABLE lt_body.
 
-    READ TABLE lt_body INDEX 1 INTO lv_body.
+    READ TABLE lt_body INDEX 1 INTO lv_body.              "#EC CI_SUBRC
     rs_data-text = lv_body.
 
     DELETE lt_body INDEX 1.

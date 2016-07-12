@@ -8,10 +8,10 @@ CLASS lcl_length DEFINITION FINAL.
     CLASS-METHODS:
       encode
         IMPORTING iv_length     TYPE i
-        RETURNING value(rv_hex) TYPE zags_hex4,
+        RETURNING VALUE(rv_hex) TYPE zags_hex4,
       decode
         IMPORTING iv_data          TYPE string
-        RETURNING value(rv_length) TYPE i.
+        RETURNING VALUE(rv_length) TYPE i.
 
 ENDCLASS.                    "lcl_length DEFINITION
 

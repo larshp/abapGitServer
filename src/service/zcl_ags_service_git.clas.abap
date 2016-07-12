@@ -19,6 +19,11 @@ CLASS zcl_ags_service_git DEFINITION
         name   TYPE zags_branch_name,
         length TYPE i,
       END OF ty_push.
+    TYPES:
+      BEGIN OF ty_request,
+        want   TYPE STANDARD TABLE OF zags_sha1 WITH DEFAULT KEY,
+        deepen TYPE i,
+      END OF ty_request.
 
     DATA mi_server TYPE REF TO if_http_server.
 
@@ -32,11 +37,11 @@ CLASS zcl_ags_service_git DEFINITION
         VALUE(rs_push) TYPE ty_push
       RAISING
         zcx_ags_error.
-    METHODS decode_want
+    METHODS decode_request
       IMPORTING
-        !iv_string     TYPE string
+        !iv_string        TYPE string
       RETURNING
-        VALUE(rv_sha1) TYPE zags_sha1.
+        VALUE(rs_request) TYPE ty_request.
     METHODS get_null
       RETURNING
         VALUE(rv_char) TYPE char1.
@@ -126,11 +131,14 @@ CLASS ZCL_AGS_SERVICE_GIT IMPLEMENTATION.
     CONCATENATE LINES OF lt_reply INTO lv_reply
       SEPARATED BY cl_abap_char_utilities=>newline.
 
-    mi_server->response->set_header_field( name = 'Server'
-                                           value = 'abapGitServer' ).
-    mi_server->response->set_header_field( name = 'Cache-Control'
-                                           value = 'no-cache' ).
-    mi_server->response->set_content_type( 'application/x-git-upload-pack-advertisement' ).
+    mi_server->response->set_header_field(
+      name  = 'Server'
+      value = 'abapGitServer' ) ##NO_TEXT.
+    mi_server->response->set_header_field(
+      name  = 'Cache-Control'
+      value = 'no-cache' ) ##NO_TEXT.
+    mi_server->response->set_content_type(
+      'application/x-git-upload-pack-advertisement' ) ##NO_TEXT.
 
 * must be sent as raw, using data will change the content-type of the response
     DATA(lv_raw) = zcl_ags_util=>string_to_xstring_utf8( lv_reply ).
@@ -149,9 +157,9 @@ CLASS ZCL_AGS_SERVICE_GIT IMPLEMENTATION.
   METHOD decode_push.
 
     DATA: lv_first TYPE xstring,
-          lv_utf TYPE string,
-          lv_data TYPE string,
-          lt_data TYPE TABLE OF string.
+          lv_utf   TYPE string,
+          lv_data  TYPE string,
+          lt_data  TYPE TABLE OF string.
 
 
     lv_first = iv_data(4).
@@ -165,7 +173,7 @@ CLASS ZCL_AGS_SERVICE_GIT IMPLEMENTATION.
     SPLIT lv_data AT get_null( ) INTO TABLE lt_data.
     ASSERT lines( lt_data ) > 0.
 
-    READ TABLE lt_data INDEX 1 INTO lv_data.
+    READ TABLE lt_data INDEX 1 INTO lv_data.              "#EC CI_SUBRC
 
     rs_push-old  = lv_data.
     rs_push-new  = lv_data+41.
@@ -174,10 +182,36 @@ CLASS ZCL_AGS_SERVICE_GIT IMPLEMENTATION.
   ENDMETHOD.
 
 
-  METHOD decode_want.
+  METHOD decode_request.
 
-* todo, proper decoding
-    rv_sha1 = iv_string+9.
+    DATA: lv_line    TYPE string,
+          lv_command TYPE string,
+          lv_rest    TYPE string,
+          lt_lines   TYPE TABLE OF string.
+
+
+    SPLIT iv_string AT cl_abap_char_utilities=>newline INTO TABLE lt_lines.
+
+    LOOP AT lt_lines INTO lv_line.
+
+      SPLIT lv_line AT space INTO lv_command lv_rest.
+      IF lv_command(4) = '0000'.
+        RETURN.
+      ENDIF.
+
+      lv_command = lv_command+4.
+
+      CASE lv_command.
+        WHEN 'want'.
+          APPEND lv_rest TO rs_request-want.
+        WHEN 'deepen'.
+          rs_request-deepen = lv_rest.
+        WHEN OTHERS.
+* todo, unknown command
+          ASSERT 0 = 1.
+      ENDCASE.
+
+    ENDLOOP.
 
   ENDMETHOD.
 
@@ -199,17 +233,20 @@ CLASS ZCL_AGS_SERVICE_GIT IMPLEMENTATION.
 
   METHOD pack.
 
-    CONSTANTS: lc_band1 TYPE x VALUE '01'.
+    CONSTANTS: lc_band1  TYPE x VALUE '01',
+               lc_length TYPE i VALUE 8196.
 
     DATA: lv_response TYPE xstring,
           lv_branch   TYPE zags_sha1,
           lo_commit   TYPE REF TO zcl_ags_obj_commit,
           lv_encoded  TYPE zags_hex4,
           lv_pack     TYPE xstring,
+          ls_request  TYPE ty_request,
           lv_length   TYPE i.
 
 
-    lv_branch = decode_want( mi_server->request->get_cdata( ) ).
+    ls_request = decode_request( mi_server->request->get_cdata( ) ).
+    lv_branch = ls_request-want[ 1 ]. " todo
 
     lv_pack = zcl_ags_util=>string_to_xstring_utf8( |NAK\n| ).
     lv_encoded = lcl_length=>encode( xstrlen( lv_pack ) + 4 ).
@@ -219,11 +256,13 @@ CLASS ZCL_AGS_SERVICE_GIT IMPLEMENTATION.
       EXPORTING
         iv_sha1 = lv_branch.
 
-    lv_pack = zcl_ags_pack=>encode( zcl_ags_pack=>explode( lo_commit ) ).
+    lv_pack = zcl_ags_pack=>encode( zcl_ags_pack=>explode(
+      ii_object = lo_commit
+      iv_deepen = ls_request-deepen ) ).
 
     WHILE xstrlen( lv_pack ) > 0.
-      IF xstrlen( lv_pack ) >= 8196.
-        lv_length = 8196.
+      IF xstrlen( lv_pack ) >= lc_length.
+        lv_length = lc_length.
       ELSE.
         lv_length = xstrlen( lv_pack ).
       ENDIF.
@@ -322,7 +361,7 @@ CLASS ZCL_AGS_SERVICE_GIT IMPLEMENTATION.
 
   METHOD zif_ags_service~run.
 
-    DATA: lv_path TYPE string,
+    DATA: lv_path  TYPE string,
           lv_xdata TYPE string.
 
 
