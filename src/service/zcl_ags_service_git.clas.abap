@@ -213,6 +213,9 @@ CLASS ZCL_AGS_SERVICE_GIT IMPLEMENTATION.
 
     ENDLOOP.
 
+    SORT rs_request-want ASCENDING.
+    DELETE ADJACENT DUPLICATES FROM rs_request-want.
+
   ENDMETHOD.
 
 
@@ -237,28 +240,35 @@ CLASS ZCL_AGS_SERVICE_GIT IMPLEMENTATION.
                lc_length TYPE i VALUE 8196.
 
     DATA: lv_response TYPE xstring,
-          lv_branch   TYPE zags_sha1,
           lo_commit   TYPE REF TO zcl_ags_obj_commit,
           lv_encoded  TYPE zags_hex4,
+          lt_objects  TYPE zcl_ags_pack=>ty_objects_tt,
           lv_pack     TYPE xstring,
           ls_request  TYPE ty_request,
+          lv_branch   LIKE LINE OF ls_request-want,
           lv_length   TYPE i.
 
 
     ls_request = decode_request( mi_server->request->get_cdata( ) ).
-    lv_branch = ls_request-want[ 1 ]. " todo
 
     lv_pack = zcl_ags_util=>string_to_xstring_utf8( |NAK\n| ).
     lv_encoded = lcl_length=>encode( xstrlen( lv_pack ) + 4 ).
     CONCATENATE lv_response lv_encoded lv_pack INTO lv_response IN BYTE MODE.
 
-    CREATE OBJECT lo_commit
-      EXPORTING
-        iv_sha1 = lv_branch.
+    LOOP AT ls_request-want INTO lv_branch.
+      CREATE OBJECT lo_commit
+        EXPORTING
+          iv_sha1 = lv_branch.
 
-    lv_pack = zcl_ags_pack=>encode( zcl_ags_pack=>explode(
-      ii_object = lo_commit
-      iv_deepen = ls_request-deepen ) ).
+      APPEND LINES OF zcl_ags_pack=>explode(
+        ii_object = lo_commit
+        iv_deepen = ls_request-deepen ) TO lt_objects.
+    ENDLOOP.
+
+    SORT lt_objects BY type ASCENDING sha1 ASCENDING.
+    DELETE ADJACENT DUPLICATES FROM lt_objects COMPARING type sha1.
+
+    lv_pack = zcl_ags_pack=>encode( lt_objects ).
 
     WHILE xstrlen( lv_pack ) > 0.
       IF xstrlen( lv_pack ) >= lc_length.
