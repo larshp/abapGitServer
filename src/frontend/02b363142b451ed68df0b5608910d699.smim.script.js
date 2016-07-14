@@ -440,6 +440,10 @@ class Commit extends React.Component {
     return (<div>{this.state.data.FILES.map(this.single.bind(this))}</div>);             
   }
   
+  parentLink(parent) {
+    return (<Link to={this.props.params.repo + "/commit/" + parent}>{parent}</Link>);
+  }            
+            
   renderCommit() {
     return (
       <div>
@@ -455,8 +459,9 @@ class Commit extends React.Component {
       <tr>
       <td>Parent:</td>
       <td>
-      <Link to={this.props.params.repo + "/commit/" + this.state.data.PARENT}>
-      {this.state.data.PARENT}</Link>
+      {this.parentLink(this.state.data.PARENT)}
+      {this.state.data.PARENT2?" + ":""}
+      {this.state.data.PARENT2?this.parentLink(this.state.data.PARENT2):""}
       </td>
       </tr>
       <tr>

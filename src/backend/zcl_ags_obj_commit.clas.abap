@@ -28,6 +28,7 @@ CLASS zcl_ags_obj_commit DEFINITION
         sha1      TYPE zags_sha1,
         tree      TYPE zags_sha1,
         parent    TYPE zags_sha1,
+        parent2   TYPE zags_sha1,
         author    TYPE ty_userfield,
         committer TYPE ty_userfield,
         text      TYPE string,
@@ -130,6 +131,7 @@ CLASS ZCL_AGS_OBJ_COMMIT IMPLEMENTATION.
     rs_data-sha1      = sha1( ).
     rs_data-tree      = ls_data-tree.
     rs_data-parent    = ls_data-parent.
+    rs_data-parent2   = ls_data-parent2.
     rs_data-author    = parse_userfield( ls_data-author ).
     rs_data-committer = parse_userfield( ls_data-committer ).
 
