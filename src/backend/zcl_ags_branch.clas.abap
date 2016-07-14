@@ -78,7 +78,7 @@ CLASS ZCL_AGS_BRANCH IMPLEMENTATION.
       AND name = ms_data-name.
     ASSERT sy-subrc = 0.
 
-* todo, delete unreferenced objects?
+* unreferenced objects stay in the database
 
   ENDMETHOD.
 

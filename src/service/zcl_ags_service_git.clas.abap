@@ -338,8 +338,9 @@ CLASS ZCL_AGS_SERVICE_GIT IMPLEMENTATION.
         iv_commit = ls_push-new ).
     ELSEIF ls_push-new CO '0'.
 * delete branch
-* todo
-      ASSERT 0 = 1.
+      lo_branch = lo_repo->get_branch( ls_push-name ).
+      ASSERT lo_branch->get_data( )-sha1 = ls_push-old.
+      lo_branch->delete( ).
     ELSE.
 * update branch
 
