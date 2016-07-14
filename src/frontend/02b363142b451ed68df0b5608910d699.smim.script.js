@@ -162,20 +162,16 @@ class CommitList extends React.Component {
       <hr />
       <table>
       <tr>
-      <td>Key:</td>
-      <td><Link to={this.props.params.repo + "/commit/" + e.SHA1}>{e.SHA1}</Link></td>
-      </tr>
-      <tr>
-      <td>Name:</td>
-      <td>{e.COMMITTER.NAME}</td>
-      </tr>
-      <tr>
       <td>Description:</td>
-      <td>{e.TEXT}</td>
+      <td><Link to={this.props.params.repo + "/commit/" + e.SHA1}>{e.TEXT}</Link></td>
       </tr>
       <tr>
       <td>Time:</td>
       <td>{ago}</td>
+      </tr>
+      <tr>
+      <td>Name:</td>
+      <td><Link to={"/user/" + e.COMMITTER.NAME}>{e.COMMITTER.NAME}</Link></td>
       </tr>
       </table>
       </div>);
@@ -445,28 +441,29 @@ class Commit extends React.Component {
   }            
             
   renderCommit() {
+    let data = this.state.data;
     return (
       <div>
       <table>
       <tr>
       <td>Name:</td>
-      <td>{this.state.data.COMMITTER.NAME}</td>
+      <td><Link to={"/user/"+data.COMMITTER.NAME}>{data.COMMITTER.NAME}</Link></td>
       </tr>
       <tr>
       <td>Description:</td>
-      <td>{this.state.data.TEXT}</td>
+      <td>{data.TEXT}</td>
       </tr>
       <tr>
       <td>Parent:</td>
       <td>
-      {this.parentLink(this.state.data.PARENT)}
-      {this.state.data.PARENT2?" + ":""}
-      {this.state.data.PARENT2?this.parentLink(this.state.data.PARENT2):""}
+      {this.parentLink(data.PARENT)}
+      {data.PARENT2?" + ":""}
+      {data.PARENT2?this.parentLink(data.PARENT2):""}
       </td>
       </tr>
       <tr>
       <td>Time:</td>
-      <td>{Time.ago(Time.parse(this.state.data.COMMITTER.TIME))}</td>
+      <td>{Time.ago(Time.parse(data.COMMITTER.TIME))}</td>
       </tr>
       </table>
       <br />
@@ -667,7 +664,17 @@ class RepoList extends React.Component {
       </div>);
   }
 }
-            
+
+class User extends React.Component {
+  render() {
+    return(<div>
+      <Breadcrumb routes={this.props.routes} params={this.props.params} />
+      <h1>{this.props.params.user}</h1>
+      todo, list commits by user
+      </div>)
+  }
+}
+      
 class FilesList extends React.Component {
   constructor(props) {
     super(props);
@@ -713,12 +720,16 @@ class Router extends React.Component {
     const history = ReactRouter.useRouterHistory(History.createHistory)({ basename: base });
       
 /*
-* FRONTEND folder overview 
+* FRONTEND FOLDER OVERVIEW
 *
 * FOLDER                            COMPONENT       DESCRIPTION
 * /                                 RepoList        list repositories
+* /git/                             N/A             used for backend
+* /static/                          N/A             used for backend
+* /rest/                            N/A             used for backend
 * /create/                          Create          create repository
 * /edit/(name)                      Edit            edit repo description
+* /user/(name)                      User            display user information/list commits
 * /(name)/                          BranchList      list branches
 * /(name)/commit/(sha1)             Commit          display commit
 * /(name)/(branch)/                 FilesList       list files in branch 
@@ -732,6 +743,7 @@ class Router extends React.Component {
           <ReactRouter.IndexRoute component={RepoList} />
           <ReactRouter.Route path="create" component={Create} bread="Create" />
           <ReactRouter.Route path="edit/:repo" component={Edit} bread="Edit" />
+          <ReactRouter.Route path="user/:user" component={User} bread="User" />
           <ReactRouter.Route path=":repo">
             <ReactRouter.IndexRoute component={BranchList} />
             <ReactRouter.Route path="commit">
