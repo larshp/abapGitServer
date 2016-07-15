@@ -43,13 +43,12 @@ CLASS ltcl_rest IMPLEMENTATION.
 
   METHOD list_files.
 
-    DATA: lt_files  TYPE zcl_ags_service_rest=>ty_files_tt,
-          lo_branch TYPE REF TO zcl_ags_branch.
+    DATA: lt_files  TYPE zcl_ags_service_rest=>ty_files_tt.
 
 
-    lo_branch = mo_repo->get_branch( mo_repo->get_data( )-head ).
-
-    lt_files = mo_rest->list_files_extra( lo_branch->get_data( )-sha1 ).
+    lt_files = mo_rest->list_files(
+      iv_repo   = c_name
+      iv_branch = mo_repo->get_data( )-head ).
 
     cl_abap_unit_assert=>assert_not_initial( lt_files ).
 
