@@ -95,55 +95,11 @@ CLASS ZCL_AGS_OBJ_TREE IMPLEMENTATION.
 
   METHOD zif_ags_object~deserialize.
 
-    CONSTANTS: lc_sha_length TYPE i VALUE 20,
-               lc_null       TYPE x VALUE '00'.
-
-    DATA: lv_xstring TYPE xstring,
-          lv_chmod   TYPE ty_chmod,
-          lv_name    TYPE string,
-          lv_string  TYPE string,
-          lv_len     TYPE i,
-          lv_offset  TYPE i,
-          lv_cursor  TYPE i,
-          ls_node    LIKE LINE OF mt_data,
-          lv_start   TYPE i.
-
-
-    DO.
-      IF lv_cursor >= xstrlen( iv_data ).
-        EXIT. " current loop
-      ENDIF.
-
-      IF iv_data+lv_cursor(1) = lc_null.
-        lv_len = lv_cursor - lv_start.
-        lv_xstring = iv_data+lv_start(lv_len).
-
-        lv_string = zcl_ags_util=>xstring_to_string_utf8( lv_xstring ).
-        SPLIT lv_string AT space INTO lv_chmod lv_name.
-
-        lv_offset = lv_cursor + 1.
-
-        CLEAR ls_node.
-        ls_node-chmod = lv_chmod.
-        IF ls_node-chmod <> c_chmod-dir
-            AND ls_node-chmod <> c_chmod-file
-            AND ls_node-chmod <> c_chmod-executable.
-          RAISE EXCEPTION TYPE zcx_ags_error
-            EXPORTING
-              textid = zcx_ags_error=>m007.
-        ENDIF.
-
-        ls_node-name = lv_name.
-        ls_node-sha1 = iv_data+lv_offset(lc_sha_length).
-        TRANSLATE ls_node-sha1 TO LOWER CASE.
-        APPEND ls_node TO mt_data.
-
-        lv_start = lv_cursor + 1 + lc_sha_length.
-        lv_cursor = lv_start.
-      ELSE.
-        lv_cursor = lv_cursor + 1.
-      ENDIF.
-    ENDDO.
+    CALL METHOD ('\PROGRAM=ZABAPGIT\CLASS=LCL_GIT_PACK')=>decode_tree
+      EXPORTING
+        iv_data  = iv_data
+      RECEIVING
+        rt_nodes = mt_data.
 
   ENDMETHOD.
 
@@ -165,26 +121,11 @@ CLASS ZCL_AGS_OBJ_TREE IMPLEMENTATION.
 
   METHOD zif_ags_object~serialize.
 
-    CONSTANTS: lc_null TYPE x VALUE '00'.
-
-    DATA: lv_string  TYPE string,
-          lv_hex20   TYPE x LENGTH 20,
-          lv_xstring TYPE xstring.
-
-    FIELD-SYMBOLS: <ls_data> LIKE LINE OF mt_data.
-
-* todo, sort tree
-
-    LOOP AT mt_data ASSIGNING <ls_data>.
-      ASSERT NOT <ls_data>-chmod IS INITIAL.
-      ASSERT NOT <ls_data>-name IS INITIAL.
-
-      CONCATENATE <ls_data>-chmod <ls_data>-name INTO lv_string SEPARATED BY space.
-      lv_xstring = zcl_ags_util=>string_to_xstring_utf8( lv_string ).
-
-      lv_hex20 = to_upper( <ls_data>-sha1 ).
-      CONCATENATE rv_data lv_xstring lc_null lv_hex20 INTO rv_data IN BYTE MODE.
-    ENDLOOP.
+    CALL METHOD ('\PROGRAM=ZABAPGIT\CLASS=LCL_GIT_PACK')=>encode_tree
+      EXPORTING
+        it_nodes = mt_data
+      RECEIVING
+        rv_data  = rv_data.
 
   ENDMETHOD.
 
@@ -192,8 +133,8 @@ CLASS ZCL_AGS_OBJ_TREE IMPLEMENTATION.
   METHOD zif_ags_object~sha1.
 
     rv_sha1 = zcl_ags_util=>sha1(
-        iv_type = zif_ags_constants=>c_type-tree
-        iv_data = serialize( ) ) ##NO_TEXT.
+      iv_type = zif_ags_constants=>c_type-tree
+      iv_data = serialize( ) ).
 
   ENDMETHOD.
 
