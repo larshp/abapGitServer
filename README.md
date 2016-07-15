@@ -2,7 +2,7 @@
 [![devDependency Status](https://david-dm.org/larshp/abapGitServer/dev-status.svg)](https://david-dm.org/larshp/abapGitServer#info=devDependencies)
 
 # abapGitServer
-Git server implemented in ABAP
+Git server implemented in [ABAP](http://www.abapgit.org)
 
 Install via abapGit
 
