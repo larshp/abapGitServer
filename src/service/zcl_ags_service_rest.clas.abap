@@ -248,15 +248,42 @@ CLASS ZCL_AGS_SERVICE_REST IMPLEMENTATION.
 
   METHOD list_commits.
 
+    DATA: lt_visit  TYPE STANDARD TABLE OF zags_sha1,
+          lo_commit TYPE REF TO zcl_ags_obj_commit,
+          ls_data   TYPE zcl_ags_obj_commit=>ty_pretty,
+          lv_commit LIKE LINE OF lt_visit.
+
+
     DATA(lo_repo) = NEW zcl_ags_repo( iv_repo ).
     DATA(lo_branch) = lo_repo->get_branch( iv_branch ).
-    DATA(lo_commit) = NEW zcl_ags_obj_commit( lo_branch->get_data( )-sha1 ).
 
-    APPEND lo_commit->get_pretty( ) TO rt_commits.
-    WHILE NOT lo_commit->get( )-parent IS INITIAL.
-      lo_commit = NEW zcl_ags_obj_commit( lo_commit->get( )-parent ).
-      APPEND lo_commit->get_pretty( ) TO rt_commits.
-    ENDWHILE.
+    APPEND lo_branch->get_data( )-sha1 TO lt_visit.
+
+    LOOP AT lt_visit INTO lv_commit.
+
+      CREATE OBJECT lo_commit
+        EXPORTING
+          iv_sha1 = lv_commit.
+      ls_data = lo_commit->get_pretty( ).
+
+      APPEND ls_data TO rt_commits.
+
+      IF NOT ls_data-parent IS INITIAL.
+        READ TABLE lt_visit FROM ls_data-parent TRANSPORTING NO FIELDS.
+        IF sy-subrc <> 0.
+          APPEND ls_data-parent TO lt_visit.
+        ENDIF.
+      ENDIF.
+      IF NOT ls_data-parent2 IS INITIAL.
+        READ TABLE lt_visit FROM ls_data-parent2 TRANSPORTING NO FIELDS.
+        IF sy-subrc <> 0.
+          APPEND ls_data-parent2 TO lt_visit.
+        ENDIF.
+      ENDIF.
+
+    ENDLOOP.
+
+    SORT rt_commits BY author-time DESCENDING.
 
   ENDMETHOD.
 
@@ -279,6 +306,7 @@ CLASS ZCL_AGS_SERVICE_REST IMPLEMENTATION.
 
 * todo, at some point in time this recursion will break
 * due to the number of commits
+* todo, also look at parent2
     IF NOT lo_commit->get( )-parent IS INITIAL.
       DATA(lt_old) = list_files_extra( lo_commit->get( )-parent ).
       LOOP AT rt_files ASSIGNING FIELD-SYMBOL(<ls_output>).

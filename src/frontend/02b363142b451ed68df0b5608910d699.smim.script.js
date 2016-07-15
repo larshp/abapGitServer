@@ -181,6 +181,7 @@ class CommitList extends React.Component {
     return (<div>
       <Breadcrumb routes={this.props.routes} params={this.props.params} />
       <h1>Commits</h1>
+      {this.state.data.length} commits listed<br /><br />
       {this.state.spinner?<Spinner />:this.state.data.map(this.commit.bind(this))}
       </div>);
   }
