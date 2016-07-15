@@ -5,10 +5,6 @@ CLASS zcl_ags_service_git DEFINITION
   PUBLIC SECTION.
 
     INTERFACES zif_ags_service.
-
-    METHODS constructor
-      IMPORTING
-        !ii_server TYPE REF TO if_http_server.
   PROTECTED SECTION.
   PRIVATE SECTION.
 
@@ -143,13 +139,6 @@ CLASS ZCL_AGS_SERVICE_GIT IMPLEMENTATION.
 * must be sent as raw, using data will change the content-type of the response
     DATA(lv_raw) = zcl_ags_util=>string_to_xstring_utf8( lv_reply ).
     mi_server->response->set_data( lv_raw ).
-
-  ENDMETHOD.
-
-
-  METHOD constructor.
-
-    mi_server = ii_server.
 
   ENDMETHOD.
 
@@ -375,6 +364,8 @@ CLASS ZCL_AGS_SERVICE_GIT IMPLEMENTATION.
     DATA: lv_path  TYPE string,
           lv_xdata TYPE string.
 
+
+    mi_server = ii_server.
 
     lv_path = mi_server->request->get_header_field( '~path_info' ).
     lv_xdata = mi_server->request->get_data( ).

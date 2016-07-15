@@ -6,9 +6,6 @@ CLASS ltcl_rest DEFINITION FOR TESTING
     RISK LEVEL HARMLESS
     FINAL.
 
-  PUBLIC SECTION.
-    INTERFACES: if_http_server PARTIALLY IMPLEMENTED.
-
   PRIVATE SECTION.
     CONSTANTS:
       c_name        TYPE zags_repos-name VALUE 'unit_test' ##NO_TEXT,
@@ -32,9 +29,7 @@ CLASS ltcl_rest IMPLEMENTATION.
 
   METHOD setup.
 
-    CREATE OBJECT mo_rest
-      EXPORTING
-        ii_server = me.
+    CREATE OBJECT mo_rest.
 
     mo_repo = zcl_ags_repo=>create(
       iv_name        = c_name

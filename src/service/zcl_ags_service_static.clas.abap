@@ -5,10 +5,6 @@ CLASS zcl_ags_service_static DEFINITION
   PUBLIC SECTION.
 
     INTERFACES zif_ags_service.
-
-    METHODS constructor
-      IMPORTING
-        !ii_server TYPE REF TO if_http_server.
   PROTECTED SECTION.
   PRIVATE SECTION.
 
@@ -24,13 +20,6 @@ ENDCLASS.
 
 
 CLASS ZCL_AGS_SERVICE_STATIC IMPLEMENTATION.
-
-
-  METHOD constructor.
-
-    mi_server = ii_server.
-
-  ENDMETHOD.
 
 
   METHOD read_mime.
@@ -57,6 +46,8 @@ CLASS ZCL_AGS_SERVICE_STATIC IMPLEMENTATION.
     DATA: lv_name TYPE string,
           lv_path TYPE string.
 
+
+    mi_server = ii_server.
 
     lv_path = mi_server->request->get_header_field( '~path' ).
 

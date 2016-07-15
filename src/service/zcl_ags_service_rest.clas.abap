@@ -7,7 +7,6 @@ CLASS zcl_ags_service_rest DEFINITION
     INTERFACES zif_ags_service.
     INTERFACES zif_swag_handler.
 
-
     TYPES:
       BEGIN OF ty_create,
         name        TYPE zags_repos-name,
@@ -46,9 +45,6 @@ CLASS zcl_ags_service_rest DEFINITION
     TYPES:
       ty_files_tt TYPE STANDARD TABLE OF ty_file WITH DEFAULT KEY.
 
-    METHODS constructor
-      IMPORTING
-        !ii_server TYPE REF TO if_http_server.
     METHODS create_repo
       IMPORTING
         !is_data TYPE ty_create
@@ -113,7 +109,6 @@ CLASS zcl_ags_service_rest DEFINITION
   PROTECTED SECTION.
   PRIVATE SECTION.
 
-    DATA mi_server TYPE REF TO if_http_server.
     CONSTANTS c_base TYPE string VALUE '/sap/zgit/rest' ##NO_TEXT.
 
     METHODS list_changes
@@ -143,13 +138,6 @@ ENDCLASS.
 
 
 CLASS ZCL_AGS_SERVICE_REST IMPLEMENTATION.
-
-
-  METHOD constructor.
-
-    mi_server = ii_server.
-
-  ENDMETHOD.
 
 
   METHOD create_repo.
@@ -497,13 +485,13 @@ CLASS ZCL_AGS_SERVICE_REST IMPLEMENTATION.
 
 
     DATA(lo_swag) = NEW zcl_swag(
-      ii_server = mi_server
+      ii_server = ii_server
       iv_base   = c_base ).
     lo_swag->register( me ).
 
     DATA(lv_json_url) = c_base && '/swagger.json'.
 
-    lv_path = mi_server->request->get_header_field( '~path' ).
+    lv_path = ii_server->request->get_header_field( '~path' ).
     IF lv_path = c_base && '/swagger.html'.
       lo_swag->generate_ui(
         iv_json_url = lv_json_url

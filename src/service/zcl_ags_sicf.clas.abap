@@ -18,9 +18,6 @@ CLASS ZCL_AGS_SICF IMPLEMENTATION.
 
     DATA: lv_reason  TYPE string,
           lv_path    TYPE string,
-          lo_git     TYPE REF TO zcl_ags_service_git,
-          lo_rest    TYPE REF TO zcl_ags_service_rest,
-          lo_static  TYPE REF TO zcl_ags_service_static,
           lx_error   TYPE REF TO zcx_ags_error,
           li_service TYPE REF TO zif_ags_service.
 
@@ -29,23 +26,14 @@ CLASS ZCL_AGS_SICF IMPLEMENTATION.
 
     TRY.
         IF lv_path CP '/sap/zgit/git/*'.
-          CREATE OBJECT lo_git
-            EXPORTING
-              ii_server = server.
-          li_service ?= lo_git.
+          CREATE OBJECT li_service TYPE zcl_ags_service_git.
         ELSEIF lv_path CP '/sap/zgit/rest/*'.
-          CREATE OBJECT lo_rest
-            EXPORTING
-              ii_server = server.
-          li_service ?= lo_rest.
+          CREATE OBJECT li_service TYPE zcl_ags_service_rest.
         ELSE.
-          CREATE OBJECT lo_static
-            EXPORTING
-              ii_server = server.
-          li_service ?= lo_static.
+          CREATE OBJECT li_service TYPE zcl_ags_service_static.
         ENDIF.
 
-        li_service->run( ).
+        li_service->run( server ).
 
         server->response->set_status( code   = 200
                                       reason = lv_reason ).
