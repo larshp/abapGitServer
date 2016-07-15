@@ -177,15 +177,30 @@ CLASS ZCL_AGS_SERVICE_REST IMPLEMENTATION.
 
   METHOD list_branches.
 
-    DATA(lo_repo) = NEW zcl_ags_repo( iv_repo ).
-    DATA(lv_head) = lo_repo->get_data( )-head.
-    DATA(lt_branches) = lo_repo->list_branches( ).
+    DATA: lv_head     TYPE zags_sha1,
+          lt_branches TYPE zcl_ags_repo=>ty_branches_tt,
+          lo_commit   TYPE REF TO zcl_ags_obj_commit,
+          lo_repo     TYPE REF TO zcl_ags_repo.
 
-    LOOP AT lt_branches ASSIGNING FIELD-SYMBOL(<lo_branch>).
-      APPEND INITIAL LINE TO rt_branches ASSIGNING FIELD-SYMBOL(<ls_output>).
+    FIELD-SYMBOLS: <ls_output> LIKE LINE OF rt_branches,
+                   <lo_branch> LIKE LINE OF lt_branches.
+
+
+    CREATE OBJECT lo_repo
+      EXPORTING
+        iv_name = iv_repo.
+
+    lv_head = lo_repo->get_data( )-head.
+    lt_branches = lo_repo->list_branches( ).
+
+    LOOP AT lt_branches ASSIGNING <lo_branch>.
+      APPEND INITIAL LINE TO rt_branches ASSIGNING <ls_output>.
       <ls_output>-name = <lo_branch>->get_data( )-name.
 
-      DATA(lo_commit) = NEW zcl_ags_obj_commit( <lo_branch>->get_data( )-sha1 ).
+      CREATE OBJECT lo_commit
+        EXPORTING
+          iv_sha1 = <lo_branch>->get_data( )-sha1.
+
       <ls_output>-time = lo_commit->get_pretty( )-committer-time.
       <ls_output>-commit = lo_commit->sha1( ).
       IF <ls_output>-name = lv_head.
@@ -198,15 +213,20 @@ CLASS ZCL_AGS_SERVICE_REST IMPLEMENTATION.
 
   METHOD list_changes.
 
+    DATA: lt_new TYPE ty_files_tt,
+          lt_old TYPE ty_files_tt,
+          ls_new LIKE LINE OF lt_new,
+          ls_old LIKE LINE OF lt_old.
+
     FIELD-SYMBOLS: <ls_file> LIKE LINE OF rt_files.
 
 
-    DATA(lt_new) = list_files_simple( iv_new ).
+    lt_new = list_files_simple( iv_new ).
     IF NOT iv_old IS INITIAL AND NOT iv_old CO '0'.
-      DATA(lt_old) = list_files_simple( iv_old ).
+      lt_old = list_files_simple( iv_old ).
     ENDIF.
 
-    LOOP AT lt_new INTO DATA(ls_new).
+    LOOP AT lt_new INTO ls_new.
 * remove unchanged
       DELETE lt_old WHERE filename = ls_new-filename AND sha1 = ls_new-sha1.
       IF sy-subrc = 0.
@@ -216,7 +236,7 @@ CLASS ZCL_AGS_SERVICE_REST IMPLEMENTATION.
       ENDIF.
 
 * find changed
-      READ TABLE lt_old INTO DATA(ls_old) WITH KEY filename = ls_new-filename.
+      READ TABLE lt_old INTO ls_old WITH KEY filename = ls_new-filename.
       IF sy-subrc = 0.
         DELETE lt_new WHERE filename = ls_new-filename.
         ASSERT sy-subrc = 0.
@@ -251,11 +271,16 @@ CLASS ZCL_AGS_SERVICE_REST IMPLEMENTATION.
     DATA: lt_visit  TYPE STANDARD TABLE OF zags_sha1,
           lo_commit TYPE REF TO zcl_ags_obj_commit,
           ls_data   TYPE zcl_ags_obj_commit=>ty_pretty,
+          lo_repo   TYPE REF TO zcl_ags_repo,
+          lo_branch TYPE REF TO zcl_ags_branch,
           lv_commit LIKE LINE OF lt_visit.
 
 
-    DATA(lo_repo) = NEW zcl_ags_repo( iv_repo ).
-    DATA(lo_branch) = lo_repo->get_branch( iv_branch ).
+    CREATE OBJECT lo_repo
+      EXPORTING
+        iv_name = iv_repo.
+
+    lo_branch = lo_repo->get_branch( iv_branch ).
 
     APPEND lo_branch->get_data( )-sha1 TO lt_visit.
 
@@ -290,8 +315,15 @@ CLASS ZCL_AGS_SERVICE_REST IMPLEMENTATION.
 
   METHOD list_files.
 
-    DATA(lo_repo) = NEW zcl_ags_repo( iv_repo ).
-    DATA(lv_commit) = lo_repo->get_branch( iv_branch )->get_data( )-sha1.
+    DATA: lv_commit TYPE zags_sha1,
+          lo_repo   TYPE REF TO zcl_ags_repo.
+
+
+    CREATE OBJECT lo_repo
+      EXPORTING
+        iv_name = iv_repo.
+
+    lv_commit = lo_repo->get_branch( iv_branch )->get_data( )-sha1.
 
     rt_files = list_files_extra( lv_commit ).
 
@@ -300,9 +332,14 @@ CLASS ZCL_AGS_SERVICE_REST IMPLEMENTATION.
 
   METHOD list_files_extra.
 
+    DATA: lo_commit TYPE REF TO zcl_ags_obj_commit.
+
+
     rt_files = list_files_simple( iv_commit ).
 
-    DATA(lo_commit) = NEW zcl_ags_obj_commit( iv_commit ).
+    CREATE OBJECT lo_commit
+      EXPORTING
+        iv_sha1 = iv_commit.
 
 * todo, at some point in time this recursion will break
 * due to the number of commits
@@ -341,22 +378,32 @@ CLASS ZCL_AGS_SERVICE_REST IMPLEMENTATION.
              base TYPE string,
            END OF ty_tree.
 
-    DATA: lt_trees TYPE STANDARD TABLE OF ty_tree WITH DEFAULT KEY.
+    DATA: lo_commit TYPE REF TO zcl_ags_obj_commit,
+          lo_tree   TYPE REF TO zcl_ags_obj_tree,
+          lt_files  TYPE zcl_ags_obj_tree=>ty_tree_tt,
+          lt_trees  TYPE STANDARD TABLE OF ty_tree WITH DEFAULT KEY.
 
-    FIELD-SYMBOLS: <ls_file> LIKE LINE OF rt_files,
-                   <ls_tree> LIKE LINE OF lt_trees.
+    FIELD-SYMBOLS:
+      <ls_input_tree> LIKE LINE OF lt_trees,
+      <ls_input_file> LIKE LINE OF lt_files,
+      <ls_file>       LIKE LINE OF rt_files,
+      <ls_tree>       LIKE LINE OF lt_trees.
 
 
-    DATA(lo_commit) = NEW zcl_ags_obj_commit( iv_commit ).
+    CREATE OBJECT lo_commit
+      EXPORTING
+        iv_sha1 = iv_commit.
 
     APPEND INITIAL LINE TO lt_trees ASSIGNING <ls_tree>.
     <ls_tree>-sha1 = lo_commit->get( )-tree.
     <ls_tree>-base = '/'.
 
-    LOOP AT lt_trees ASSIGNING FIELD-SYMBOL(<ls_input_tree>).
-      DATA(lo_tree) = NEW zcl_ags_obj_tree( <ls_input_tree>-sha1 ).
-      DATA(lt_files) = lo_tree->get_files( ).
-      LOOP AT lt_files ASSIGNING FIELD-SYMBOL(<ls_input_file>).
+    LOOP AT lt_trees ASSIGNING <ls_input_tree>.
+      CREATE OBJECT lo_tree
+        EXPORTING
+          iv_sha1 = <ls_input_tree>-sha1.
+      lt_files = lo_tree->get_files( ).
+      LOOP AT lt_files ASSIGNING <ls_input_file>.
         CASE <ls_input_file>-chmod.
           WHEN zcl_ags_obj_tree=>c_chmod-dir.
             APPEND INITIAL LINE TO lt_trees ASSIGNING <ls_tree>.
@@ -382,11 +429,21 @@ CLASS ZCL_AGS_SERVICE_REST IMPLEMENTATION.
 
   METHOD read_blob.
 
-    DATA(lo_repo) = NEW zcl_ags_repo( iv_repo ).
-    DATA(lv_commit) = lo_repo->get_branch( CONV #( iv_branch ) )->get_data( )-sha1.
-    DATA(lt_files) = list_files_simple( lv_commit ).
+    DATA: lv_commit TYPE zags_sha1,
+          lo_blob   TYPE REF TO zcl_ags_obj_blob,
+          lt_files  TYPE ty_files_tt,
+          lo_repo   TYPE REF TO zcl_ags_repo.
 
-    READ TABLE lt_files ASSIGNING FIELD-SYMBOL(<ls_file>)
+    FIELD-SYMBOLS: <ls_file> LIKE LINE OF lt_files.
+
+
+    CREATE OBJECT lo_repo
+      EXPORTING
+        iv_name = iv_repo.
+    lv_commit = lo_repo->get_branch( CONV #( iv_branch ) )->get_data( )-sha1.
+    lt_files = list_files_simple( lv_commit ).
+
+    READ TABLE lt_files ASSIGNING <ls_file>
       WITH KEY filename = '/' && iv_filename.
     IF sy-subrc <> 0.
       RAISE EXCEPTION TYPE zcx_ags_error
@@ -394,7 +451,9 @@ CLASS ZCL_AGS_SERVICE_REST IMPLEMENTATION.
           textid = zcx_ags_error=>m011.
     ENDIF.
 
-    DATA(lo_blob) = NEW zcl_ags_obj_blob( <ls_file>-sha1 ).
+    CREATE OBJECT lo_blob
+      EXPORTING
+        iv_sha1 = <ls_file>-sha1.
     rv_contents = lo_blob->get_data( ).
 
   ENDMETHOD.
@@ -402,7 +461,13 @@ CLASS ZCL_AGS_SERVICE_REST IMPLEMENTATION.
 
   METHOD read_blob_sha1.
 
-    DATA(lo_blob) = NEW zcl_ags_obj_blob( iv_sha1 ).
+    DATA: lo_blob TYPE REF TO zcl_ags_obj_blob.
+
+
+    CREATE OBJECT lo_blob
+      EXPORTING
+        iv_sha1 = iv_sha1.
+
     rv_contents = lo_blob->get_data( ).
 
   ENDMETHOD.
@@ -410,7 +475,13 @@ CLASS ZCL_AGS_SERVICE_REST IMPLEMENTATION.
 
   METHOD read_commit.
 
-    DATA(lo_commit) = NEW zcl_ags_obj_commit( iv_commit ).
+    DATA: lo_commit TYPE REF TO zcl_ags_obj_commit.
+
+
+    CREATE OBJECT lo_commit
+      EXPORTING
+        iv_sha1 = iv_commit.
+
     MOVE-CORRESPONDING lo_commit->get_pretty( ) TO rs_data.
 
     rs_data-files = list_changes(

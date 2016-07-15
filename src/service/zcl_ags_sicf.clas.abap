@@ -21,6 +21,7 @@ CLASS ZCL_AGS_SICF IMPLEMENTATION.
           lo_git     TYPE REF TO zcl_ags_service_git,
           lo_rest    TYPE REF TO zcl_ags_service_rest,
           lo_static  TYPE REF TO zcl_ags_service_static,
+          lx_error   TYPE REF TO zcx_ags_error,
           li_service TYPE REF TO zif_ags_service.
 
 
@@ -50,12 +51,11 @@ CLASS ZCL_AGS_SICF IMPLEMENTATION.
                                       reason = lv_reason ).
 
         COMMIT WORK.
-      CATCH zcx_ags_error INTO DATA(lx_error).
+      CATCH zcx_ags_error INTO lx_error.
         ROLLBACK WORK.
-        DATA(lv_text) = lx_error->if_message~get_text( ).
         server->response->set_status( code   = 500
                                       reason = 'Error' ) ##no_text.
-        server->response->set_cdata( lv_text ).
+        server->response->set_cdata( lx_error->if_message~get_text( ) ).
     ENDTRY.
 
   ENDMETHOD.
