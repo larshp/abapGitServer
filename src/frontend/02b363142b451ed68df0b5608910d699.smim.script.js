@@ -178,10 +178,16 @@ class CommitList extends React.Component {
   }
     
   render() {
+    let total = this.state.data.length;
+    let view = Math.min(total, 1000);
+    if (total !== view) {
+      this.state.data.splice(view);
+    }
+      
     return (<div>
       <Breadcrumb routes={this.props.routes} params={this.props.params} />
       <h1>Commits</h1>
-      {this.state.data.length} commits listed<br /><br />
+      {total} commits total, {view} commits listed<br /><br />
       {this.state.spinner?<Spinner />:this.state.data.map(this.commit.bind(this))}
       </div>);
   }
