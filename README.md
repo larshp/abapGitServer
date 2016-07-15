@@ -2,9 +2,9 @@
 [![devDependency Status](https://david-dm.org/larshp/abapGitServer/dev-status.svg)](https://david-dm.org/larshp/abapGitServer#info=devDependencies)
 
 # abapGitServer
-Git server implemented in [ABAP](http://www.abapgit.org)
+Git server implemented in ABAP
 
-Install via abapGit
+Install via [abapGit](http://www.abapgit.org)
 
 ### Requirements
 - https://github.com/larshp/ABAP-Swagger
