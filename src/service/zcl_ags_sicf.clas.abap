@@ -35,12 +35,10 @@ CLASS ZCL_AGS_SICF IMPLEMENTATION.
 
         li_service->run( server ).
 
-        server->response->set_status( code   = 200
-                                      reason = lv_reason ).
-
         COMMIT WORK.
       CATCH zcx_ags_error INTO lx_error.
         ROLLBACK WORK.
+        server->response->set_cdata( '500, error' ).
         server->response->set_status( code   = 500
                                       reason = 'Error' ) ##no_text.
         server->response->set_cdata( lx_error->if_message~get_text( ) ).
