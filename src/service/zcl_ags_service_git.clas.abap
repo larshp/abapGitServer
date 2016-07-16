@@ -254,6 +254,7 @@ CLASS ZCL_AGS_SERVICE_GIT IMPLEMENTATION.
         iv_deepen = ls_request-deepen ) TO lt_objects.
     ENDLOOP.
 
+* make sure there are no duplicate objects
     SORT lt_objects BY type ASCENDING sha1 ASCENDING.
     DELETE ADJACENT DUPLICATES FROM lt_objects COMPARING type sha1.
 
