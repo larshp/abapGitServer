@@ -195,7 +195,92 @@ class CommitList extends React.Component {
             
 class Spinner extends React.Component {
   render() {
-    return(<div className="sk-rotating-plane"></div>);
+    let rand = Math.floor(Math.random() * (11 - 1)) + 1;
+
+    switch (rand) {
+      case 1:
+        return (<div className="sk-rotating-plane"></div>);
+      case 2: 
+        return (<div className="sk-double-bounce">
+        <div className="sk-child sk-double-bounce1"></div>
+        <div className="sk-child sk-double-bounce2"></div>
+        </div>);
+      case 3:         
+        return (<div className="sk-wave">
+        <div className="sk-rect sk-rect1"></div>
+        <div className="sk-rect sk-rect2"></div>
+        <div className="sk-rect sk-rect3"></div>
+        <div className="sk-rect sk-rect4"></div>
+        <div className="sk-rect sk-rect5"></div>
+        </div>);
+      case 4:         
+        return (<div className="sk-wandering-cubes">
+        <div className="sk-cube sk-cube1"></div>
+        <div className="sk-cube sk-cube2"></div>
+        </div>);
+      case 5:
+        return (<div className="sk-spinner sk-spinner-pulse"></div>);
+      case 6:
+        return (<div className="sk-chasing-dots">
+        <div className="sk-child sk-dot1"></div>
+        <div className="sk-child sk-dot2"></div>
+        </div>);
+      case 7:
+        return (<div className="sk-three-bounce">
+        <div className="sk-child sk-bounce1"></div>
+        <div className="sk-child sk-bounce2"></div>
+        <div className="sk-child sk-bounce3"></div>
+        </div>);
+      case 8:
+        return (<div className="sk-circle">
+        <div className="sk-circle1 sk-child"></div>
+        <div className="sk-circle2 sk-child"></div>
+        <div className="sk-circle3 sk-child"></div>
+        <div className="sk-circle4 sk-child"></div>
+        <div className="sk-circle5 sk-child"></div>
+        <div className="sk-circle6 sk-child"></div>
+        <div className="sk-circle7 sk-child"></div>
+        <div className="sk-circle8 sk-child"></div>
+        <div className="sk-circle9 sk-child"></div>
+        <div className="sk-circle10 sk-child"></div>
+        <div className="sk-circle11 sk-child"></div>
+        <div className="sk-circle12 sk-child"></div>
+        </div>);
+      case 9:
+        return (<div className="sk-cube-grid">
+        <div className="sk-cube sk-cube1"></div>
+        <div className="sk-cube sk-cube2"></div>
+        <div className="sk-cube sk-cube3"></div>
+        <div className="sk-cube sk-cube4"></div>
+        <div className="sk-cube sk-cube5"></div>
+        <div className="sk-cube sk-cube6"></div>
+        <div className="sk-cube sk-cube7"></div>
+        <div className="sk-cube sk-cube8"></div>
+        <div className="sk-cube sk-cube9"></div>
+        </div>);
+      case 10:
+        return (<div className="sk-fading-circle">
+        <div className="sk-circle1 sk-circle"></div>
+        <div className="sk-circle2 sk-circle"></div>
+        <div className="sk-circle3 sk-circle"></div>
+        <div className="sk-circle4 sk-circle"></div>
+        <div className="sk-circle5 sk-circle"></div>
+        <div className="sk-circle6 sk-circle"></div>
+        <div className="sk-circle7 sk-circle"></div>
+        <div className="sk-circle8 sk-circle"></div>
+        <div className="sk-circle9 sk-circle"></div>
+        <div className="sk-circle10 sk-circle"></div>
+        <div className="sk-circle11 sk-circle"></div>
+        <div className="sk-circle12 sk-circle"></div>
+        </div>);
+      default:
+        return (<div className="sk-folding-cube">
+        <div className="sk-cube1 sk-cube"></div>
+        <div className="sk-cube2 sk-cube"></div>
+        <div className="sk-cube4 sk-cube"></div>
+        <div className="sk-cube3 sk-cube"></div>
+        </div>);
+    }
   }
 }  
            
