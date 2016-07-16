@@ -23,9 +23,9 @@
     }      
     </style>    
     <link rel="icon" href="data:;base64,iVBORw0KGgo=">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/spinkit/1.2.5/spinkit.css">
-    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/6.10.3/babel.min.js"></script>    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/spinkit/1.2.5/spinkit.css">  
     <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/react/15.2.1/react.min.js"></script>
+    <script type="text/javascript" async src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/6.10.3/babel.min.js"></script>
     <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/react/15.2.1/react-dom.min.js"></script>
     <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/react-router/2.5.2/ReactRouter.js"></script>    
     <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/history/2.1.2/History.min.js"></script>
@@ -41,6 +41,41 @@
   </head>
   <body>
     <div id="app"></div>
-    <script type="text/babel" src="/sap/zgit/static/script.js"></script>
+    <script type="text/javascript">
+      let cookie = document.cookie.replace(/(?:(?:^|.*;\s*)jsmodified\s*\=\s*([^;]*).*$)|^.*$/, "$1");
+      
+      function callback(evt) {      
+        if (typeof Babel === "undefined") {
+          setTimeout(function() {callback(evt);},50);
+          return;
+        }
+      
+        let compiled = Babel.transform(evt.target.response, {
+          presets: ['es2015', 'react', 'stage-0']
+          }).code;
+     
+        localStorage.setItem('compiled', compiled);
+        localStorage.setItem('modified', cookie);
+      
+        eval(compiled);
+      }
+      
+      function run() {
+        let modified = localStorage.getItem('modified');
+        
+        let compiled = localStorage.getItem('compiled');
+        if (modified === cookie && compiled) {  
+          eval(compiled);
+          return;
+        }
+
+        let oReq = new XMLHttpRequest();
+        oReq.addEventListener("load", callback);
+        oReq.open("GET", "/sap/zgit/static/script.js");
+        oReq.send();
+      }
+      
+      run();
+    </script>
   </body>
 </html>

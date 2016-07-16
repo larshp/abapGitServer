@@ -10,6 +10,9 @@ CLASS zcl_ags_service_static DEFINITION
 
     DATA mi_server TYPE REF TO if_http_server.
 
+    METHODS script_changed
+      RETURNING
+        VALUE(rv_changed) TYPE string.
     METHODS read_mime
       IMPORTING
         !iv_url TYPE string.
@@ -52,9 +55,14 @@ CLASS ZCL_AGS_SERVICE_STATIC IMPLEMENTATION.
 
     lv_timestamp = lv_changed.
     lv_modified = cl_bsp_utility=>date_to_string_http( lv_timestamp ).
-    DATA(lv_value) = mi_server->request->get_header_field(
-      name  = 'If-Modified-Since' ) ##NO_TEXT.
-    IF lv_modified = lv_value.
+
+    IF iv_url = 'index.html'.
+      mi_server->response->set_cookie(
+        name  = 'jsmodified'
+        value = script_changed( ) ) ##NO_TEXT.
+    ENDIF.
+
+    IF lv_modified = mi_server->request->get_header_field( 'If-Modified-Since' ) ##NO_TEXT.
       mi_server->response->set_status( code = 304 reason = '' ).
       RETURN.
     ENDIF.
@@ -70,6 +78,30 @@ CLASS ZCL_AGS_SERVICE_STATIC IMPLEMENTATION.
     mi_server->response->set_compression( ).
     mi_server->response->set_content_type( lv_mime ).
     mi_server->response->set_data( lv_data ).
+
+  ENDMETHOD.
+
+
+  METHOD script_changed.
+
+    DATA: lv_url     TYPE string,
+          li_api     TYPE REF TO if_mr_api,
+          lv_changed TYPE smimphio-chng_time.
+
+
+    CONCATENATE '/SAP/PUBLIC/zgit/' 'script.js' INTO lv_url ##NO_TEXT.
+
+    li_api = cl_mime_repository_api=>if_mr_api~get_api( ).
+
+    li_api->get(
+      EXPORTING
+        i_url                  = lv_url
+      IMPORTING
+        e_content_last_changed = lv_changed
+      EXCEPTIONS
+        not_found              = 1 ).
+
+    rv_changed = lv_changed.
 
   ENDMETHOD.
 
