@@ -552,7 +552,6 @@ CLASS ZCL_AGS_SERVICE_REST IMPLEMENTATION.
     APPEND 'IV_BRANCH' TO <ls_meta>-url-group_names.
     APPEND 'IV_FILENAME' TO <ls_meta>-url-group_names.
     <ls_meta>-method    = zcl_swag=>c_method-get.
-    <ls_meta>-produce   = zcl_swag=>c_content_type-text_plain.
     <ls_meta>-handler   = 'READ_BLOB'.
 
     APPEND INITIAL LINE TO rt_meta ASSIGNING <ls_meta>.
@@ -560,7 +559,6 @@ CLASS ZCL_AGS_SERVICE_REST IMPLEMENTATION.
     <ls_meta>-url-regex = '/blob/(\w+)$'.
     APPEND 'IV_SHA1' TO <ls_meta>-url-group_names.
     <ls_meta>-method    = zcl_swag=>c_method-get.
-    <ls_meta>-produce   = zcl_swag=>c_content_type-text_plain.
     <ls_meta>-handler   = 'READ_BLOB_SHA1'.
 
     APPEND INITIAL LINE TO rt_meta ASSIGNING <ls_meta>.
