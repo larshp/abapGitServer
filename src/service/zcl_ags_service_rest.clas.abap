@@ -479,15 +479,18 @@ CLASS ZCL_AGS_SERVICE_REST IMPLEMENTATION.
 
   METHOD zif_ags_service~run.
 
-    DATA: lv_path TYPE string.
+    DATA: lv_path     TYPE string,
+          lv_json_url TYPE string,
+          lo_swag     TYPE REF TO zcl_swag.
 
 
-    DATA(lo_swag) = NEW zcl_swag(
-      ii_server = ii_server
-      iv_base   = c_base ).
+    CREATE OBJECT lo_swag
+      EXPORTING
+        ii_server = ii_server
+        iv_base   = c_base.
     lo_swag->register( me ).
 
-    DATA(lv_json_url) = c_base && '/swagger.json'.
+    lv_json_url = c_base && '/swagger.json'.
 
     lv_path = ii_server->request->get_header_field( '~path' ).
     IF lv_path = c_base && '/swagger.html'.
