@@ -479,31 +479,17 @@ CLASS ZCL_AGS_SERVICE_REST IMPLEMENTATION.
 
   METHOD zif_ags_service~run.
 
-    DATA: lv_path     TYPE string,
-          lv_json_url TYPE string,
-          lo_swag     TYPE REF TO zcl_swag.
+    DATA: lo_swag TYPE REF TO zcl_swag.
 
 
     CREATE OBJECT lo_swag
       EXPORTING
         ii_server = ii_server
-        iv_base   = c_base.
+        iv_base   = c_base
+        iv_title  = 'abapGitServer'.
     lo_swag->register( me ).
 
-    lv_json_url = c_base && '/swagger.json'.
-
-    lv_path = ii_server->request->get_header_field( '~path' ).
-    IF lv_path = c_base && '/swagger.html'.
-      lo_swag->generate_ui(
-        iv_json_url = lv_json_url
-        iv_title    = 'abapGitServer - Swagger'(008) ).
-    ELSEIF lv_path = lv_json_url.
-      lo_swag->generate_spec(
-        iv_title       = 'abapGitServer'(010)
-        iv_description = 'abapGitServer REST functions'(009) ).
-    ELSE.
-      lo_swag->run( ).
-    ENDIF.
+    lo_swag->run( ).
 
   ENDMETHOD.
 
