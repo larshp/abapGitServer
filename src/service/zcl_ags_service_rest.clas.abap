@@ -412,6 +412,7 @@ CLASS ZCL_AGS_SERVICE_REST IMPLEMENTATION.
           lo_blob   TYPE REF TO zcl_ags_obj_blob,
           lt_files  TYPE ty_files_tt,
           lo_commit TYPE REF TO zcl_ags_obj_commit,
+          lv_branch TYPE zags_branch_name,
           lo_repo   TYPE REF TO zcl_ags_repo.
 
     FIELD-SYMBOLS: <ls_file> LIKE LINE OF lt_files.
@@ -421,7 +422,9 @@ CLASS ZCL_AGS_SERVICE_REST IMPLEMENTATION.
       EXPORTING
         iv_name = iv_repo.
 
-    lv_commit = lo_repo->get_branch( CONV #( iv_branch ) )->get_data( )-sha1.
+    lv_branch = iv_branch.
+
+    lv_commit = lo_repo->get_branch( lv_branch )->get_data( )-sha1.
 
     CREATE OBJECT lo_commit
       EXPORTING
