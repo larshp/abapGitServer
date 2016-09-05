@@ -413,7 +413,8 @@ CLASS ZCL_AGS_SERVICE_REST IMPLEMENTATION.
           lt_files  TYPE ty_files_tt,
           lo_commit TYPE REF TO zcl_ags_obj_commit,
           lv_branch TYPE zags_branch_name,
-          lo_repo   TYPE REF TO zcl_ags_repo.
+          lo_repo   TYPE REF TO zcl_ags_repo,
+          lv_tmp    TYPE string.
 
     FIELD-SYMBOLS: <ls_file> LIKE LINE OF lt_files.
 
@@ -432,8 +433,9 @@ CLASS ZCL_AGS_SERVICE_REST IMPLEMENTATION.
 
     lt_files = list_files_simple( lo_commit->get( )-tree ).
 
+    lv_tmp = '/' && iv_filename.
     READ TABLE lt_files ASSIGNING <ls_file>
-      WITH KEY filename = '/' && iv_filename.
+      WITH KEY filename = lv_tmp.
     IF sy-subrc <> 0.
       RAISE EXCEPTION TYPE zcx_ags_error
         EXPORTING
