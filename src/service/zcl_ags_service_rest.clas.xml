@@ -129,6 +129,13 @@
      <LENGTH>28</LENGTH>
      <SPLIT/>
     </item>
+    <item>
+     <ID>I</ID>
+     <KEY>013</KEY>
+     <ENTRY>Delete repository</ENTRY>
+     <LENGTH>27</LENGTH>
+     <SPLIT/>
+    </item>
    </TPOOL>
   </asx:values>
  </asx:abap>
