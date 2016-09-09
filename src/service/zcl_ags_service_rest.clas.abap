@@ -50,9 +50,6 @@ CLASS zcl_ags_service_rest DEFINITION
         !is_data TYPE ty_create
       RAISING
         zcx_ags_error.
-    METHODS delete_repo
-      IMPORTING
-        !iv_name TYPE zags_repos-name.
     METHODS edit_repo
       IMPORTING
         !is_data TYPE ty_create
@@ -141,19 +138,6 @@ CLASS ZCL_AGS_SERVICE_REST IMPLEMENTATION.
     zcl_ags_repo=>create(
       iv_name        = is_data-name
       iv_description = is_data-description ).
-
-  ENDMETHOD.
-
-
-  METHOD delete_repo.
-
-    DATA: lo_repo TYPE REF TO zcl_ags_repo.
-
-    CREATE OBJECT lo_repo
-      EXPORTING
-        iv_name = iv_name.
-
-    lo_repo->delete( ).
 
   ENDMETHOD.
 
@@ -582,12 +566,6 @@ CLASS ZCL_AGS_SERVICE_REST IMPLEMENTATION.
     APPEND 'IV_BRANCH' TO <ls_meta>-url-group_names.
     <ls_meta>-method    = zcl_swag=>c_method-get.
     <ls_meta>-handler   = 'LIST_COMMITS'.
-
-    APPEND INITIAL LINE TO rt_meta ASSIGNING <ls_meta>.
-    <ls_meta>-summary   = 'Delete repository'(013).
-    <ls_meta>-url-regex = '/delete$'.
-    <ls_meta>-method    = zcl_swag=>c_method-delete.
-    <ls_meta>-handler   = 'DELETE_REPO'.
 
   ENDMETHOD.
 ENDCLASS.
