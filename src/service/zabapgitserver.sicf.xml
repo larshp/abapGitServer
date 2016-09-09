@@ -2,7 +2,7 @@
 <abapGit version="v1.0.0" serializer="LCL_OBJECT_SICF" serializer_version="v1.0.0">
  <asx:abap xmlns:asx="http://www.sap.com/abapxml" version="1.0">
   <asx:values>
-   <URL>/sap/zgit/</URL>
+   <URL>/sap/zabapgitserver/</URL>
    <ICFSERVICE>
     <ICF_NAME>ZGIT</ICF_NAME>
     <ICFPARGUID/>
