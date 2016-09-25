@@ -1,5 +1,5 @@
 [![Build Status](https://travis-ci.org/larshp/abapGitServer.svg?branch=master)](https://travis-ci.org/larshp/abapGitServer)
-[![devDependency Status](https://david-dm.org/larshp/abapGitServer/dev-status.svg)](https://david-dm.org/larshp/abapGitServer#info=devDependencies)
+[![devDependency Status](https://david-dm.org/larshp/abapGitServer/dev-status.svg)](https://david-dm.org/larshp/abapGitServer?type=dev)
 [![abaplint](http://abaplint.org/badges/larshp/abapGitServer)](http://abaplint.org/project/larshp/abapGitServer)
 
 # abapGitServer
