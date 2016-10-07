@@ -116,7 +116,7 @@ CLASS ZCL_AGS_SERVICE_STATIC IMPLEMENTATION.
 
     lv_path = mi_server->request->get_header_field( '~path' ).
 
-    FIND REGEX '/sap/zgit/static/(.*)'
+    FIND REGEX '/sap/zabapgitserver/static/(.*)'
       IN lv_path
       SUBMATCHES lv_name ##NO_TEXT.
 
