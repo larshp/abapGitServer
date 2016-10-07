@@ -291,7 +291,7 @@ CLASS ZCL_AGS_SERVICE_GIT IMPLEMENTATION.
     DATA: lv_path TYPE string.
 
     lv_path = mi_server->request->get_header_field( '~path' ).
-    FIND REGEX 'sap/zgit/git/(.*)\.git*'
+    FIND REGEX 'sap/zabapgitserver/git/(.*)\.git*'
       IN lv_path
       SUBMATCHES rv_name ##no_text.
 

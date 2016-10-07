@@ -109,7 +109,7 @@ CLASS zcl_ags_service_rest DEFINITION
   PROTECTED SECTION.
   PRIVATE SECTION.
 
-    CONSTANTS c_base TYPE string VALUE '/sap/zgit/rest' ##NO_TEXT.
+    CONSTANTS c_base TYPE string VALUE '/sap/zabapgitserver/rest' ##NO_TEXT.
 
     METHODS list_changes
       IMPORTING

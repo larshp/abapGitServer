@@ -1,4 +1,4 @@
-const base = '/sap/zgit';
+const base = '/sap/zabapgitserver';
 const Link = ReactRouter.Link;
 
 class Octicons {
@@ -752,7 +752,7 @@ class RepoList extends React.Component {
       {Octicons.plus()} <Link to="/create">Create</Link>
       <br />
       <br />
-      <a href="/sap/zgit/rest/swagger.html">swagger</a>
+      <a href="/sap/zabapgitserver/rest/swagger.html">swagger</a>
       </div>);
   }
 }

@@ -25,9 +25,9 @@ CLASS ZCL_AGS_SICF IMPLEMENTATION.
     lv_path = server->request->get_header_field( '~path' ).
 
     TRY.
-        IF lv_path CP '/sap/zgit/git/*'.
+        IF lv_path CP '/sap/zabapgitserver/git/*'.
           CREATE OBJECT li_service TYPE zcl_ags_service_git.
-        ELSEIF lv_path CP '/sap/zgit/rest/*'.
+        ELSEIF lv_path CP '/sap/zabapgitserver/rest/*'.
           CREATE OBJECT li_service TYPE zcl_ags_service_rest.
         ELSE.
           CREATE OBJECT li_service TYPE zcl_ags_service_static.
