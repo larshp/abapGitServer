@@ -69,7 +69,7 @@
           return;
         }
 
-        let oReq = new XMLHttpRequest();
+        var oReq = new XMLHttpRequest();
         oReq.addEventListener("load", callback);
         oReq.open("GET", "/sap/zabapgitserver/static/script.js");
         oReq.send();
