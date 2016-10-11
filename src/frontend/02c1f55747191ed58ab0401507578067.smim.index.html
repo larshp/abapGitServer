@@ -50,7 +50,7 @@
           return;
         }
       
-        let compiled = Babel.transform(evt.target.response, {
+        var compiled = Babel.transform(evt.target.response, {
           presets: ['es2015', 'react', 'stage-0']
           }).code;
      
@@ -61,9 +61,9 @@
       }
       
       function run() {
-        let modified = localStorage.getItem('modified');
+        var modified = localStorage.getItem('modified');
         
-        let compiled = localStorage.getItem('compiled');
+        var compiled = localStorage.getItem('compiled');
         if (modified === cookie && compiled) {  
           eval(compiled);
           return;
