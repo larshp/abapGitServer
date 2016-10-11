@@ -7,7 +7,7 @@ Git server implemented in ABAP
 
 Install via [abapGit](http://www.abapgit.org)
 
-Start web frontend via SICF service ZGIT
+Start web frontend via SICF service ZABAPGITSERVER
 
 ### Requirements
 - https://github.com/larshp/ABAP-Swagger
