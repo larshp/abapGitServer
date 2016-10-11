@@ -42,7 +42,7 @@
   <body>
     <div id="app"></div>
     <script type="text/javascript">
-      let cookie = document.cookie.replace(/(?:(?:^|.*;\s*)jsmodified\s*\=\s*([^;]*).*$)|^.*$/, "$1");
+      var cookie = document.cookie.replace(/(?:(?:^|.*;\s*)jsmodified\s*\=\s*([^;]*).*$)|^.*$/, "$1");
       
       function callback(evt) {      
         if (typeof Babel === "undefined") {
