@@ -284,10 +284,8 @@ CLASS ZCL_AGS_SERVICE_GIT IMPLEMENTATION.
     mi_server->response->set_data( lv_response ).
 
     mi_server->response->set_header_field(
-      EXPORTING
-        name  = if_http_header_fields=>content_type
-        value = 'application/x-git-upload-pack-result'
-    ).
+      name  = if_http_header_fields=>content_type
+      value = 'application/x-git-upload-pack-result' ).
 
   ENDMETHOD.
 
