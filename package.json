@@ -8,6 +8,6 @@
     "url": "git+https://github.com/larshp/abapGitServer.git"
   },
   "devDependencies": {
-    "abaplint": "^0.28.3"
+    "abaplint": "^0.29.0"
   }
 }
