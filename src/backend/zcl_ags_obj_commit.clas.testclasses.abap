@@ -1,6 +1,3 @@
-CONSTANTS: gc_field TYPE string VALUE 'Foobar <foo@bar.com> 1466596513 +0000' ##no_text.
-
-
 *----------------------------------------------------------------------*
 *       CLASS ltcl_test DEFINITION
 *----------------------------------------------------------------------*
@@ -30,15 +27,17 @@ CLASS ltcl_test IMPLEMENTATION.
 
   METHOD serialize.
 
+    CONSTANTS: lc_field TYPE string VALUE 'Foobar <foo@bar.com> 1466596513 +0000' ##no_text.
+
     DATA: lo_old  TYPE REF TO zcl_ags_obj_commit,
           lo_new  TYPE REF TO zcl_ags_obj_commit,
           lv_xstr TYPE xstring.
 
 
     CREATE OBJECT lo_old.
-    lo_old->set_author( gc_field ).
+    lo_old->set_author( lc_field ).
     lo_old->set_body( 'body' ).
-    lo_old->set_committer( gc_field ).
+    lo_old->set_committer( lc_field ).
     lo_old->set_parent( c_sha1 ).
     lo_old->set_tree( c_sha1 ).
     lv_xstr = lo_old->zif_ags_object~serialize( ).
@@ -89,7 +88,9 @@ CLASS ltcl_userfield DEFINITION FOR TESTING
     METHODS:
       setup
         RAISING zcx_ags_error,
-      parse_userfield FOR TESTING
+      parse_userfield1 FOR TESTING
+        RAISING zcx_ags_error,
+      parse_userfield2 FOR TESTING
         RAISING zcx_ags_error,
       error FOR TESTING.
 
@@ -106,12 +107,14 @@ CLASS ltcl_userfield IMPLEMENTATION.
     CREATE OBJECT mo_commit.
   ENDMETHOD.                    "setup
 
-  METHOD parse_userfield.
+  METHOD parse_userfield1.
+
+    CONSTANTS: lc_field TYPE string VALUE 'Foobar <foo@bar.com> 1466596513 +0000' ##no_text.
 
     DATA: ls_field TYPE zcl_ags_obj_commit=>ty_userfield.
 
 
-    ls_field = mo_commit->parse_userfield( gc_field ).
+    ls_field = mo_commit->parse_userfield( lc_field ).
 
     cl_abap_unit_assert=>assert_not_initial( ls_field ).
 
@@ -124,6 +127,27 @@ CLASS ltcl_userfield IMPLEMENTATION.
         exp = 'Foobar' ).
 
   ENDMETHOD.                    "parse_userfield
+
+  METHOD parse_userfield2.
+
+    CONSTANTS: lc_field TYPE string VALUE 'SAP* <SAP*@localhost> 1482397806 +0100' ##no_text.
+
+    DATA: ls_field TYPE zcl_ags_obj_commit=>ty_userfield.
+
+
+    ls_field = mo_commit->parse_userfield( lc_field ).
+
+    cl_abap_unit_assert=>assert_not_initial( ls_field ).
+
+    cl_abap_unit_assert=>assert_equals(
+        act = ls_field-email
+        exp = 'SAP*@localhost' ).
+
+    cl_abap_unit_assert=>assert_equals(
+        act = ls_field-name
+        exp = 'SAP*' ).
+
+  ENDMETHOD.
 
   METHOD error.
 

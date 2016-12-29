@@ -152,7 +152,7 @@ CLASS ZCL_AGS_OBJ_COMMIT IMPLEMENTATION.
 
     DATA: lv_time TYPE string.
 
-    FIND REGEX '^(\w+) <(.*)> (\d{10}) .\d{4}$' IN iv_field
+    FIND REGEX '^([\w\*]+) <(.*)> (\d{10}) .\d{4}$' IN iv_field
       SUBMATCHES
       rs_userfield-name
       rs_userfield-email
