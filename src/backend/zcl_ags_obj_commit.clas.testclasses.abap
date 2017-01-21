@@ -92,6 +92,8 @@ CLASS ltcl_userfield DEFINITION FOR TESTING
         RAISING zcx_ags_error,
       parse_userfield2 FOR TESTING
         RAISING zcx_ags_error,
+      parse_userfield3 FOR TESTING
+        RAISING zcx_ags_error,
       error FOR TESTING.
 
 ENDCLASS.       "ltcl_Userfield
@@ -146,6 +148,24 @@ CLASS ltcl_userfield IMPLEMENTATION.
     cl_abap_unit_assert=>assert_equals(
         act = ls_field-name
         exp = 'SAP*' ).
+
+  ENDMETHOD.
+
+  METHOD parse_userfield3.
+
+* this is actually the UNAM saved in REPOSRC, bug in SAP standard?
+    CONSTANTS: lc_field TYPE string VALUE 'SAP*........ <SAP*........@localhost> 1484987134 +0100' ##no_text.
+
+    DATA: ls_field TYPE zcl_ags_obj_commit=>ty_userfield.
+
+
+    ls_field = mo_commit->parse_userfield( lc_field ).
+
+    cl_abap_unit_assert=>assert_not_initial( ls_field ).
+
+    cl_abap_unit_assert=>assert_equals(
+        act = ls_field-name
+        exp = 'SAP*........' ).
 
   ENDMETHOD.
 
