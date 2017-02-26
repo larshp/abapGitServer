@@ -744,7 +744,13 @@ class RepoList extends React.Component {
   render() {
     return (
       <div>
+      <table>
+      <tr><td>
+      <img src="./static/logo.svg" height="100"></img>
+      </td><td>
       <h1>abapGitServer</h1>
+      </td></tr>
+      </table>      
       <table>
       {this.state.spinner?<Spinner />:this.state.data.map(this.repo)}
       </table>
@@ -752,7 +758,9 @@ class RepoList extends React.Component {
       {Octicons.plus()} <Link to="/create">Create</Link>
       <br />
       <br />
-      <a href="/sap/zabapgitserver/rest/swagger.html">swagger</a>
+      <p className="right">
+      <a href="/sap/zabapgitserver/rest/swagger.html"><img src="./static/swagger.png" height="50"></img></a>
+      </p>
       </div>);
   }
 }
