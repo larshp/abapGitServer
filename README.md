@@ -16,8 +16,6 @@ Start web frontend via SICF service ZABAPGITSERVER
 ### Version requirement
 see https://github.com/larshp/ABAP-Swagger
 
-Does not work with Internet Explorer 9
-
 ### Scope
 - Web interface: browse/create repository
 - No tags, no submodules, no blame
