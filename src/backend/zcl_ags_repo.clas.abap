@@ -54,6 +54,8 @@ CLASS zcl_ags_repo DEFINITION
     DATA ms_data TYPE zags_repos.
 
     CLASS-METHODS initial_commit
+      IMPORTING
+        !iv_name         TYPE clike
       RETURNING
         VALUE(rv_commit) TYPE zags_sha1
       RAISING
@@ -111,7 +113,7 @@ CLASS ZCL_AGS_REPO IMPLEMENTATION.
     zcl_ags_branch=>create(
       io_repo   = ro_repo
       iv_name   = ls_repo-head
-      iv_commit = initial_commit( ) ).
+      iv_commit = initial_commit( iv_name ) ).
 
   ENDMETHOD.
 
@@ -163,16 +165,18 @@ CLASS ZCL_AGS_REPO IMPLEMENTATION.
     DATA: lo_blob   TYPE REF TO zcl_ags_obj_blob,
           lo_commit TYPE REF TO zcl_ags_obj_commit,
           lo_tree   TYPE REF TO zcl_ags_obj_tree,
+          lv_str    TYPE string,
           lv_user   TYPE string.
 
 
     CREATE OBJECT lo_blob.
-    lo_blob->set_data( zcl_ags_util=>string_to_xstring_utf8( 'test' ) ) ##no_text.
+    lv_str = iv_name.
+    lo_blob->set_data( zcl_ags_util=>string_to_xstring_utf8( lv_str ) ).
     lo_blob->save( ).
 
     CREATE OBJECT lo_tree.
     lo_tree->add_file( iv_chmod = zcl_ags_obj_tree=>c_chmod-file
-                       iv_name  = 'test.txt'
+                       iv_name  = 'README.md'
                        iv_sha1  = lo_blob->sha1( ) ) ##no_text.
     lo_tree->save( ).
 
@@ -180,8 +184,8 @@ CLASS ZCL_AGS_REPO IMPLEMENTATION.
 
     CREATE OBJECT lo_commit.
     lo_commit->set_tree( lo_tree->sha1( ) ).
-    lo_commit->set_author( lv_user ) ##no_text.
-    lo_commit->set_committer( lv_user ) ##no_text.
+    lo_commit->set_author( lv_user ).
+    lo_commit->set_committer( lv_user ).
     lo_commit->set_body( 'initial' ) ##no_text.
     lo_commit->save( ).
 
