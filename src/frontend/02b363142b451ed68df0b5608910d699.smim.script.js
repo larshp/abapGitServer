@@ -733,12 +733,12 @@ class RepoList extends React.Component {
 
   repo(e) {
     return (
-        <tr>
-        <td>{Octicons.repo()}</td>
-        <td><Link to={e.NAME + "/"}>{e.NAME}</Link></td>
-        <td>{e.DESCRIPTION}</td>
-        <td><Link to={"/edit/" + e.NAME}>{Octicons.pencil()}</Link></td>
-        </tr>);
+      <div className="tile">
+      {Octicons.repo()} <Link to={e.NAME + "/"}>{e.NAME}</Link><br />
+      <div className="italic inline">{e.DESCRIPTION}       
+      &nbsp;
+      <Link to={"/edit/" + e.NAME}>{Octicons.pencil()}</Link></div>
+      </div>);
   }          
       
   render() {
@@ -750,10 +750,8 @@ class RepoList extends React.Component {
       </td><td>
       <h1>abapGitServer</h1>
       </td></tr>
-      </table>      
-      <table>
+      </table>          
       {this.state.spinner?<Spinner />:this.state.data.map(this.repo)}
-      </table>
       <br />
       {Octicons.plus()} <Link to="/create">Create</Link>
       <br />
