@@ -716,7 +716,12 @@ class Breadcrumb extends React.Component {
   }
     
   render() {
-    return(<div>{this.bread.map(this.show)}</div>);
+    return(<table>
+      <tr>
+      <td><Link to="/"><img src={base + "/static/logo.svg"} height="50"></img></Link></td>
+      <td>{this.bread.map(this.show)}</td>
+      </tr>
+      </table>);
   }           
 }           
            
