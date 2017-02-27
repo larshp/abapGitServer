@@ -763,7 +763,7 @@ class RepoList extends React.Component {
       <br />
       <br />
       <p className="right">
-      <a href="/sap/zabapgitserver/rest/swagger.html"><img src="./static/swagger.png" height="50"></img></a>
+      <a href="/sap/zabapgitserver/rest/swagger.html"><img src={base + "/static/swagger.png"} height="50"></img></a>
       </p>
       </div>);
   }
