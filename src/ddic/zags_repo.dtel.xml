@@ -10,11 +10,11 @@
     <SCRLEN1>10</SCRLEN1>
     <SCRLEN2>20</SCRLEN2>
     <SCRLEN3>40</SCRLEN3>
-    <DDTEXT>Repsitory</DDTEXT>
-    <REPTEXT>Repsitory</REPTEXT>
-    <SCRTEXT_S>Repsitory</SCRTEXT_S>
-    <SCRTEXT_M>Repsitory</SCRTEXT_M>
-    <SCRTEXT_L>Repsitory</SCRTEXT_L>
+    <DDTEXT>Repository</DDTEXT>
+    <REPTEXT>Repository</REPTEXT>
+    <SCRTEXT_S>Repository</SCRTEXT_S>
+    <SCRTEXT_M>Repository</SCRTEXT_M>
+    <SCRTEXT_L>Repository</SCRTEXT_L>
     <DTELMASTER>E</DTELMASTER>
     <REFKIND>D</REFKIND>
    </DD04V>
