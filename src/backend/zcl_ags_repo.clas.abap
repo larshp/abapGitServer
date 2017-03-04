@@ -5,8 +5,6 @@ class ZCL_AGS_REPO definition
 public section.
 
   types:
-    ty_repos_tt TYPE STANDARD TABLE OF zags_repos WITH DEFAULT KEY .
-  types:
     ty_branches_tt TYPE STANDARD TABLE OF REF TO zcl_ags_branch WITH DEFAULT KEY .
 
   class-methods CREATE
@@ -19,7 +17,7 @@ public section.
       ZCX_AGS_ERROR .
   class-methods LIST
     returning
-      value(RT_LIST) type TY_REPOS_TT .
+      value(RT_LIST) type ZAGS_REPOS_TT .
   class-methods GET_INSTANCE
     importing
       !IV_NAME type ZAGS_REPOS-NAME
@@ -76,46 +74,36 @@ CLASS ZCL_AGS_REPO IMPLEMENTATION.
 
   METHOD constructor.
 
-    SELECT SINGLE * FROM zags_repos
-      INTO ms_data
-      WHERE name = iv_name.
-    IF sy-subrc <> 0.
-      RAISE EXCEPTION TYPE zcx_ags_error
-        EXPORTING
-          textid = zcx_ags_error=>m002.
-    ENDIF.
+    ms_data = zcl_ags_db=>get_repos( )->single( iv_name ).
 
   ENDMETHOD.
 
 
   METHOD create.
 
-    DATA: lt_list TYPE ty_repos_tt,
-          ls_repo TYPE zags_repos.
+    DATA: ls_repo TYPE zags_repos.
 
 
     ASSERT NOT iv_name CA '/\'.
     ASSERT NOT iv_name IS INITIAL.
 
-    lt_list = list( ).
-    READ TABLE lt_list WITH KEY name = iv_name TRANSPORTING NO FIELDS.
-    IF sy-subrc = 0.
-      RAISE EXCEPTION TYPE zcx_ags_error
-        EXPORTING
-          textid = zcx_ags_error=>m001.
-    ENDIF.
 
-    ls_repo-repo = zcl_ags_util=>uuid( ).
-    ls_repo-name = iv_name.
+    TRY.
+        zcl_ags_db=>get_repos( )->single( iv_name ).
+        RAISE EXCEPTION TYPE zcx_ags_error
+          EXPORTING
+            textid = zcx_ags_error=>m001.
+      CATCH zcx_ags_error ##NO_HANDLER.
+    ENDTRY.
+
+    ls_repo-repo        = zcl_ags_util=>uuid( ).
+    ls_repo-name        = iv_name.
     ls_repo-description = iv_description.
-    ls_repo-head = 'master' ##no_text.
+    ls_repo-head        = 'master' ##no_text.
 
-    INSERT zags_repos FROM ls_repo.
-    ASSERT sy-subrc = 0.
+    zcl_ags_db=>get_repos( )->insert( ls_repo ).
 
-    CREATE OBJECT ro_repo
-      EXPORTING
-        iv_name = iv_name.
+    ro_repo = get_instance( iv_name ).
 
     zcl_ags_branch=>create(
       io_repo   = ro_repo
@@ -137,8 +125,7 @@ CLASS ZCL_AGS_REPO IMPLEMENTATION.
       <lo_branch>->delete( ).
     ENDLOOP.
 
-    DELETE FROM zags_repos WHERE name = ms_data-name.
-    ASSERT sy-subrc = 0.
+    zcl_ags_db=>get_repos( )->delete( ms_data-name ).
 
   ENDMETHOD.
 
@@ -212,31 +199,26 @@ CLASS ZCL_AGS_REPO IMPLEMENTATION.
 
   METHOD list.
 
-    SELECT * FROM zags_repos
-      INTO TABLE rt_list
-      ORDER BY name ASCENDING.                          "#EC CI_NOWHERE
+    rt_list = zcl_ags_db=>get_repos( )->list( ).
 
   ENDMETHOD.
 
 
   METHOD list_branches.
 
-    DATA: lt_list   TYPE TABLE OF zags_branches-name,
+    DATA: lt_list   TYPE zags_branches_tt,
           lo_branch TYPE REF TO zcl_ags_branch.
 
-    FIELD-SYMBOLS: <lv_list> LIKE LINE OF lt_list.
+    FIELD-SYMBOLS: <ls_list> LIKE LINE OF lt_list.
 
 
-    SELECT name FROM zags_branches
-      INTO TABLE lt_list
-      WHERE repo = ms_data-repo
-      ORDER BY name ASCENDING.
+    lt_list = zcl_ags_db=>get_branches( )->list( ms_data-repo ).
 
-    LOOP AT lt_list ASSIGNING <lv_list>.
+    LOOP AT lt_list ASSIGNING <ls_list>.
       CREATE OBJECT lo_branch
         EXPORTING
           io_repo = me
-          iv_name = <lv_list>.
+          iv_name = <ls_list>-name.
 
       APPEND lo_branch TO rt_list.
     ENDLOOP.
@@ -246,10 +228,9 @@ CLASS ZCL_AGS_REPO IMPLEMENTATION.
 
   METHOD set_description.
 
-    UPDATE zags_repos SET
-      description = iv_description
-      WHERE name = ms_data-name.
-    ASSERT sy-subrc = 0.
+    zcl_ags_db=>get_repos( )->update_description(
+      iv_repo        = ms_data-repo
+      iv_description = iv_description ).
 
     ms_data-description = iv_description.
 

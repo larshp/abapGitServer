@@ -26,6 +26,7 @@ CLASS ZCL_AGS_TREE_CACHE IMPLEMENTATION.
   METHOD build.
 
 * todo
+    RETURN.
 
   ENDMETHOD.
 
@@ -39,14 +40,15 @@ CLASS ZCL_AGS_TREE_CACHE IMPLEMENTATION.
     lv_repo = zcl_ags_repo=>get_instance( iv_repo )->get_data( )-repo.
     lv_commit_sha1 = io_commit->zif_ags_object~sha1( ).
 
-    SELECT * FROM zags_tree_cache
-      INTO CORRESPONDING FIELDS OF TABLE rt_files
-      WHERE repo = lv_repo
-      AND commit_sha1 = lv_commit_sha1
-      AND path = iv_path.
-    IF sy-subrc = 0.
-      RETURN.
-    ENDIF.
+* todo
+*    SELECT * FROM zags_tree_cache
+*      INTO CORRESPONDING FIELDS OF TABLE rt_files
+*      WHERE repo = lv_repo
+*      AND commit_sha1 = lv_commit_sha1
+*      AND path = iv_path.
+*    IF sy-subrc = 0.
+*      RETURN.
+*    ENDIF.
 
   ENDMETHOD.
 ENDCLASS.

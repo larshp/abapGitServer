@@ -27,7 +27,8 @@ CLASS ltcl_test IMPLEMENTATION.
 
   METHOD serialize.
 
-    CONSTANTS: lc_field TYPE string VALUE 'Foobar <foo@bar.com> 1466596513 +0000' ##no_text.
+    CONSTANTS: lc_field TYPE string
+      VALUE 'Foobar <foo@bar.com> 1466596513 +0000' ##no_text.
 
     DATA: lo_old  TYPE REF TO zcl_ags_obj_commit,
           lo_new  TYPE REF TO zcl_ags_obj_commit,
@@ -111,7 +112,8 @@ CLASS ltcl_userfield IMPLEMENTATION.
 
   METHOD parse_userfield1.
 
-    CONSTANTS: lc_field TYPE string VALUE 'Foobar <foo@bar.com> 1466596513 +0000' ##no_text.
+    CONSTANTS: lc_field TYPE string
+      VALUE 'Foobar <foo@bar.com> 1466596513 +0000' ##no_text.
 
     DATA: ls_field TYPE zcl_ags_obj_commit=>ty_userfield.
 
@@ -132,7 +134,8 @@ CLASS ltcl_userfield IMPLEMENTATION.
 
   METHOD parse_userfield2.
 
-    CONSTANTS: lc_field TYPE string VALUE 'SAP* <SAP*@localhost> 1482397806 +0100' ##no_text.
+    CONSTANTS: lc_field TYPE string
+      VALUE 'SAP* <SAP*@localhost> 1482397806 +0100' ##no_text.
 
     DATA: ls_field TYPE zcl_ags_obj_commit=>ty_userfield.
 
@@ -154,7 +157,8 @@ CLASS ltcl_userfield IMPLEMENTATION.
   METHOD parse_userfield3.
 
 * this is actually the UNAM saved in REPOSRC, bug in SAP standard?
-    CONSTANTS: lc_field TYPE string VALUE 'SAP*........ <SAP*........@localhost> 1484987134 +0100' ##no_text.
+    CONSTANTS: lc_field TYPE string
+      VALUE 'SAP*........ <SAP*........@localhost> 1484987134 +0100' ##no_text.
 
     DATA: ls_field TYPE zcl_ags_obj_commit=>ty_userfield.
 

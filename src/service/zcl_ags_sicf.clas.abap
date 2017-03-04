@@ -16,8 +16,7 @@ CLASS ZCL_AGS_SICF IMPLEMENTATION.
 
   METHOD if_http_extension~handle_request.
 
-    DATA: lv_reason  TYPE string,
-          lv_path    TYPE string,
+    DATA: lv_path    TYPE string,
           lx_error   TYPE REF TO zcx_ags_error,
           li_service TYPE REF TO zif_ags_service.
 

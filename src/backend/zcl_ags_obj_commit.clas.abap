@@ -260,7 +260,7 @@ CLASS ZCL_AGS_OBJ_COMMIT IMPLEMENTATION.
     ls_object-type = zif_ags_constants=>c_type-commit.
     ls_object-data_raw = serialize( ).
 
-    MODIFY zags_objects FROM ls_object.
+    zcl_ags_db=>get_objects( )->modify( ls_object ).
 
   ENDMETHOD.
 

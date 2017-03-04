@@ -3,16 +3,24 @@
  <asx:abap xmlns:asx="http://www.sap.com/abapxml" version="1.0">
   <asx:values>
    <VSEOCLASS>
-    <CLSNAME>ZCL_AGS_DB_REPO</CLSNAME>
+    <CLSNAME>ZCL_AGS_DB_BRANCHES</CLSNAME>
     <VERSION>1</VERSION>
     <LANGU>E</LANGU>
-    <DESCRIPT>Database - Repo</DESCRIPT>
+    <DESCRIPT>Database - Branches</DESCRIPT>
     <STATE>1</STATE>
     <CLSCCINCL>X</CLSCCINCL>
     <FIXPT>X</FIXPT>
     <UNICODE>X</UNICODE>
    </VSEOCLASS>
    <TPOOL/>
+   <DESCRIPTIONS>
+    <SEOCOMPOTX>
+     <CLSNAME>ZCL_AGS_DB_BRANCHES</CLSNAME>
+     <CMPNAME>MT_BRANCHES</CMPNAME>
+     <LANGU>E</LANGU>
+     <DESCRIPT>ZAGS_REPOS Table Type</DESCRIPT>
+    </SEOCOMPOTX>
+   </DESCRIPTIONS>
   </asx:values>
  </asx:abap>
 </abapGit>

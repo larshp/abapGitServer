@@ -83,7 +83,7 @@ CLASS ZCL_AGS_OBJ_BLOB IMPLEMENTATION.
     ls_object-type = zif_ags_constants=>c_type-blob.
     ls_object-data_raw = serialize( ).
 
-    MODIFY zags_objects FROM ls_object.
+    zcl_ags_db=>get_objects( )->modify( ls_object ).
 
   ENDMETHOD.
 

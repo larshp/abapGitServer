@@ -80,7 +80,7 @@ CLASS zcl_ags_service_rest DEFINITION
         zcx_ags_error.
     METHODS list_repos
       RETURNING
-        VALUE(rt_list) TYPE zcl_ags_repo=>ty_repos_tt
+        VALUE(rt_list) TYPE zags_repos_tt
       RAISING
         zcx_ags_error.
     METHODS read_blob
@@ -306,7 +306,7 @@ CLASS ZCL_AGS_SERVICE_REST IMPLEMENTATION.
     DATA: lt_commits TYPE zcl_ags_obj_commit=>ty_pretty_tt,
           lt_current TYPE ty_files_tt,
           lv_changed TYPE abap_bool,
-          lo_branch  TYPE REF TO zcl_ags_branch,
+*          lo_branch  TYPE REF TO zcl_ags_branch,
           lo_commit  TYPE REF TO zcl_ags_obj_commit,
           lt_prev    TYPE ty_files_tt.
 

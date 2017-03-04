@@ -42,14 +42,9 @@ CLASS ZCL_AGS_BRANCH IMPLEMENTATION.
 
     lv_repo = io_repo->get_data( )-repo.
 
-    SELECT SINGLE * FROM zags_branches INTO ms_data
-      WHERE name = iv_name
-      AND repo = lv_repo.
-    IF sy-subrc <> 0.
-      RAISE EXCEPTION TYPE zcx_ags_error
-        EXPORTING
-          textid = zcx_ags_error=>m002.
-    ENDIF.
+    ms_data = zcl_ags_db=>get_branches( )->single(
+      iv_repo = lv_repo
+      iv_name = iv_name ).
 
   ENDMETHOD.
 
@@ -65,20 +60,19 @@ CLASS ZCL_AGS_BRANCH IMPLEMENTATION.
     ls_branch-name   = iv_name.
     ls_branch-sha1   = iv_commit.
 
-    INSERT zags_branches FROM ls_branch.
-    ASSERT sy-subrc = 0.
+    zcl_ags_db=>get_branches( )->insert( ls_branch ).
 
   ENDMETHOD.
 
 
   METHOD delete.
 
-    DELETE FROM zags_branches
-      WHERE repo = ms_data-repo
-      AND name = ms_data-name.
-    ASSERT sy-subrc = 0.
+    zcl_ags_db=>get_branches( )->delete(
+      iv_repo = ms_data-repo
+      iv_name = ms_data-name ).
 
-* unreferenced objects stay in the database
+* todo, unreferenced objects stay in the database
+* see https://github.com/larshp/abapGitServer/issues/41
 
   ENDMETHOD.
 
@@ -94,9 +88,10 @@ CLASS ZCL_AGS_BRANCH IMPLEMENTATION.
 
     ASSERT NOT iv_sha1 IS INITIAL.
 
-    UPDATE zags_branches SET sha1 = iv_sha1
-      WHERE repo = ms_data-repo
-      AND branch = ms_data-branch.
+    zcl_ags_db=>get_branches( )->update_sha1(
+      iv_sha1   = iv_sha1
+      iv_repo   = ms_data-repo
+      iv_branch = ms_data-branch ).
     ASSERT sy-subrc = 0.
 
   ENDMETHOD.

@@ -23,15 +23,7 @@ CLASS ZCL_AGS_LOOKUP IMPLEMENTATION.
 
   METHOD read_object.
 
-    SELECT SINGLE * FROM zags_objects
-      INTO rs_data
-      WHERE sha1 = iv_sha1.
-    IF sy-subrc <> 0.
-      RAISE EXCEPTION TYPE zcx_ags_error
-        EXPORTING
-          textid = zcx_ags_error=>m005
-          sha1   = iv_sha1.
-    ENDIF.
+    rs_data = zcl_ags_db=>get_objects( )->single( iv_sha1 ).
 
   ENDMETHOD.
 ENDCLASS.
