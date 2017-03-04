@@ -1,30 +1,30 @@
-CLASS zcl_ags_obj_commit DEFINITION
-  PUBLIC
-  CREATE PUBLIC.
+class ZCL_AGS_OBJ_COMMIT definition
+  public
+  create public .
 
-  PUBLIC SECTION.
+public section.
 
-    INTERFACES zif_ags_object.
+  interfaces ZIF_AGS_OBJECT .
 
-    ALIASES c_newline
-      FOR zif_ags_object~c_newline.
-    ALIASES deserialize
-      FOR zif_ags_object~deserialize.
-    ALIASES save
-      FOR zif_ags_object~save.
-    ALIASES serialize
-      FOR zif_ags_object~serialize.
-    ALIASES sha1
-      FOR zif_ags_object~sha1.
+  aliases C_NEWLINE
+    for ZIF_AGS_OBJECT~C_NEWLINE .
+  aliases DESERIALIZE
+    for ZIF_AGS_OBJECT~DESERIALIZE .
+  aliases SAVE
+    for ZIF_AGS_OBJECT~SAVE .
+  aliases SERIALIZE
+    for ZIF_AGS_OBJECT~SERIALIZE .
+  aliases SHA1
+    for ZIF_AGS_OBJECT~SHA1 .
 
-    TYPES:
-      BEGIN OF ty_userfield,
+  types:
+    BEGIN OF ty_userfield,
         name  TYPE string,
         email TYPE string,
         time  TYPE zags_unix_time,
-      END OF ty_userfield.
-    TYPES:
-      BEGIN OF ty_pretty,
+      END OF ty_userfield .
+  types:
+    BEGIN OF ty_pretty,
         sha1      TYPE zags_sha1,
         tree      TYPE zags_sha1,
         parent    TYPE zags_sha1,
@@ -33,66 +33,72 @@ CLASS zcl_ags_obj_commit DEFINITION
         committer TYPE ty_userfield,
         text      TYPE string,
         body      TYPE string,
-      END OF ty_pretty.
-    TYPES:
-      ty_pretty_tt TYPE STANDARD TABLE OF ty_pretty WITH DEFAULT KEY.
-    TYPES:
-      BEGIN OF ty_commit,
+      END OF ty_pretty .
+  types:
+    ty_pretty_tt TYPE STANDARD TABLE OF ty_pretty WITH DEFAULT KEY .
+  types:
+    BEGIN OF ty_commit,
         tree      TYPE zags_sha1,
         parent    TYPE zags_sha1,
         parent2   TYPE zags_sha1,
         author    TYPE string,
         committer TYPE string,
         body      TYPE string,
-      END OF ty_commit.
-    TYPES:
-      ty_commits_tt TYPE STANDARD TABLE OF ty_commit WITH DEFAULT KEY.
+      END OF ty_commit .
+  types:
+    ty_commits_tt TYPE STANDARD TABLE OF ty_commit WITH DEFAULT KEY .
 
-    METHODS constructor
-      IMPORTING
-        !iv_sha1 TYPE zags_sha1 OPTIONAL
-      RAISING
-        zcx_ags_error.
-    METHODS get
-      RETURNING
-        VALUE(rs_data) TYPE ty_commit.
-    METHODS get_pretty
-      RETURNING
-        VALUE(rs_data) TYPE ty_pretty
-      RAISING
-        zcx_ags_error.
-    METHODS set_author
-      IMPORTING
-        !iv_author TYPE ty_commit-author
-      RAISING
-        zcx_ags_error.
-    METHODS set_body
-      IMPORTING
-        !iv_body TYPE ty_commit-body.
-    METHODS set_committer
-      IMPORTING
-        !iv_committer TYPE ty_commit-committer
-      RAISING
-        zcx_ags_error.
-    METHODS set_parent
-      IMPORTING
-        !iv_parent TYPE ty_commit-parent.
-    METHODS set_tree
-      IMPORTING
-        !iv_tree TYPE zags_sha1.
+  class-methods GET_INSTANCE
+    importing
+      !IV_SHA1 type ZAGS_SHA1
+    returning
+      value(RO_COMMIT) type ref to ZCL_AGS_OBJ_COMMIT .
+  methods CONSTRUCTOR
+    importing
+      !IV_SHA1 type ZAGS_SHA1 optional
+    raising
+      ZCX_AGS_ERROR .
+  methods GET
+    returning
+      value(RS_DATA) type TY_COMMIT .
+  methods GET_PRETTY
+    returning
+      value(RS_DATA) type TY_PRETTY
+    raising
+      ZCX_AGS_ERROR .
+  methods SET_AUTHOR
+    importing
+      !IV_AUTHOR type TY_COMMIT-AUTHOR
+    raising
+      ZCX_AGS_ERROR .
+  methods SET_BODY
+    importing
+      !IV_BODY type TY_COMMIT-BODY .
+  methods SET_COMMITTER
+    importing
+      !IV_COMMITTER type TY_COMMIT-COMMITTER
+    raising
+      ZCX_AGS_ERROR .
+  methods SET_PARENT
+    importing
+      !IV_PARENT type TY_COMMIT-PARENT .
+  methods SET_TREE
+    importing
+      !IV_TREE type ZAGS_SHA1 .
   PROTECTED SECTION.
-  PRIVATE SECTION.
+private section.
 
-    DATA ms_data TYPE ty_commit.
-    DATA mv_new TYPE abap_bool.
+  data MS_DATA type TY_COMMIT .
+  data MV_NEW type ABAP_BOOL .
+  data MV_SHA1 type ZAGS_SHA1 .
 
-    METHODS parse_userfield
-      IMPORTING
-        !iv_field           TYPE string
-      RETURNING
-        VALUE(rs_userfield) TYPE ty_userfield
-      RAISING
-        zcx_ags_error.
+  methods PARSE_USERFIELD
+    importing
+      !IV_FIELD type STRING
+    returning
+      value(RS_USERFIELD) type TY_USERFIELD
+    raising
+      ZCX_AGS_ERROR .
 ENDCLASS.
 
 
@@ -106,6 +112,7 @@ CLASS ZCL_AGS_OBJ_COMMIT IMPLEMENTATION.
       mv_new = abap_true.
     ELSE.
       mv_new = abap_false.
+      mv_sha1 = iv_sha1.
       deserialize( zcl_ags_lookup=>read_object( iv_sha1 )-data_raw ).
     ENDIF.
 
@@ -119,6 +126,15 @@ CLASS ZCL_AGS_OBJ_COMMIT IMPLEMENTATION.
   ENDMETHOD.
 
 
+  METHOD get_instance.
+
+    CREATE OBJECT ro_commit
+      EXPORTING
+        iv_sha1 = iv_sha1.
+
+  ENDMETHOD.
+
+
   METHOD get_pretty.
 
     DATA: ls_data TYPE ty_commit,
@@ -128,7 +144,13 @@ CLASS ZCL_AGS_OBJ_COMMIT IMPLEMENTATION.
 
     ls_data = get( ).
 
-    rs_data-sha1      = sha1( ).
+    IF mv_sha1 IS INITIAL.
+      ASSERT mv_new = abap_true.
+      rs_data-sha1    = sha1( ).
+    ELSE.
+      rs_data-sha1    = mv_sha1.
+    ENDIF.
+
     rs_data-tree      = ls_data-tree.
     rs_data-parent    = ls_data-parent.
     rs_data-parent2   = ls_data-parent2.
@@ -170,6 +192,8 @@ CLASS ZCL_AGS_OBJ_COMMIT IMPLEMENTATION.
 
   METHOD set_author.
 
+    ASSERT mv_new = abap_true.
+
     parse_userfield( iv_author ).
 
     ms_data-author = iv_author.
@@ -179,12 +203,16 @@ CLASS ZCL_AGS_OBJ_COMMIT IMPLEMENTATION.
 
   METHOD set_body.
 
+    ASSERT mv_new = abap_true.
+
     ms_data-body = iv_body.
 
   ENDMETHOD.
 
 
   METHOD set_committer.
+
+    ASSERT mv_new = abap_true.
 
     parse_userfield( iv_committer ).
 
@@ -195,12 +223,16 @@ CLASS ZCL_AGS_OBJ_COMMIT IMPLEMENTATION.
 
   METHOD set_parent.
 
+    ASSERT mv_new = abap_true.
+
     ms_data-parent = iv_parent.
 
   ENDMETHOD.
 
 
   METHOD set_tree.
+
+    ASSERT mv_new = abap_true.
 
     ms_data-tree = iv_tree.
 

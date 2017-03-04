@@ -306,6 +306,8 @@ CLASS ZCL_AGS_SERVICE_REST IMPLEMENTATION.
     DATA: lt_commits TYPE zcl_ags_obj_commit=>ty_pretty_tt,
           lt_current TYPE ty_files_tt,
           lv_changed TYPE abap_bool,
+          lo_branch  TYPE REF TO zcl_ags_branch,
+          lo_commit  TYPE REF TO zcl_ags_obj_commit,
           lt_prev    TYPE ty_files_tt.
 
     FIELD-SYMBOLS: <ls_current> LIKE LINE OF lt_current,
@@ -314,15 +316,20 @@ CLASS ZCL_AGS_SERVICE_REST IMPLEMENTATION.
                    <ls_commit>  LIKE LINE OF lt_commits.
 
 
+*    lo_branch = zcl_ags_repo=>get_instance( iv_repo )->get_branch( iv_branch ).
+*    lo_commit = zcl_ags_obj_commit=>get_instance( lo_branch->get_data( )-sha1 ).
+*    rt_files = list_files_simple( lo_commit->get( )-tree ).
+
     lt_commits = list_commits(
-      iv_repo    = iv_repo
-      iv_branch  = iv_branch ).
+      iv_repo   = iv_repo
+      iv_branch = iv_branch ).
 
     READ TABLE lt_commits INDEX 1 ASSIGNING <ls_commit>.
     IF sy-subrc = 0.
       rt_files = list_files_simple( <ls_commit>-tree ).
     ENDIF.
 
+* todo, is it wrong to sort by time?
     SORT lt_commits BY committer-time ASCENDING.
 
     LOOP AT lt_commits ASSIGNING <ls_commit>.
