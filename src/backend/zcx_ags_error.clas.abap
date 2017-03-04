@@ -53,24 +53,6 @@ public section.
       attr4 type scx_attrname value '',
     end of M005 .
   constants:
-    begin of M006,
-      msgid type symsgid value 'ZABAPGITSERVER',
-      msgno type symsgno value '006',
-      attr1 type scx_attrname value 'STRING',
-      attr2 type scx_attrname value '',
-      attr3 type scx_attrname value '',
-      attr4 type scx_attrname value '',
-    end of M006 .
-  constants:
-    begin of M007,
-      msgid type symsgid value 'ZABAPGITSERVER',
-      msgno type symsgno value '007',
-      attr1 type scx_attrname value '',
-      attr2 type scx_attrname value '',
-      attr3 type scx_attrname value '',
-      attr4 type scx_attrname value '',
-    end of M007 .
-  constants:
     begin of M008,
       msgid type symsgid value 'ZABAPGITSERVER',
       msgno type symsgno value '008',
@@ -88,15 +70,6 @@ public section.
       attr3 type scx_attrname value '',
       attr4 type scx_attrname value '',
     end of M009 .
-  constants:
-    begin of M010,
-      msgid type symsgid value 'ZABAPGITSERVER',
-      msgno type symsgno value '010',
-      attr1 type scx_attrname value '',
-      attr2 type scx_attrname value '',
-      attr3 type scx_attrname value '',
-      attr4 type scx_attrname value '',
-    end of M010 .
   constants:
     begin of M011,
       msgid type symsgid value 'ZABAPGITSERVER',
@@ -133,7 +106,7 @@ ENDCLASS.
 CLASS ZCX_AGS_ERROR IMPLEMENTATION.
 
 
-  method CONSTRUCTOR.
+  method CONSTRUCTOR ##ADT_SUPPRESS_GENERATION.
 CALL METHOD SUPER->CONSTRUCTOR
 EXPORTING
 PREVIOUS = PREVIOUS

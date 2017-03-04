@@ -10,7 +10,9 @@ public section.
       !IV_COMMIT type ZAGS_SHA1 .
   methods LIST_COMMITS
     returning
-      value(RT_COMMITS) type ZCL_AGS_OBJ_COMMIT=>TY_PRETTY_TT .
+      value(RT_COMMITS) type ZCL_AGS_OBJ_COMMIT=>TY_PRETTY_TT
+    raising
+      ZCX_AGS_ERROR .
   methods LIST_COMMITS_BY_FILE .
   methods LIST_COMMITS_BY_USER .
   methods LIST_FILES_BY_PATH
@@ -35,6 +37,7 @@ CLASS ZCL_AGS_CACHE IMPLEMENTATION.
 
 
   METHOD constructor.
+* todo, not sure about the input fields for this constructor
     mv_repo   = iv_repo.
     mv_commit = iv_commit.
   ENDMETHOD.
@@ -44,7 +47,6 @@ CLASS ZCL_AGS_CACHE IMPLEMENTATION.
 
     DATA: lt_visit  TYPE STANDARD TABLE OF zags_sha1,
           ls_data   TYPE zcl_ags_obj_commit=>ty_pretty,
-          lo_branch TYPE REF TO zcl_ags_branch,
           lv_commit LIKE LINE OF lt_visit.
 
 
@@ -85,7 +87,7 @@ CLASS ZCL_AGS_CACHE IMPLEMENTATION.
   ENDMETHOD.
 
 
-  METHOD LIST_COMMITS_BY_USER.
+  METHOD list_commits_by_user.
 
 * todo, return list of commits
 * input: user
@@ -95,7 +97,7 @@ CLASS ZCL_AGS_CACHE IMPLEMENTATION.
   ENDMETHOD.
 
 
-  METHOD LIST_FILES_BY_PATH.
+  METHOD list_files_by_path.
 
     DATA: lv_commit_sha1 TYPE zags_sha1,
           lv_repo        TYPE zags_tree_cache-repo.

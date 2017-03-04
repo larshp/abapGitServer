@@ -9,13 +9,6 @@ CLASS zcl_ags_service_git DEFINITION
   PRIVATE SECTION.
 
     TYPES:
-      BEGIN OF ty_push,
-        old    TYPE zags_sha1,
-        new    TYPE zags_sha1,
-        name   TYPE zags_branch_name,
-        length TYPE i,
-      END OF ty_push.
-    TYPES:
       BEGIN OF ty_request,
         want   TYPE STANDARD TABLE OF zags_sha1 WITH DEFAULT KEY,
         deepen TYPE i,
@@ -30,7 +23,7 @@ CLASS zcl_ags_service_git DEFINITION
       IMPORTING
         !iv_data       TYPE xstring
       RETURNING
-        VALUE(rs_push) TYPE ty_push
+        VALUE(rs_push) TYPE zcl_ags_branch=>ty_push
       RAISING
         zcx_ags_error.
     METHODS decode_request
@@ -101,7 +94,7 @@ CLASS ZCL_AGS_SERVICE_GIT IMPLEMENTATION.
         iv_name = lv_name.
     lv_head = lo_repo->get_branch( lo_repo->get_data( )-head )->get_data( )-sha1.
 
-    lv_tmp = '001e# service=git-upload-pack'.
+    lv_tmp = '001e# service=git-upload-pack' ##NO_TEXT.
     APPEND lv_tmp TO lt_reply ##no_text.
 
     lv_content = |{ lv_head } HEAD{ get_null( ) }{ lv_reply }|.
@@ -285,7 +278,7 @@ CLASS ZCL_AGS_SERVICE_GIT IMPLEMENTATION.
 
     mi_server->response->set_header_field(
       name  = if_http_header_fields=>content_type
-      value = 'application/x-git-upload-pack-result' ).
+      value = 'application/x-git-upload-pack-result' ) ##NO_TEXT.
 
   ENDMETHOD.
 
@@ -310,7 +303,7 @@ CLASS ZCL_AGS_SERVICE_GIT IMPLEMENTATION.
           lt_objects TYPE zcl_ags_pack=>ty_objects_tt,
           lo_repo    TYPE REF TO zcl_ags_repo,
           lo_branch  TYPE REF TO zcl_ags_branch,
-          ls_push    TYPE ty_push.
+          ls_push    TYPE zcl_ags_branch=>ty_push.
 
 
     ls_push = decode_push( mi_server->request->get_data( ) ).
@@ -322,14 +315,11 @@ CLASS ZCL_AGS_SERVICE_GIT IMPLEMENTATION.
 
     lt_objects = zcl_ags_pack=>decode( lv_xstring ).
 
-    CREATE OBJECT lo_repo
-      EXPORTING
-        iv_name = repo_name( ).
+    lo_repo = zcl_ags_repo=>get_instance( repo_name( ) ).
 
     IF ls_push-old CO '0'.
 * create branch
-      zcl_ags_branch=>create(
-        io_repo   = lo_repo
+      lo_repo->create_branch(
         iv_name   = ls_push-name
         iv_commit = ls_push-new ).
     ELSEIF ls_push-new CO '0'.
@@ -339,18 +329,10 @@ CLASS ZCL_AGS_SERVICE_GIT IMPLEMENTATION.
       lo_branch->delete( ).
     ELSE.
 * update branch
-
-      READ TABLE lt_objects WITH KEY sha1 = ls_push-new TRANSPORTING NO FIELDS.
-* new commit should exist in objects
-      ASSERT sy-subrc = 0.
-
-      lo_branch = lo_repo->get_branch( ls_push-name ).
-
-      ASSERT lo_branch->get_data( )-sha1 = ls_push-old.
-
-      zcl_ags_pack=>save( lt_objects ).
-
-      lo_branch->update_sha1( ls_push-new ).
+      lo_repo->get_branch( ls_push-name )->push(
+        iv_new     = ls_push-new
+        iv_old     = ls_push-old
+        it_objects = lt_objects ).
     ENDIF.
 
     unpack_ok( ).
@@ -361,7 +343,7 @@ CLASS ZCL_AGS_SERVICE_GIT IMPLEMENTATION.
   METHOD unpack_ok.
 
 * todo, this is all wrong(but will work in most cases):
-    mi_server->response->set_cdata( '000eunpack ok#0019ok refs/heads/master#00000000' ).
+    mi_server->response->set_cdata( '000eunpack ok#0019ok refs/heads/master#00000000' ) ##NO_TEXT.
 
   ENDMETHOD.
 

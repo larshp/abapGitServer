@@ -15,9 +15,6 @@ public section.
       value(RO_REPO) type ref to ZCL_AGS_REPO
     raising
       ZCX_AGS_ERROR .
-  class-methods LIST
-    returning
-      value(RT_LIST) type ZAGS_REPOS_TT .
   class-methods GET_INSTANCE
     importing
       !IV_NAME type ZAGS_REPOS-NAME
@@ -25,9 +22,20 @@ public section.
       value(RO_REPO) type ref to ZCL_AGS_REPO
     raising
       ZCX_AGS_ERROR .
+  class-methods LIST
+    returning
+      value(RT_LIST) type ZAGS_REPOS_TT .
   methods CONSTRUCTOR
     importing
       !IV_NAME type ZAGS_REPOS-NAME
+    raising
+      ZCX_AGS_ERROR .
+  methods CREATE_BRANCH
+    importing
+      !IV_NAME type ZAGS_BRANCHES-NAME
+      !IV_COMMIT type ZAGS_SHA1
+    returning
+      value(RO_BRANCH) type ref to ZCL_AGS_BRANCH
     raising
       ZCX_AGS_ERROR .
   methods DELETE
@@ -43,6 +51,11 @@ public section.
   methods GET_DATA
     returning
       value(RS_DATA) type ZAGS_REPOS .
+  methods GET_DEFAULT_BRANCH
+    returning
+      value(RO_BRANCH) type ref to ZCL_AGS_BRANCH
+    raising
+      ZCX_AGS_ERROR .
   methods LIST_BRANCHES
     returning
       value(RT_LIST) type TY_BRANCHES_TT
@@ -54,17 +67,17 @@ public section.
     raising
       ZCX_AGS_ERROR .
   PROTECTED SECTION.
-  PRIVATE SECTION.
+private section.
 
-    DATA ms_data TYPE zags_repos.
+  data MS_DATA type ZAGS_REPOS .
 
-    CLASS-METHODS initial_commit
-      IMPORTING
-        !iv_name         TYPE clike
-      RETURNING
-        VALUE(rv_commit) TYPE zags_sha1
-      RAISING
-        zcx_ags_error.
+  class-methods INITIAL_COMMIT
+    importing
+      !IV_NAME type CLIKE
+    returning
+      value(RV_COMMIT) type ZAGS_SHA1
+    raising
+      ZCX_AGS_ERROR .
 ENDCLASS.
 
 
@@ -105,10 +118,28 @@ CLASS ZCL_AGS_REPO IMPLEMENTATION.
 
     ro_repo = get_instance( iv_name ).
 
-    zcl_ags_branch=>create(
-      io_repo   = ro_repo
+    ro_repo->create_branch(
       iv_name   = ls_repo-head
       iv_commit = initial_commit( iv_name ) ).
+
+  ENDMETHOD.
+
+
+  METHOD create_branch.
+
+    DATA: ls_branch TYPE zags_branches.
+
+* validate that iv_commit exists?
+    zcl_ags_obj_commit=>get_instance( iv_commit ).
+
+    ls_branch-repo   = ms_data-repo.
+    ls_branch-branch = zcl_ags_util=>uuid( ).
+    ls_branch-name   = iv_name.
+    ls_branch-sha1   = iv_commit.
+
+    zcl_ags_db=>get_branches( )->insert( ls_branch ).
+
+    ro_branch = get_branch( iv_name ).
 
   ENDMETHOD.
 
@@ -150,6 +181,13 @@ CLASS ZCL_AGS_REPO IMPLEMENTATION.
   METHOD get_data.
 
     rs_data = ms_data.
+
+  ENDMETHOD.
+
+
+  METHOD get_default_branch.
+
+    ro_branch = get_branch( ms_data-head ).
 
   ENDMETHOD.
 

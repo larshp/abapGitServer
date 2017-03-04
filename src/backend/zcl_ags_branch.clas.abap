@@ -4,13 +4,14 @@ class ZCL_AGS_BRANCH definition
 
 public section.
 
-  class-methods CREATE
-    importing
-      !IO_REPO type ref to ZCL_AGS_REPO
-      !IV_NAME type ZAGS_BRANCHES-NAME
-      !IV_COMMIT type ZAGS_SHA1
-    raising
-      ZCX_AGS_ERROR .
+  types:
+    BEGIN OF ty_push,
+        old    TYPE zags_sha1,
+        new    TYPE zags_sha1,
+        name   TYPE zags_branch_name,
+        length TYPE i,
+      END OF ty_push .
+
   methods CONSTRUCTOR
     importing
       !IO_REPO type ref to ZCL_AGS_REPO
@@ -24,10 +25,17 @@ public section.
   methods GET_DATA
     returning
       value(RS_DATA) type ZAGS_BRANCHES .
+  methods PUSH
+    importing
+      !IV_NEW type ZAGS_SHA1
+      !IV_OLD type ZAGS_SHA1
+      !IT_OBJECTS type ZCL_AGS_PACK=>TY_OBJECTS_TT
+    raising
+      ZCX_AGS_ERROR .
   methods UPDATE_SHA1
     importing
       !IV_SHA1 type ZAGS_SHA1 .
-  PROTECTED SECTION.
+protected section.
   PRIVATE SECTION.
 
     DATA ms_data TYPE zags_branches.
@@ -48,22 +56,6 @@ CLASS ZCL_AGS_BRANCH IMPLEMENTATION.
     ms_data = zcl_ags_db=>get_branches( )->single(
       iv_repo = lv_repo
       iv_name = iv_name ).
-
-  ENDMETHOD.
-
-
-  METHOD create.
-
-    DATA: ls_branch TYPE zags_branches.
-
-* todo, validate that iv_commit exists?
-
-    ls_branch-repo   = io_repo->get_data( )-repo.
-    ls_branch-branch = zcl_ags_util=>uuid( ).
-    ls_branch-name   = iv_name.
-    ls_branch-sha1   = iv_commit.
-
-    zcl_ags_db=>get_branches( )->insert( ls_branch ).
 
   ENDMETHOD.
 
@@ -93,6 +85,26 @@ CLASS ZCL_AGS_BRANCH IMPLEMENTATION.
   METHOD get_data.
 
     rs_data = ms_data.
+
+  ENDMETHOD.
+
+
+  METHOD push.
+
+    ASSERT NOT iv_new IS INITIAL.
+    ASSERT NOT iv_old IS INITIAL.
+    ASSERT NOT it_objects IS INITIAL.
+
+    READ TABLE it_objects WITH KEY sha1 = iv_new TRANSPORTING NO FIELDS.
+* new commit should exist in objects
+    ASSERT sy-subrc = 0.
+
+    ASSERT get_data( )-sha1 = iv_old.
+
+* todo, add object validations?
+    zcl_ags_pack=>save( it_objects ).
+
+    update_sha1( iv_new ).
 
   ENDMETHOD.
 

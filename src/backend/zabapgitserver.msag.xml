@@ -29,12 +29,6 @@
     <T100>
      <SPRSL>E</SPRSL>
      <ARBGB>ZABAPGITSERVER</ARBGB>
-     <MSGNR>003</MSGNR>
-     <TEXT>Done</TEXT>
-    </T100>
-    <T100>
-     <SPRSL>E</SPRSL>
-     <ARBGB>ZABAPGITSERVER</ARBGB>
      <MSGNR>004</MSGNR>
      <TEXT>Error while calculating SHA1</TEXT>
     </T100>
@@ -47,18 +41,6 @@
     <T100>
      <SPRSL>E</SPRSL>
      <ARBGB>ZABAPGITSERVER</ARBGB>
-     <MSGNR>006</MSGNR>
-     <TEXT>Unknown path, &amp;1</TEXT>
-    </T100>
-    <T100>
-     <SPRSL>E</SPRSL>
-     <ARBGB>ZABAPGITSERVER</ARBGB>
-     <MSGNR>007</MSGNR>
-     <TEXT>Unknown chmod</TEXT>
-    </T100>
-    <T100>
-     <SPRSL>E</SPRSL>
-     <ARBGB>ZABAPGITSERVER</ARBGB>
      <MSGNR>008</MSGNR>
      <TEXT>Unable to determine service</TEXT>
     </T100>
@@ -67,12 +49,6 @@
      <ARBGB>ZABAPGITSERVER</ARBGB>
      <MSGNR>009</MSGNR>
      <TEXT>Unknown object type</TEXT>
-    </T100>
-    <T100>
-     <SPRSL>E</SPRSL>
-     <ARBGB>ZABAPGITSERVER</ARBGB>
-     <MSGNR>010</MSGNR>
-     <TEXT>REST error</TEXT>
     </T100>
     <T100>
      <SPRSL>E</SPRSL>

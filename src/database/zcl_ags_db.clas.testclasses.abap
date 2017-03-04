@@ -21,7 +21,7 @@ CLASS ltcl_test IMPLEMENTATION.
 
     CONSTANTS: lc_name TYPE zags_repos-name VALUE 'TESTBLAH'.
 
-    DATA: ls_repo TYPE zags_repos.
+    DATA: ls_repo TYPE zags_repos ##NEEDED.
 
 
     zcl_ags_repo=>create(
@@ -30,7 +30,7 @@ CLASS ltcl_test IMPLEMENTATION.
 
 * nothing should hit the database
     SELECT SINGLE * FROM zags_repos INTO ls_repo
-      WHERE name = lc_name.                               "#EC CI_SUBRC
+      WHERE name = lc_name ##WARN_OK.                     "#EC CI_SUBRC
     cl_abap_unit_assert=>assert_subrc( exp = 4 ).
 
 * but it should still be accessible via memory

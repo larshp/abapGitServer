@@ -59,24 +59,6 @@
     </item>
     <item>
      <ID>I</ID>
-     <KEY>008</KEY>
-     <ENTRY>abapGitServer - Swagger</ENTRY>
-     <LENGTH>46</LENGTH>
-    </item>
-    <item>
-     <ID>I</ID>
-     <KEY>009</KEY>
-     <ENTRY>abapGitServer REST functions</ENTRY>
-     <LENGTH>56</LENGTH>
-    </item>
-    <item>
-     <ID>I</ID>
-     <KEY>010</KEY>
-     <ENTRY>abapGitServer</ENTRY>
-     <LENGTH>23</LENGTH>
-    </item>
-    <item>
-     <ID>I</ID>
      <KEY>011</KEY>
      <ENTRY>Edit repository description</ENTRY>
      <LENGTH>54</LENGTH>
@@ -86,12 +68,6 @@
      <KEY>012</KEY>
      <ENTRY>Read blob via SHA1</ENTRY>
      <LENGTH>28</LENGTH>
-    </item>
-    <item>
-     <ID>I</ID>
-     <KEY>013</KEY>
-     <ENTRY>Delete repository</ENTRY>
-     <LENGTH>27</LENGTH>
     </item>
    </TPOOL>
   </asx:values>

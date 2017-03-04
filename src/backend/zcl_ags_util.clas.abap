@@ -135,7 +135,7 @@ CLASS ZCL_AGS_UTIL IMPLEMENTATION.
     TRY.
         rv_uuid = cl_system_uuid=>if_system_uuid_static~create_uuid_c22( ).
       CATCH cx_uuid_error.
-        ASSERT 1 = 2.
+        ASSERT 0 = 1.
     ENDTRY.
 
   ENDMETHOD.

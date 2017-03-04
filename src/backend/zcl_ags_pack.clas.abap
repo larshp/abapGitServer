@@ -1,44 +1,51 @@
-CLASS zcl_ags_pack DEFINITION
-  PUBLIC
-  FINAL
-  CREATE PUBLIC.
+class ZCL_AGS_PACK definition
+  public
+  final
+  create public .
 
-  PUBLIC SECTION.
+public section.
 
-    TYPES:
-      BEGIN OF ty_object,
+  types:
+    BEGIN OF ty_object,
         sha1 TYPE zags_sha1,
         type TYPE zags_type,
         data TYPE xstring,
-      END OF ty_object.
-    TYPES:
-      ty_objects_tt TYPE STANDARD TABLE OF ty_object WITH DEFAULT KEY.
-    TYPES:
-      ty_adler32 TYPE x LENGTH 4.
+      END OF ty_object .
+  types:
+    ty_objects_tt TYPE STANDARD TABLE OF ty_object WITH DEFAULT KEY .
+  types:
+    ty_adler32 TYPE x LENGTH 4 .
 
-    CLASS-METHODS encode
-      IMPORTING
-        !it_objects    TYPE ty_objects_tt
-      RETURNING
-        VALUE(rv_data) TYPE xstring.
-    CLASS-METHODS decode
-      IMPORTING
-        !iv_data          TYPE xstring
-      RETURNING
-        VALUE(rt_objects) TYPE ty_objects_tt.
-    CLASS-METHODS save
-      IMPORTING
-        !it_objects TYPE ty_objects_tt
-      RAISING
-        zcx_ags_error.
-    CLASS-METHODS explode
-      IMPORTING
-        !ii_object        TYPE REF TO zif_ags_object
-        !iv_deepen        TYPE i DEFAULT 0
-      RETURNING
-        VALUE(rt_objects) TYPE ty_objects_tt
-      RAISING
-        zcx_ags_error.
+  class-methods TO_OBJECT
+    importing
+      !II_OBJECT type ref to ZIF_AGS_OBJECT
+    returning
+      value(RS_OBJECT) type TY_OBJECT
+    raising
+      ZCX_AGS_ERROR .
+  class-methods ENCODE
+    importing
+      !IT_OBJECTS type TY_OBJECTS_TT
+    returning
+      value(RV_DATA) type XSTRING .
+  class-methods DECODE
+    importing
+      !IV_DATA type XSTRING
+    returning
+      value(RT_OBJECTS) type TY_OBJECTS_TT .
+  class-methods SAVE
+    importing
+      !IT_OBJECTS type TY_OBJECTS_TT
+    raising
+      ZCX_AGS_ERROR .
+  class-methods EXPLODE
+    importing
+      !II_OBJECT type ref to ZIF_AGS_OBJECT
+      !IV_DEEPEN type I default 0
+    returning
+      value(RT_OBJECTS) type TY_OBJECTS_TT
+    raising
+      ZCX_AGS_ERROR .
   PROTECTED SECTION.
   PRIVATE SECTION.
 ENDCLASS.
@@ -105,8 +112,7 @@ CLASS ZCL_AGS_PACK IMPLEMENTATION.
           lt_visit  TYPE STANDARD TABLE OF ty_visit WITH DEFAULT KEY,
           lo_commit TYPE REF TO zcl_ags_obj_commit.
 
-    FIELD-SYMBOLS: <ls_obj>   LIKE LINE OF rt_objects,
-                   <ls_visit> LIKE LINE OF lt_visit,
+    FIELD-SYMBOLS: <ls_visit> LIKE LINE OF lt_visit,
                    <ls_new>   LIKE LINE OF lt_visit,
                    <ls_file>  LIKE LINE OF lt_files.
 
@@ -116,10 +122,7 @@ CLASS ZCL_AGS_PACK IMPLEMENTATION.
     <ls_visit>-deepen = iv_deepen.
 
     LOOP AT lt_visit ASSIGNING <ls_visit>.
-      APPEND INITIAL LINE TO rt_objects ASSIGNING <ls_obj>.
-      <ls_obj>-sha1 = <ls_visit>-object->sha1( ).
-      <ls_obj>-type = <ls_visit>-object->type( ).
-      <ls_obj>-data = <ls_visit>-object->serialize( ).
+      APPEND to_object( <ls_visit>-object ) TO rt_objects.
 
       IF <ls_visit>-object->type( ) = zif_ags_constants=>c_type-commit.
         lo_commit ?= <ls_visit>-object.
@@ -184,6 +187,15 @@ CLASS ZCL_AGS_PACK IMPLEMENTATION.
       li_object->save( ).
 
     ENDLOOP.
+
+  ENDMETHOD.
+
+
+  METHOD to_object.
+
+    rs_object-sha1 = ii_object->sha1( ).
+    rs_object-type = ii_object->type( ).
+    rs_object-data = ii_object->serialize( ).
 
   ENDMETHOD.
 ENDCLASS.

@@ -52,7 +52,9 @@ public section.
     importing
       !IV_SHA1 type ZAGS_SHA1
     returning
-      value(RO_COMMIT) type ref to ZCL_AGS_OBJ_COMMIT .
+      value(RO_COMMIT) type ref to ZCL_AGS_OBJ_COMMIT
+    raising
+      ZCX_AGS_ERROR .
   methods CONSTRUCTOR
     importing
       !IV_SHA1 type ZAGS_SHA1 optional
@@ -80,6 +82,9 @@ public section.
     raising
       ZCX_AGS_ERROR .
   methods SET_PARENT
+    importing
+      !IV_PARENT type TY_COMMIT-PARENT .
+  methods SET_PARENT2
     importing
       !IV_PARENT type TY_COMMIT-PARENT .
   methods SET_TREE
@@ -226,6 +231,15 @@ CLASS ZCL_AGS_OBJ_COMMIT IMPLEMENTATION.
     ASSERT mv_new = abap_true.
 
     ms_data-parent = iv_parent.
+
+  ENDMETHOD.
+
+
+  METHOD set_parent2.
+
+    ASSERT mv_new = abap_true.
+
+    ms_data-parent2 = iv_parent.
 
   ENDMETHOD.
 

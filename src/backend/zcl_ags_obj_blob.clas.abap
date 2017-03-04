@@ -32,7 +32,9 @@ public section.
     importing
       !IV_SHA1 type ZAGS_SHA1
     returning
-      value(RO_BLOB) type ref to ZCL_AGS_OBJ_BLOB .
+      value(RO_BLOB) type ref to ZCL_AGS_OBJ_BLOB
+    raising
+      ZCX_AGS_ERROR .
   PROTECTED SECTION.
 private section.
 

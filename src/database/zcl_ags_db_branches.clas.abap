@@ -32,12 +32,12 @@ public section.
     importing
       !IS_BRANCH type ZAGS_BRANCHES .
 protected section.
-private section.
+PRIVATE SECTION.
 
-  data MT_BRANCHES type ZAGS_BRANCHES_TT .
-  data MV_FAKE type ABAP_BOOL .
+  DATA mt_branches TYPE zags_branches_tt .
+  DATA mv_fake TYPE abap_bool .
 
-  methods SET_FAKE .
+  METHODS set_fake ##RELAX.
 ENDCLASS.
 
 
@@ -101,7 +101,7 @@ CLASS ZCL_AGS_DB_BRANCHES IMPLEMENTATION.
     ELSE.
       SELECT SINGLE * FROM zags_branches INTO rs_data
         WHERE name = iv_name
-        AND repo = iv_repo.
+        AND repo = iv_repo ##WARN_OK.
     ENDIF.
     IF sy-subrc <> 0.
       RAISE EXCEPTION TYPE zcx_ags_error
