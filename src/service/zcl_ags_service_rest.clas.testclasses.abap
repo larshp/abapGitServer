@@ -1,10 +1,7 @@
 CLASS ltcl_rest DEFINITION DEFERRED.
 CLASS zcl_ags_service_rest DEFINITION LOCAL FRIENDS ltcl_rest.
 
-CLASS ltcl_rest DEFINITION FOR TESTING
-    DURATION SHORT
-    RISK LEVEL HARMLESS
-    FINAL.
+CLASS ltcl_rest DEFINITION FOR TESTING DURATION SHORT RISK LEVEL HARMLESS FINAL.
 
   PRIVATE SECTION.
     CONSTANTS:
@@ -17,7 +14,6 @@ CLASS ltcl_rest DEFINITION FOR TESTING
     METHODS:
       setup
         RAISING zcx_ags_error,
-      teardown,
       list_files FOR TESTING
         RAISING zcx_ags_error,
       list_branches FOR TESTING
@@ -29,16 +25,14 @@ CLASS ltcl_rest IMPLEMENTATION.
 
   METHOD setup.
 
+    zcl_ags_db=>set_fake( ).
+
     CREATE OBJECT mo_rest.
 
     mo_repo = zcl_ags_repo=>create(
       iv_name        = c_name
       iv_description = c_description ).
 
-  ENDMETHOD.
-
-  METHOD teardown.
-    ROLLBACK WORK.                                     "#EC CI_ROLLBACK
   ENDMETHOD.
 
   METHOD list_files.

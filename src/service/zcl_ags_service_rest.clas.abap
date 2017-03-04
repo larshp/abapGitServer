@@ -144,14 +144,7 @@ CLASS ZCL_AGS_SERVICE_REST IMPLEMENTATION.
 
   METHOD edit_repo.
 
-    DATA: lo_repo TYPE REF TO zcl_ags_repo.
-
-
-    CREATE OBJECT lo_repo
-      EXPORTING
-        iv_name = is_data-name.
-
-    lo_repo->set_description( is_data-description ).
+    zcl_ags_repo=>get_instance( is_data-name )->set_description( is_data-description ).
 
   ENDMETHOD.
 
@@ -167,10 +160,7 @@ CLASS ZCL_AGS_SERVICE_REST IMPLEMENTATION.
                    <lo_branch> LIKE LINE OF lt_branches.
 
 
-    CREATE OBJECT lo_repo
-      EXPORTING
-        iv_name = iv_repo.
-
+    lo_repo = zcl_ags_repo=>get_instance( iv_repo ).
     lv_head = lo_repo->get_data( )-head.
     lt_branches = lo_repo->list_branches( ).
 
@@ -178,9 +168,7 @@ CLASS ZCL_AGS_SERVICE_REST IMPLEMENTATION.
       APPEND INITIAL LINE TO rt_branches ASSIGNING <ls_output>.
       <ls_output>-name = <lo_branch>->get_data( )-name.
 
-      CREATE OBJECT lo_commit
-        EXPORTING
-          iv_sha1 = <lo_branch>->get_data( )-sha1.
+      lo_commit = zcl_ags_obj_commit=>get_instance( <lo_branch>->get_data( )-sha1 ).
 
       <ls_output>-time = lo_commit->get_pretty( )-committer-time.
       <ls_output>-commit = lo_commit->sha1( ).
@@ -256,47 +244,12 @@ CLASS ZCL_AGS_SERVICE_REST IMPLEMENTATION.
 
   METHOD list_commits.
 
-    DATA: lt_visit  TYPE STANDARD TABLE OF zags_sha1,
-          lo_commit TYPE REF TO zcl_ags_obj_commit,
-          ls_data   TYPE zcl_ags_obj_commit=>ty_pretty,
-          lo_repo   TYPE REF TO zcl_ags_repo,
-          lo_branch TYPE REF TO zcl_ags_branch,
-          lv_commit LIKE LINE OF lt_visit.
+    DATA: lo_branch TYPE REF TO zcl_ags_branch.
 
 
-    CREATE OBJECT lo_repo
-      EXPORTING
-        iv_name = iv_repo.
+    lo_branch = zcl_ags_repo=>get_instance( iv_repo )->get_branch( iv_branch ).
 
-    lo_branch = lo_repo->get_branch( iv_branch ).
-
-    APPEND lo_branch->get_data( )-sha1 TO lt_visit.
-
-    LOOP AT lt_visit INTO lv_commit.
-
-      CREATE OBJECT lo_commit
-        EXPORTING
-          iv_sha1 = lv_commit.
-      ls_data = lo_commit->get_pretty( ).
-
-      APPEND ls_data TO rt_commits.
-
-      IF NOT ls_data-parent IS INITIAL.
-        READ TABLE lt_visit FROM ls_data-parent TRANSPORTING NO FIELDS.
-        IF sy-subrc <> 0.
-          APPEND ls_data-parent TO lt_visit.
-        ENDIF.
-      ENDIF.
-      IF NOT ls_data-parent2 IS INITIAL.
-        READ TABLE lt_visit FROM ls_data-parent2 TRANSPORTING NO FIELDS.
-        IF sy-subrc <> 0.
-          APPEND ls_data-parent2 TO lt_visit.
-        ENDIF.
-      ENDIF.
-
-    ENDLOOP.
-
-    SORT rt_commits BY author-time DESCENDING.
+    rt_commits = lo_branch->get_cache( )->list_commits( ).
 
   ENDMETHOD.
 
@@ -329,7 +282,6 @@ CLASS ZCL_AGS_SERVICE_REST IMPLEMENTATION.
       rt_files = list_files_simple( <ls_commit>-tree ).
     ENDIF.
 
-* todo, is it wrong to sort by time?
     SORT lt_commits BY committer-time ASCENDING.
 
     LOOP AT lt_commits ASSIGNING <ls_commit>.
@@ -415,30 +367,21 @@ CLASS ZCL_AGS_SERVICE_REST IMPLEMENTATION.
 
   METHOD read_blob.
 
+* todo, change iv_branch to the correct type?
+
     DATA: lv_commit TYPE zags_sha1,
-          lo_blob   TYPE REF TO zcl_ags_obj_blob,
           lt_files  TYPE ty_files_tt,
-          lo_commit TYPE REF TO zcl_ags_obj_commit,
           lv_branch TYPE zags_branch_name,
-          lo_repo   TYPE REF TO zcl_ags_repo,
           lv_tmp    TYPE string.
 
     FIELD-SYMBOLS: <ls_file> LIKE LINE OF lt_files.
 
 
-    CREATE OBJECT lo_repo
-      EXPORTING
-        iv_name = iv_repo.
-
     lv_branch = iv_branch.
 
-    lv_commit = lo_repo->get_branch( lv_branch )->get_data( )-sha1.
+    lv_commit = zcl_ags_repo=>get_instance( iv_repo )->get_branch( lv_branch )->get_data( )-sha1.
 
-    CREATE OBJECT lo_commit
-      EXPORTING
-        iv_sha1 = lv_commit.
-
-    lt_files = list_files_simple( lo_commit->get( )-tree ).
+    lt_files = list_files_simple( zcl_ags_obj_commit=>get_instance( lv_commit )->get( )-tree ).
 
     lv_tmp = '/' && iv_filename.
     READ TABLE lt_files ASSIGNING <ls_file>
@@ -449,38 +392,23 @@ CLASS ZCL_AGS_SERVICE_REST IMPLEMENTATION.
           textid = zcx_ags_error=>m011.
     ENDIF.
 
-    CREATE OBJECT lo_blob
-      EXPORTING
-        iv_sha1 = <ls_file>-sha1.
-    rv_contents = lo_blob->get_data( ).
+    rv_contents = zcl_ags_obj_blob=>get_instance( <ls_file>-sha1 )->get_data( ).
 
   ENDMETHOD.
 
 
   METHOD read_blob_sha1.
 
-    DATA: lo_blob TYPE REF TO zcl_ags_obj_blob.
-
-
-    CREATE OBJECT lo_blob
-      EXPORTING
-        iv_sha1 = iv_sha1.
-
-    rv_contents = lo_blob->get_data( ).
+    rv_contents = zcl_ags_obj_blob=>get_instance( iv_sha1 )->get_data( ).
 
   ENDMETHOD.
 
 
   METHOD read_commit.
 
-    DATA: lo_commit TYPE REF TO zcl_ags_obj_commit.
-
-
-    CREATE OBJECT lo_commit
-      EXPORTING
-        iv_sha1 = iv_commit.
-
-    MOVE-CORRESPONDING lo_commit->get_pretty( ) TO rs_data.
+    MOVE-CORRESPONDING
+      zcl_ags_obj_commit=>get_instance( iv_commit )->get_pretty( )
+      TO rs_data.
 
     rs_data-files = list_changes(
       iv_new = iv_commit

@@ -1,38 +1,43 @@
-CLASS zcl_ags_obj_blob DEFINITION
-  PUBLIC
-  CREATE PUBLIC.
+class ZCL_AGS_OBJ_BLOB definition
+  public
+  create public .
 
-  PUBLIC SECTION.
+public section.
 
-    INTERFACES zif_ags_object.
+  interfaces ZIF_AGS_OBJECT .
 
-    ALIASES c_newline
-      FOR zif_ags_object~c_newline.
-    ALIASES deserialize
-      FOR zif_ags_object~deserialize.
-    ALIASES save
-      FOR zif_ags_object~save.
-    ALIASES serialize
-      FOR zif_ags_object~serialize.
-    ALIASES sha1
-      FOR zif_ags_object~sha1.
+  aliases C_NEWLINE
+    for ZIF_AGS_OBJECT~C_NEWLINE .
+  aliases DESERIALIZE
+    for ZIF_AGS_OBJECT~DESERIALIZE .
+  aliases SAVE
+    for ZIF_AGS_OBJECT~SAVE .
+  aliases SERIALIZE
+    for ZIF_AGS_OBJECT~SERIALIZE .
+  aliases SHA1
+    for ZIF_AGS_OBJECT~SHA1 .
 
-    METHODS get_data
-      RETURNING
-        VALUE(rv_data) TYPE xstring.
-    METHODS set_data
-      IMPORTING
-        !iv_data TYPE xstring.
-    METHODS constructor
-      IMPORTING
-        !iv_sha1 TYPE zags_sha1 OPTIONAL
-      RAISING
-        zcx_ags_error.
+  methods GET_DATA
+    returning
+      value(RV_DATA) type XSTRING .
+  methods SET_DATA
+    importing
+      !IV_DATA type XSTRING .
+  methods CONSTRUCTOR
+    importing
+      !IV_SHA1 type ZAGS_SHA1 optional
+    raising
+      ZCX_AGS_ERROR .
+  class-methods GET_INSTANCE
+    importing
+      !IV_SHA1 type ZAGS_SHA1
+    returning
+      value(RO_BLOB) type ref to ZCL_AGS_OBJ_BLOB .
   PROTECTED SECTION.
-  PRIVATE SECTION.
+private section.
 
-    DATA mv_data TYPE xstring.
-    DATA mv_new TYPE abap_bool.
+  data MV_DATA type XSTRING .
+  data MV_NEW type ABAP_BOOL .
 ENDCLASS.
 
 
@@ -55,6 +60,15 @@ CLASS ZCL_AGS_OBJ_BLOB IMPLEMENTATION.
   METHOD get_data.
 
     rv_data = mv_data.
+
+  ENDMETHOD.
+
+
+  METHOD get_instance.
+
+    CREATE OBJECT ro_blob
+      EXPORTING
+        iv_sha1 = iv_sha1.
 
   ENDMETHOD.
 

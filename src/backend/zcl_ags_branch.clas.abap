@@ -1,29 +1,32 @@
-CLASS zcl_ags_branch DEFINITION
-  PUBLIC
-  CREATE PUBLIC.
+class ZCL_AGS_BRANCH definition
+  public
+  create public .
 
-  PUBLIC SECTION.
+public section.
 
-    METHODS delete.
-    METHODS get_data
-      RETURNING
-        VALUE(rs_data) TYPE zags_branches.
-    CLASS-METHODS create
-      IMPORTING
-        !io_repo   TYPE REF TO zcl_ags_repo
-        !iv_name   TYPE zags_branches-name
-        !iv_commit TYPE zags_sha1
-      RAISING
-        zcx_ags_error.
-    METHODS constructor
-      IMPORTING
-        !io_repo TYPE REF TO zcl_ags_repo
-        !iv_name TYPE zags_branches-name
-      RAISING
-        zcx_ags_error.
-    METHODS update_sha1
-      IMPORTING
-        !iv_sha1 TYPE zags_sha1.
+  class-methods CREATE
+    importing
+      !IO_REPO type ref to ZCL_AGS_REPO
+      !IV_NAME type ZAGS_BRANCHES-NAME
+      !IV_COMMIT type ZAGS_SHA1
+    raising
+      ZCX_AGS_ERROR .
+  methods CONSTRUCTOR
+    importing
+      !IO_REPO type ref to ZCL_AGS_REPO
+      !IV_NAME type ZAGS_BRANCHES-NAME
+    raising
+      ZCX_AGS_ERROR .
+  methods DELETE .
+  methods GET_CACHE
+    returning
+      value(RO_CACHE) type ref to ZCL_AGS_CACHE .
+  methods GET_DATA
+    returning
+      value(RS_DATA) type ZAGS_BRANCHES .
+  methods UPDATE_SHA1
+    importing
+      !IV_SHA1 type ZAGS_SHA1 .
   PROTECTED SECTION.
   PRIVATE SECTION.
 
@@ -73,6 +76,16 @@ CLASS ZCL_AGS_BRANCH IMPLEMENTATION.
 
 * todo, unreferenced objects stay in the database
 * see https://github.com/larshp/abapGitServer/issues/41
+
+  ENDMETHOD.
+
+
+  METHOD get_cache.
+
+    CREATE OBJECT ro_cache
+      EXPORTING
+        iv_repo   = ms_data-repo
+        iv_commit = ms_data-sha1.
 
   ENDMETHOD.
 
