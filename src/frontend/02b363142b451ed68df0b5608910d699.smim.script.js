@@ -796,7 +796,7 @@ class FilesList extends React.Component {
   
   file(e) {
     let url = this.props.params.repo + "/" + this.props.params.branch + "/blob" + e.PATH + e.FILENAME;
-    let commit = this.props.params.repo + "/commit/" + e.COMMIT_SHA1;
+    let commit = this.props.params.repo + "/commit/" + e.LAST_COMMIT_SHA1;
     return (
       <tr>
       <td>{Octicons.file()}</td>

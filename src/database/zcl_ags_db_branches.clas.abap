@@ -1,43 +1,43 @@
-class ZCL_AGS_DB_BRANCHES definition
-  public
-  create private
+CLASS zcl_ags_db_branches DEFINITION
+  PUBLIC
+  CREATE PRIVATE
 
-  global friends ZCL_AGS_DB .
+  GLOBAL FRIENDS zcl_ags_db .
 
-public section.
+  PUBLIC SECTION.
 
-  methods UPDATE_SHA1
-    importing
-      !IV_REPO type ZAGS_BRANCHES-REPO
-      !IV_BRANCH type ZAGS_BRANCHES-BRANCH
-      !IV_SHA1 type ZAGS_BRANCHES-SHA1 .
-  methods SINGLE
-    importing
-      !IV_REPO type ZAGS_BRANCHES-REPO
-      !IV_NAME type ZAGS_BRANCHES-NAME
-    returning
-      value(RS_DATA) type ZAGS_BRANCHES
-    raising
-      ZCX_AGS_ERROR .
-  methods LIST
-    importing
-      !IV_REPO type ZAGS_BRANCHES-REPO
-    returning
-      value(RT_LIST) type ZAGS_BRANCHES_TT .
-  methods DELETE
-    importing
-      !IV_REPO type ZAGS_BRANCHES-REPO
-      !IV_NAME type ZAGS_BRANCHES-NAME .
-  methods INSERT
-    importing
-      !IS_BRANCH type ZAGS_BRANCHES .
-protected section.
-PRIVATE SECTION.
+    METHODS update_sha1
+      IMPORTING
+        !iv_repo   TYPE zags_branches-repo
+        !iv_branch TYPE zags_branches-branch
+        !iv_sha1   TYPE zags_branches-sha1 .
+    METHODS single
+      IMPORTING
+        !iv_repo       TYPE zags_branches-repo
+        !iv_name       TYPE zags_branches-name
+      RETURNING
+        VALUE(rs_data) TYPE zags_branches
+      RAISING
+        zcx_ags_error .
+    METHODS list
+      IMPORTING
+        !iv_repo       TYPE zags_branches-repo
+      RETURNING
+        VALUE(rt_list) TYPE zags_branches_tt .
+    METHODS delete
+      IMPORTING
+        !iv_repo TYPE zags_branches-repo
+        !iv_name TYPE zags_branches-name .
+    METHODS insert
+      IMPORTING
+        !is_branch TYPE zags_branches .
+  PROTECTED SECTION.
+  PRIVATE SECTION.
 
-  DATA mt_branches TYPE zags_branches_tt .
-  DATA mv_fake TYPE abap_bool .
+    DATA mt_branches TYPE zags_branches_tt .
+    DATA mv_fake TYPE abap_bool .
 
-  METHODS set_fake ##RELAX.
+    METHODS set_fake ##RELAX.
 ENDCLASS.
 
 

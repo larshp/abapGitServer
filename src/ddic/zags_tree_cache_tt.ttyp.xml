@@ -1,0 +1,40 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<abapGit version="v1.0.0" serializer="LCL_OBJECT_TTYP" serializer_version="v1.0.0">
+ <asx:abap xmlns:asx="http://www.sap.com/abapxml" version="1.0">
+  <asx:values>
+   <DD40V>
+    <TYPENAME>ZAGS_TREE_CACHE_TT</TYPENAME>
+    <DDLANGUAGE>E</DDLANGUAGE>
+    <ROWTYPE>ZAGS_TREE_CACHE</ROWTYPE>
+    <ROWKIND>S</ROWKIND>
+    <DATATYPE>STRU</DATATYPE>
+    <ACCESSMODE>S</ACCESSMODE>
+    <KEYDEF>K</KEYDEF>
+    <KEYKIND>U</KEYKIND>
+    <KEYFDCOUNT>0003</KEYFDCOUNT>
+    <DDTEXT>ZAGS_TREE_CACHE Table Type</DDTEXT>
+   </DD40V>
+   <DD42V>
+    <DD42V>
+     <TYPENAME>ZAGS_TREE_CACHE_TT</TYPENAME>
+     <KEYFDPOS>0001</KEYFDPOS>
+     <ROWTYPEPOS>0002</ROWTYPEPOS>
+     <KEYFIELD>REPO</KEYFIELD>
+    </DD42V>
+    <DD42V>
+     <TYPENAME>ZAGS_TREE_CACHE_TT</TYPENAME>
+     <KEYFDPOS>0002</KEYFDPOS>
+     <ROWTYPEPOS>0003</ROWTYPEPOS>
+     <KEYFIELD>COMMIT_SHA1</KEYFIELD>
+    </DD42V>
+    <DD42V>
+     <TYPENAME>ZAGS_TREE_CACHE_TT</TYPENAME>
+     <KEYFDPOS>0003</KEYFDPOS>
+     <ROWTYPEPOS>0004</ROWTYPEPOS>
+     <KEYFIELD>COUNTER</KEYFIELD>
+    </DD42V>
+   </DD42V>
+   <DD43V/>
+  </asx:values>
+ </asx:abap>
+</abapGit>

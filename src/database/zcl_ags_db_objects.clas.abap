@@ -1,28 +1,28 @@
-class ZCL_AGS_DB_OBJECTS definition
-  public
-  create private
+CLASS zcl_ags_db_objects DEFINITION
+  PUBLIC
+  CREATE PRIVATE
 
-  global friends ZCL_AGS_DB .
+  GLOBAL FRIENDS zcl_ags_db .
 
-public section.
+  PUBLIC SECTION.
 
-  methods SINGLE
-    importing
-      !IV_SHA1 type ZAGS_OBJECTS-SHA1
-    returning
-      value(RS_DATA) type ZAGS_OBJECTS
-    raising
-      ZCX_AGS_ERROR .
-  methods MODIFY
-    importing
-      !IS_DATA type ZAGS_OBJECTS .
-protected section.
-private section.
+    METHODS single
+      IMPORTING
+        !iv_sha1       TYPE zags_objects-sha1
+      RETURNING
+        VALUE(rs_data) TYPE zags_objects
+      RAISING
+        zcx_ags_error .
+    METHODS modify
+      IMPORTING
+        !is_data TYPE zags_objects .
+  PROTECTED SECTION.
+  PRIVATE SECTION.
 
-  data MT_OBJECTS type ZAGS_OBJECTS_TT .
-  data MV_FAKE type ABAP_BOOL .
+    DATA mt_objects TYPE zags_objects_tt .
+    DATA mv_fake TYPE abap_bool .
 
-  methods SET_FAKE .
+    METHODS set_fake .
 ENDCLASS.
 
 

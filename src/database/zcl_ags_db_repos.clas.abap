@@ -1,38 +1,38 @@
-class ZCL_AGS_DB_REPOS definition
-  public
-  create private
+CLASS zcl_ags_db_repos DEFINITION
+  PUBLIC
+  CREATE PRIVATE
 
-  global friends ZCL_AGS_DB .
+  GLOBAL FRIENDS zcl_ags_db .
 
-public section.
+  PUBLIC SECTION.
 
-  methods SINGLE
-    importing
-      !IV_NAME type ZAGS_REPOS-NAME
-    returning
-      value(RS_REPO) type ZAGS_REPOS
-    raising
-      ZCX_AGS_ERROR .
-  methods LIST
-    returning
-      value(RT_LIST) type ZAGS_REPOS_TT .
-  methods DELETE
-    importing
-      !IV_NAME type ZAGS_REPOS-NAME .
-  methods UPDATE_DESCRIPTION
-    importing
-      !IV_REPO type ZAGS_REPOS-REPO
-      !IV_DESCRIPTION type ZAGS_REPOS-DESCRIPTION .
-  methods INSERT
-    importing
-      !IS_REPO type ZAGS_REPOS .
-protected section.
-private section.
+    METHODS single
+      IMPORTING
+        !iv_name       TYPE zags_repos-name
+      RETURNING
+        VALUE(rs_repo) TYPE zags_repos
+      RAISING
+        zcx_ags_error .
+    METHODS list
+      RETURNING
+        VALUE(rt_list) TYPE zags_repos_tt .
+    METHODS delete
+      IMPORTING
+        !iv_name TYPE zags_repos-name .
+    METHODS update_description
+      IMPORTING
+        !iv_repo        TYPE zags_repos-repo
+        !iv_description TYPE zags_repos-description .
+    METHODS insert
+      IMPORTING
+        !is_repo TYPE zags_repos .
+  PROTECTED SECTION.
+  PRIVATE SECTION.
 
-  data MT_REPOS type ZAGS_REPOS_TT .
-  data MV_FAKE type ABAP_BOOL .
+    DATA mt_repos TYPE zags_repos_tt .
+    DATA mv_fake TYPE abap_bool .
 
-  methods SET_FAKE .
+    METHODS set_fake .
 ENDCLASS.
 
 

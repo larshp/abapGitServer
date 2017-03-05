@@ -109,10 +109,10 @@ CLASS ltcl_list_files_by_path IMPLEMENTATION.
     LOOP AT it_files ASSIGNING <ls_file>.
       cl_abap_unit_assert=>assert_not_initial( <ls_file>-filename ).
       cl_abap_unit_assert=>assert_not_initial( <ls_file>-path ).
-      cl_abap_unit_assert=>assert_not_initial( <ls_file>-sha1 ).
-      cl_abap_unit_assert=>assert_not_initial( <ls_file>-comment ).
-      cl_abap_unit_assert=>assert_not_initial( <ls_file>-commit_sha1 ).
+      cl_abap_unit_assert=>assert_not_initial( <ls_file>-blob_sha1 ).
+      cl_abap_unit_assert=>assert_not_initial( <ls_file>-last_commit_sha1 ).
       cl_abap_unit_assert=>assert_not_initial( <ls_file>-time ).
+      cl_abap_unit_assert=>assert_not_initial( <ls_file>-comment ).
     ENDLOOP.
 
   ENDMETHOD.
@@ -172,8 +172,9 @@ CLASS ltcl_list_files_by_path IMPLEMENTATION.
 
   METHOD list_files_by_path.
 
-    DATA: lt_files TYPE zcl_ags_cache=>ty_files_tt,
-          lo_repo  TYPE REF TO zcl_ags_repo.
+    DATA: lt_files  TYPE zcl_ags_cache=>ty_files_tt,
+          lt_files2 TYPE zcl_ags_cache=>ty_files_tt,
+          lo_repo   TYPE REF TO zcl_ags_repo.
 
 
     lo_repo = zcl_ags_repo=>create(
@@ -193,6 +194,12 @@ CLASS ltcl_list_files_by_path IMPLEMENTATION.
       act = lines( lt_files )
       exp = 2 ).
     check_filled( lt_files ).
+
+* identical query, test cache returns the correct result
+    lt_files2 = lo_repo->get_default_branch( )->get_cache( )->list_files_by_path( '/' ).
+    cl_abap_unit_assert=>assert_equals(
+      act = lt_files
+      exp = lt_files2 ).
 
   ENDMETHOD.
 

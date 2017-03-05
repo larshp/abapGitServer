@@ -192,9 +192,9 @@ CLASS ZCL_AGS_SERVICE_REST IMPLEMENTATION.
 
     LOOP AT lt_new INTO ls_new.
 * remove unchanged
-      DELETE lt_old WHERE filename = ls_new-filename AND sha1 = ls_new-sha1.
+      DELETE lt_old WHERE filename = ls_new-filename AND blob_sha1 = ls_new-blob_sha1.
       IF sy-subrc = 0.
-        DELETE lt_new WHERE filename = ls_new-filename AND sha1 = ls_new-sha1.
+        DELETE lt_new WHERE filename = ls_new-filename AND blob_sha1 = ls_new-blob_sha1.
         ASSERT sy-subrc = 0.
         CONTINUE.
       ENDIF.
@@ -209,22 +209,22 @@ CLASS ZCL_AGS_SERVICE_REST IMPLEMENTATION.
 
         APPEND INITIAL LINE TO rt_files ASSIGNING <ls_file>.
         <ls_file>-filename = ls_new-filename.
-        <ls_file>-old_blob = ls_old-sha1.
-        <ls_file>-new_blob = ls_new-sha1.
+        <ls_file>-old_blob = ls_old-blob_sha1.
+        <ls_file>-new_blob = ls_new-blob_sha1.
         CONTINUE.
       ENDIF.
 
 * find new
       APPEND INITIAL LINE TO rt_files ASSIGNING <ls_file>.
       <ls_file>-filename = ls_new-filename.
-      <ls_file>-new_blob = ls_new-sha1.
+      <ls_file>-new_blob = ls_new-blob_sha1.
     ENDLOOP.
 
 * find deleted
     LOOP AT lt_old INTO ls_old.
       APPEND INITIAL LINE TO rt_files ASSIGNING <ls_file>.
       <ls_file>-filename = ls_old-filename.
-      <ls_file>-old_blob = ls_old-sha1.
+      <ls_file>-old_blob = ls_old-blob_sha1.
     ENDLOOP.
 
   ENDMETHOD.
@@ -288,7 +288,7 @@ CLASS ZCL_AGS_SERVICE_REST IMPLEMENTATION.
           textid = zcx_ags_error=>m011.
     ENDIF.
 
-    rv_contents = zcl_ags_obj_blob=>get_instance( <ls_file>-sha1 )->get_data( ).
+    rv_contents = zcl_ags_obj_blob=>get_instance( <ls_file>-blob_sha1 )->get_data( ).
 
   ENDMETHOD.
 
