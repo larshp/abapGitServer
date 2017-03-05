@@ -19,6 +19,7 @@ CLASS ltcl_list_commits IMPLEMENTATION.
 
   METHOD commit_new_file.
 
+* todo, to be moved to ZCL_AGS_FILE_OPERATIONS
     DATA: lo_blob    TYPE REF TO zcl_ags_obj_blob,
           lo_tree    TYPE REF TO zcl_ags_obj_tree,
           lo_commit  TYPE REF TO zcl_ags_obj_commit,
@@ -127,7 +128,7 @@ CLASS ltcl_list_files_by_path IMPLEMENTATION.
           lo_branch  TYPE REF TO zcl_ags_branch,
           lt_objects TYPE zcl_ags_pack=>ty_objects_tt.
 
-
+* todo, to be moved to ZCL_AGS_FILE_OPERATIONS
     lo_branch = io_repo->get_default_branch( ).
 
     CREATE OBJECT lo_blob.
@@ -172,7 +173,7 @@ CLASS ltcl_list_files_by_path IMPLEMENTATION.
 
   METHOD list_files_by_path.
 
-    DATA: lt_files  TYPE zcl_ags_cache=>ty_files_tt,
+    DATA: lt_files1 TYPE zcl_ags_cache=>ty_files_tt,
           lt_files2 TYPE zcl_ags_cache=>ty_files_tt,
           lo_repo   TYPE REF TO zcl_ags_repo.
 
@@ -181,24 +182,24 @@ CLASS ltcl_list_files_by_path IMPLEMENTATION.
       iv_name        = 'UNITTEST'
       iv_description = 'FOOBAR' ).
 
-    lt_files = lo_repo->get_default_branch( )->get_cache( )->list_files_by_path( '/' ).
+    lt_files1 = lo_repo->get_default_branch( )->get_cache( )->list_files_by_path( '/' ).
     cl_abap_unit_assert=>assert_equals(
-      act = lines( lt_files )
+      act = lines( lt_files1 )
       exp = 1 ).
-    check_filled( lt_files ).
+    check_filled( lt_files1 ).
 
     push( lo_repo ).
 
-    lt_files = lo_repo->get_default_branch( )->get_cache( )->list_files_by_path( '/' ).
+    lt_files1 = lo_repo->get_default_branch( )->get_cache( )->list_files_by_path( '/' ).
     cl_abap_unit_assert=>assert_equals(
-      act = lines( lt_files )
+      act = lines( lt_files1 )
       exp = 2 ).
-    check_filled( lt_files ).
+    check_filled( lt_files1 ).
 
 * identical query, test cache returns the correct result
     lt_files2 = lo_repo->get_default_branch( )->get_cache( )->list_files_by_path( '/' ).
     cl_abap_unit_assert=>assert_equals(
-      act = lt_files
+      act = lt_files1
       exp = lt_files2 ).
 
   ENDMETHOD.

@@ -5,19 +5,16 @@ CLASS ltcl_rest DEFINITION FOR TESTING DURATION SHORT RISK LEVEL HARMLESS FINAL.
 
   PRIVATE SECTION.
     CONSTANTS:
-      c_name        TYPE zags_repos-name VALUE 'unit_test' ##NO_TEXT,
-      c_description TYPE zags_repos-description VALUE 'description, foobar' ##NO_TEXT.
+      c_name        TYPE zags_repos-name VALUE 'UNIT_TEST',
+      c_description TYPE zags_repos-description VALUE 'DESCRIPTION, FOOBAR'.
 
     DATA: mo_rest TYPE REF TO zcl_ags_service_rest,
           mo_repo TYPE REF TO zcl_ags_repo.
 
     METHODS:
-      setup
-        RAISING zcx_ags_error,
-      list_files FOR TESTING
-        RAISING zcx_ags_error,
-      list_branches FOR TESTING
-        RAISING zcx_ags_error.
+      setup RAISING zcx_ags_error,
+      list_files FOR TESTING RAISING zcx_ags_error,
+      list_branches FOR TESTING RAISING zcx_ags_error.
 
 ENDCLASS.       "ltcl_List_Files
 
@@ -37,7 +34,7 @@ CLASS ltcl_rest IMPLEMENTATION.
 
   METHOD list_files.
 
-    DATA: lt_files  TYPE zcl_ags_cache=>ty_files_tt.
+    DATA: lt_files TYPE zcl_ags_cache=>ty_files_tt.
 
 
     lt_files = mo_rest->list_files(

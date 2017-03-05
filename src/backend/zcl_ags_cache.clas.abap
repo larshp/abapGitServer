@@ -44,25 +44,25 @@ CLASS zcl_ags_cache DEFINITION
         VALUE(rt_files) TYPE ty_files_simple_tt
       RAISING
         zcx_ags_error .
-protected section.
-private section.
+  PROTECTED SECTION.
+  PRIVATE SECTION.
 
-  data MV_REPO type ZAGS_REPO .
-  data MV_COMMIT type ZAGS_SHA1 .
+    DATA mv_repo TYPE zags_repo .
+    DATA mv_commit TYPE zags_sha1 .
 
-  methods READ_TREE_CACHE
-    importing
-      !IV_PATH type STRING
-      !IV_COMMIT type ZAGS_SHA1
-    returning
-      value(RT_FILES) type TY_FILES_TT
-    raising
-      ZCX_AGS_ERROR .
-  methods SAVE_TREE_CACHE
-    importing
-      !IT_FILES type TY_FILES_TT
-    raising
-      ZCX_AGS_ERROR .
+    METHODS read_tree_cache
+      IMPORTING
+        !iv_path        TYPE string
+        !iv_commit      TYPE zags_sha1
+      RETURNING
+        VALUE(rt_files) TYPE ty_files_tt
+      RAISING
+        zcx_ags_error .
+    METHODS save_tree_cache
+      IMPORTING
+        !it_files TYPE ty_files_tt
+      RAISING
+        zcx_ags_error .
 ENDCLASS.
 
 
@@ -136,6 +136,7 @@ CLASS ZCL_AGS_CACHE IMPLEMENTATION.
     DATA: lt_commits TYPE zcl_ags_obj_commit=>ty_pretty_tt,
           lv_changed TYPE abap_bool,
           lo_cache   TYPE REF TO zcl_ags_cache,
+          lt_cache   TYPE ty_files_tt,
           lt_current TYPE ty_files_simple_tt,
           lt_files   TYPE ty_files_simple_tt,
           lt_prev    TYPE ty_files_simple_tt.
@@ -151,14 +152,13 @@ CLASS ZCL_AGS_CACHE IMPLEMENTATION.
 * todo, implement path handling, backend + frontend
     ASSERT iv_path = '/'.
 
+* todo, this will break if the git history is rewritten
     rt_files = read_tree_cache(
       iv_path   = iv_path
       iv_commit = mv_commit ).
     IF lines( rt_files ) > 0.
       RETURN.
     ENDIF.
-
-* todo, optimize, the next tree can be calculated from exising tree_cache
 
     lt_commits = list_commits( ).
     lt_files = list_files_simple( ).
@@ -170,6 +170,16 @@ CLASS ZCL_AGS_CACHE IMPLEMENTATION.
     SORT lt_commits BY committer-time ASCENDING.
 
     LOOP AT lt_commits ASSIGNING <ls_commit>.
+*      lt_cache = read_tree_cache(
+*        iv_path   = iv_path
+*        iv_commit = <ls_commit>-sha1 ).
+*      IF lines( lt_cache ) > 0.
+*        LOOP AT rt_files ASSIGNING <ls_output> WHERE last_commit_sha1 IS INITIAL.
+*          BREAK-POINT.
+*        ENDLOOP.
+*        EXIT.
+*      ENDIF.
+
       CREATE OBJECT lo_cache
         EXPORTING
           iv_repo   = mv_repo
@@ -191,8 +201,8 @@ CLASS ZCL_AGS_CACHE IMPLEMENTATION.
             path = <ls_current>-path.
           IF sy-subrc = 0.
             <ls_output>-last_commit_sha1 = <ls_commit>-sha1.
-            <ls_output>-comment     = <ls_commit>-text.
-            <ls_output>-time        = <ls_commit>-committer-time.
+            <ls_output>-comment = <ls_commit>-text.
+            <ls_output>-time    = <ls_commit>-committer-time.
           ENDIF.
         ENDIF.
       ENDLOOP.

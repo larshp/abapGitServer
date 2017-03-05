@@ -1,41 +1,41 @@
-class ZCL_AGS_BRANCH definition
-  public
-  create public .
+CLASS zcl_ags_branch DEFINITION
+  PUBLIC
+  CREATE PUBLIC .
 
-public section.
+  PUBLIC SECTION.
 
-  types:
-    BEGIN OF ty_push,
+    TYPES:
+      BEGIN OF ty_push,
         old    TYPE zags_sha1,
         new    TYPE zags_sha1,
         name   TYPE zags_branch_name,
         length TYPE i,
       END OF ty_push .
 
-  methods CONSTRUCTOR
-    importing
-      !IO_REPO type ref to ZCL_AGS_REPO
-      !IV_NAME type ZAGS_BRANCHES-NAME
-    raising
-      ZCX_AGS_ERROR .
-  methods DELETE .
-  methods GET_CACHE
-    returning
-      value(RO_CACHE) type ref to ZCL_AGS_CACHE .
-  methods GET_DATA
-    returning
-      value(RS_DATA) type ZAGS_BRANCHES .
-  methods PUSH
-    importing
-      !IV_NEW type ZAGS_SHA1
-      !IV_OLD type ZAGS_SHA1
-      !IT_OBJECTS type ZCL_AGS_PACK=>TY_OBJECTS_TT
-    raising
-      ZCX_AGS_ERROR .
-  methods UPDATE_SHA1
-    importing
-      !IV_SHA1 type ZAGS_SHA1 .
-protected section.
+    METHODS constructor
+      IMPORTING
+        !io_repo TYPE REF TO zcl_ags_repo
+        !iv_name TYPE zags_branches-name
+      RAISING
+        zcx_ags_error .
+    METHODS delete .
+    METHODS get_cache
+      RETURNING
+        VALUE(ro_cache) TYPE REF TO zcl_ags_cache .
+    METHODS get_data
+      RETURNING
+        VALUE(rs_data) TYPE zags_branches .
+    METHODS push
+      IMPORTING
+        !iv_new     TYPE zags_sha1
+        !iv_old     TYPE zags_sha1
+        !it_objects TYPE zcl_ags_pack=>ty_objects_tt
+      RAISING
+        zcx_ags_error .
+    METHODS update_sha1
+      IMPORTING
+        !iv_sha1 TYPE zags_sha1 .
+  PROTECTED SECTION.
   PRIVATE SECTION.
 
     DATA ms_data TYPE zags_branches.
