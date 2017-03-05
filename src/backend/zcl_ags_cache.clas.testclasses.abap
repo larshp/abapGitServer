@@ -46,7 +46,7 @@ CLASS ltcl_list_commits IMPLEMENTATION.
 
   METHOD test02.
 
-    CONSTANTS: lc_count TYPE i VALUE 9.
+    CONSTANTS: lc_count TYPE i VALUE 900.
 
     DATA: lt_commits TYPE zcl_ags_obj_commit=>ty_pretty_tt,
           lv_index   TYPE i.
@@ -94,10 +94,14 @@ CLASS ltcl_list_files_by_path DEFINITION
 
     METHODS:
       setup RAISING zcx_ags_error,
-      check IMPORTING iv_lines TYPE i RAISING zcx_ags_error,
+      check
+        IMPORTING iv_lines        TYPE i
+        RETURNING VALUE(rt_files) TYPE zcl_ags_cache=>ty_files_tt
+        RAISING   zcx_ags_error,
       check_filled IMPORTING it_files TYPE zcl_ags_cache=>ty_files_tt,
       test01 FOR TESTING RAISING zcx_ags_error,
-      test02 FOR TESTING RAISING zcx_ags_error.
+      test02 FOR TESTING RAISING zcx_ags_error,
+      test03 FOR TESTING RAISING zcx_ags_error.
 
 ENDCLASS.       "ltcl_List_Files_By_Path
 
@@ -133,6 +137,8 @@ CLASS ltcl_list_files_by_path IMPLEMENTATION.
     cl_abap_unit_assert=>assert_equals(
       act = lt_files1
       exp = lt_files2 ).
+
+    rt_files = lt_files1.
 
   ENDMETHOD.
 
@@ -174,6 +180,32 @@ CLASS ltcl_list_files_by_path IMPLEMENTATION.
       iv_commit_message = 'BLAH' ).
 
     check( 2 ).
+
+  ENDMETHOD.
+
+  METHOD test03.
+
+    CONSTANTS: lc_latest TYPE string VALUE 'LATEST'.
+
+    DATA: lt_files TYPE zcl_ags_cache=>ty_files_tt.
+
+
+    mo_branch->get_files( )->add(
+      iv_filename       = 'NEW.TXT'
+      iv_path           = c_root
+      iv_file_contents  = 'WELLO'
+      iv_commit_message = 'BLAH' ).
+
+    mo_branch->get_files( )->modify(
+      iv_filename       = 'NEW.TXT'
+      iv_path           = c_root
+      iv_file_contents  = '234'
+      iv_commit_message = lc_latest ).
+
+    lt_files = check( 2 ).
+
+    READ TABLE lt_files WITH KEY comment = lc_latest TRANSPORTING NO FIELDS.
+    cl_abap_unit_assert=>assert_subrc( ).
 
   ENDMETHOD.
 

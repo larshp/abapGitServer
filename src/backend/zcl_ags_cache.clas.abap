@@ -146,6 +146,7 @@ CLASS ZCL_AGS_CACHE IMPLEMENTATION.
       lt_prev = zcl_ags_db=>get_tree_cache( )->select(
         iv_repo        = mv_repo
         iv_commit_sha1 = lv_parent ).
+      ASSERT lines( lt_prev ) > 0.
     ENDIF.
 
     LOOP AT lt_files ASSIGNING <ls_output>.
@@ -157,6 +158,7 @@ CLASS ZCL_AGS_CACHE IMPLEMENTATION.
       ENDIF.
     ENDLOOP.
 
+    ASSERT lines( lt_files ) > 0.
     save_tree_cache( iv_commit = iv_commit
                      it_data   = lt_files ).
 
@@ -199,8 +201,8 @@ CLASS ZCL_AGS_CACHE IMPLEMENTATION.
 
     ENDLOOP.
 
-* todo, not needed?
-    SORT rt_commits BY author-time DESCENDING.
+* todo, not needed? or handle in a different way?
+    SORT rt_commits STABLE BY author-time DESCENDING.
 
   ENDMETHOD.
 
