@@ -118,7 +118,7 @@ CLASS ZCL_AGS_OBJ_COMMIT IMPLEMENTATION.
     ELSE.
       mv_new = abap_false.
       mv_sha1 = iv_sha1.
-      deserialize( zcl_ags_lookup=>read_object( iv_sha1 )-data_raw ).
+      deserialize( zcl_ags_db=>get_objects( )->single( iv_sha1 )-data_raw ).
     ENDIF.
 
   ENDMETHOD.

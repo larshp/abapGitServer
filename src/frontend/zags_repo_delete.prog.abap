@@ -1,4 +1,4 @@
-REPORT zags_delete_repo.
+REPORT zags_repo_delete.
 
 PARAMETERS: p_name TYPE zags_repos-name OBLIGATORY.
 
@@ -7,13 +7,7 @@ START-OF-SELECTION.
 
 FORM run RAISING zcx_ags_error.
 
-  DATA: lo_repo TYPE REF TO zcl_ags_repo.
-
-  CREATE OBJECT lo_repo
-    EXPORTING
-      iv_name = p_name.
-
-  lo_repo->delete( ).
+  zcl_ags_repo=>get_instance( p_name )->delete( ).
 
   WRITE: / 'Done'(001).
 

@@ -3,7 +3,7 @@
  <asx:abap xmlns:asx="http://www.sap.com/abapxml" version="1.0">
   <asx:values>
    <PROGDIR>
-    <NAME>ZAGS_DELETE_REPO</NAME>
+    <NAME>ZAGS_REPO_DELETE</NAME>
     <STATE>A</STATE>
     <VARCL>X</VARCL>
     <SUBC>1</SUBC>
@@ -21,8 +21,8 @@
     </item>
     <item>
      <ID>R</ID>
-     <ENTRY>Delete Repository</ENTRY>
-     <LENGTH>17</LENGTH>
+     <ENTRY>abapGitServer - Delete Repository</ENTRY>
+     <LENGTH>33</LENGTH>
     </item>
     <item>
      <ID>S</ID>

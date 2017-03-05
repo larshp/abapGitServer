@@ -1,6 +1,6 @@
 CLASS zcl_ags_cache DEFINITION
   PUBLIC
-  CREATE PUBLIC.
+  CREATE PUBLIC .
 
   PUBLIC SECTION.
 
@@ -9,7 +9,7 @@ CLASS zcl_ags_cache DEFINITION
             INCLUDE TYPE zags_tree_cache_data.
     TYPES: comment TYPE string,
            time    TYPE zags_unix_time,
-           END OF ty_file.
+           END OF ty_file .
     TYPES:
       ty_files_tt TYPE STANDARD TABLE OF ty_file WITH DEFAULT KEY .
     TYPES:
@@ -17,10 +17,13 @@ CLASS zcl_ags_cache DEFINITION
         filename  TYPE string,
         path      TYPE string,
         blob_sha1 TYPE zags_sha1,
-      END OF ty_file_simple.
+      END OF ty_file_simple .
     TYPES:
       ty_files_simple_tt TYPE STANDARD TABLE OF ty_file_simple WITH DEFAULT KEY .
 
+    METHODS build
+      RAISING
+        zcx_ags_error .
     METHODS constructor
       IMPORTING
         !iv_repo   TYPE zags_repo
@@ -50,6 +53,11 @@ CLASS zcl_ags_cache DEFINITION
     DATA mv_repo TYPE zags_repo .
     DATA mv_commit TYPE zags_sha1 .
 
+    METHODS build_tree_cache
+      IMPORTING
+        !iv_commit TYPE zags_sha1
+      RAISING
+        zcx_ags_error .
     METHODS read_tree_cache
       IMPORTING
         !iv_path        TYPE string
@@ -60,7 +68,8 @@ CLASS zcl_ags_cache DEFINITION
         zcx_ags_error .
     METHODS save_tree_cache
       IMPORTING
-        !it_files TYPE ty_files_tt
+        !iv_commit TYPE zags_sha1
+        !it_data   TYPE zags_tree_cache_data_tt
       RAISING
         zcx_ags_error .
 ENDCLASS.
@@ -68,6 +77,90 @@ ENDCLASS.
 
 
 CLASS ZCL_AGS_CACHE IMPLEMENTATION.
+
+
+  METHOD build.
+
+    DATA: lt_commits TYPE zcl_ags_obj_commit=>ty_pretty_tt,
+          lt_cache   TYPE zags_tree_cache_tt,
+          lv_index   TYPE i,
+          lv_commit  TYPE zags_sha1,
+          lt_missing TYPE STANDARD TABLE OF zags_sha1 WITH DEFAULT KEY.
+
+    FIELD-SYMBOLS: <ls_commit> LIKE LINE OF lt_commits.
+
+* todo, this will break if the git history is rewritten?
+    lt_commits = list_commits( ).
+
+    LOOP AT lt_commits ASSIGNING <ls_commit>.
+      lt_cache = zcl_ags_db=>get_tree_cache( )->select(
+        iv_repo        = mv_repo
+        iv_commit_sha1 = <ls_commit>-sha1
+        iv_max         = 1 ).
+      IF lines( lt_cache ) > 0.
+        EXIT. " current loop
+      ENDIF.
+
+      APPEND <ls_commit>-sha1 TO lt_missing.
+    ENDLOOP.
+
+    lv_index = lines( lt_missing ).
+    DO lines( lt_missing ) TIMES.
+* start with the oldest
+      READ TABLE lt_missing INDEX lv_index INTO lv_commit.
+      build_tree_cache( lv_commit ).
+      lv_index = lv_index - 1.
+    ENDDO.
+
+  ENDMETHOD.
+
+
+  METHOD build_tree_cache.
+
+    DATA: lv_parent  TYPE zags_sha1,
+          lt_current TYPE ty_files_simple_tt,
+          lt_prev    TYPE zags_tree_cache_tt,
+          lt_files   TYPE zags_tree_cache_data_tt,
+          lo_cache   TYPE REF TO zcl_ags_cache.
+
+    FIELD-SYMBOLS: <ls_current> LIKE LINE OF lt_current,
+                   <ls_output>  LIKE LINE OF lt_files,
+                   <ls_prev>    LIKE LINE OF lt_prev.
+
+* todo, handle multiple 2 parent(merge commits)
+    lv_parent = zcl_ags_obj_commit=>get_instance( iv_commit )->get( )-parent.
+
+    CREATE OBJECT lo_cache
+      EXPORTING
+        iv_repo   = mv_repo
+        iv_commit = iv_commit.
+    lt_current = lo_cache->list_files_simple( ).
+    LOOP AT lt_current ASSIGNING <ls_current>.
+      APPEND INITIAL LINE TO lt_files ASSIGNING <ls_output>.
+      MOVE-CORRESPONDING <ls_current> TO <ls_output>.
+      <ls_output>-last_commit_sha1 = iv_commit.
+    ENDLOOP.
+    CLEAR lt_current.
+
+    IF NOT lv_parent IS INITIAL.
+      lt_prev = zcl_ags_db=>get_tree_cache( )->select(
+        iv_repo        = mv_repo
+        iv_commit_sha1 = lv_parent ).
+    ENDIF.
+
+    LOOP AT lt_files ASSIGNING <ls_output>.
+      READ TABLE lt_prev ASSIGNING <ls_prev>
+        WITH KEY filename = <ls_output>-filename
+        path = <ls_output>-path.
+      IF sy-subrc = 0 AND <ls_prev>-blob_sha1 = <ls_output>-blob_sha1.
+        <ls_output>-last_commit_sha1 = <ls_prev>-last_commit_sha1.
+      ENDIF.
+    ENDLOOP.
+
+    save_tree_cache( iv_commit = iv_commit
+                     it_data   = lt_files ).
+
+  ENDMETHOD.
 
 
   METHOD constructor.
@@ -106,6 +199,7 @@ CLASS ZCL_AGS_CACHE IMPLEMENTATION.
 
     ENDLOOP.
 
+* todo, not needed?
     SORT rt_commits BY author-time DESCENDING.
 
   ENDMETHOD.
@@ -133,84 +227,14 @@ CLASS ZCL_AGS_CACHE IMPLEMENTATION.
 
   METHOD list_files_by_path.
 
-    DATA: lt_commits TYPE zcl_ags_obj_commit=>ty_pretty_tt,
-          lv_changed TYPE abap_bool,
-          lo_cache   TYPE REF TO zcl_ags_cache,
-          lt_cache   TYPE ty_files_tt,
-          lt_current TYPE ty_files_simple_tt,
-          lt_files   TYPE ty_files_simple_tt,
-          lt_prev    TYPE ty_files_simple_tt.
-
-    FIELD-SYMBOLS: <ls_current> LIKE LINE OF lt_current,
-                   <ls_prev>    LIKE LINE OF lt_prev,
-                   <ls_output>  LIKE LINE OF rt_files,
-                   <ls_simple>  LIKE LINE OF lt_files,
-                   <ls_file>    LIKE LINE OF rt_files,
-                   <ls_commit>  LIKE LINE OF lt_commits.
-
-
 * todo, implement path handling, backend + frontend
     ASSERT iv_path = '/'.
 
-* todo, this will break if the git history is rewritten
+    build( ).
+
     rt_files = read_tree_cache(
       iv_path   = iv_path
       iv_commit = mv_commit ).
-    IF lines( rt_files ) > 0.
-      RETURN.
-    ENDIF.
-
-    lt_commits = list_commits( ).
-    lt_files = list_files_simple( ).
-    LOOP AT lt_files ASSIGNING <ls_simple>.
-      APPEND INITIAL LINE TO rt_files ASSIGNING <ls_file>.
-      MOVE-CORRESPONDING <ls_simple> TO <ls_file>.
-    ENDLOOP.
-
-    SORT lt_commits BY committer-time ASCENDING.
-
-    LOOP AT lt_commits ASSIGNING <ls_commit>.
-*      lt_cache = read_tree_cache(
-*        iv_path   = iv_path
-*        iv_commit = <ls_commit>-sha1 ).
-*      IF lines( lt_cache ) > 0.
-*        LOOP AT rt_files ASSIGNING <ls_output> WHERE last_commit_sha1 IS INITIAL.
-*          BREAK-POINT.
-*        ENDLOOP.
-*        EXIT.
-*      ENDIF.
-
-      CREATE OBJECT lo_cache
-        EXPORTING
-          iv_repo   = mv_repo
-          iv_commit = <ls_commit>-sha1.
-      lt_current = lo_cache->list_files_simple( ).
-
-      LOOP AT lt_current ASSIGNING <ls_current>.
-        lv_changed = abap_false.
-        READ TABLE lt_prev ASSIGNING <ls_prev>
-          WITH KEY filename = <ls_current>-filename
-          path = <ls_current>-path.
-        IF sy-subrc <> 0 OR <ls_prev>-blob_sha1 <> <ls_current>-blob_sha1.
-          lv_changed = abap_true.
-        ENDIF.
-
-        IF lv_changed = abap_true.
-          READ TABLE rt_files ASSIGNING <ls_output>
-            WITH KEY filename = <ls_current>-filename
-            path = <ls_current>-path.
-          IF sy-subrc = 0.
-            <ls_output>-last_commit_sha1 = <ls_commit>-sha1.
-            <ls_output>-comment = <ls_commit>-text.
-            <ls_output>-time    = <ls_commit>-committer-time.
-          ENDIF.
-        ENDIF.
-      ENDLOOP.
-
-      lt_prev = lt_current.
-    ENDLOOP.
-
-    save_tree_cache( rt_files ).
 
   ENDMETHOD.
 
@@ -295,24 +319,17 @@ CLASS ZCL_AGS_CACHE IMPLEMENTATION.
           lv_counter TYPE zags_tree_cache-counter,
           ls_cache   LIKE LINE OF lt_cache.
 
-    FIELD-SYMBOLS: <ls_file>  LIKE LINE OF it_files.
+    FIELD-SYMBOLS: <ls_data> LIKE LINE OF it_data.
 
 
     lv_counter = 1.
-
-    LOOP AT it_files ASSIGNING <ls_file>.
-
+    LOOP AT it_data ASSIGNING <ls_data>.
       CLEAR ls_cache.
+      MOVE-CORRESPONDING <ls_data> TO ls_cache.
       ls_cache-repo             = mv_repo.
-      ls_cache-commit_sha1      = mv_commit.
+      ls_cache-commit_sha1      = iv_commit.
       ls_cache-counter          = lv_counter.
-      ls_cache-filename         = <ls_file>-filename.
-      ls_cache-path             = <ls_file>-path.
-      ls_cache-blob_sha1        = <ls_file>-blob_sha1.
-      ls_cache-last_commit_sha1 = <ls_file>-last_commit_sha1.
-
       INSERT ls_cache INTO TABLE lt_cache.
-
       lv_counter = lv_counter + 1.
     ENDLOOP.
 
