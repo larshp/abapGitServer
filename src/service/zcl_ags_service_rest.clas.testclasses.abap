@@ -37,7 +37,7 @@ CLASS ltcl_rest IMPLEMENTATION.
 
   METHOD list_files.
 
-    DATA: lt_files  TYPE zcl_ags_service_rest=>ty_files_tt.
+    DATA: lt_files  TYPE zcl_ags_cache=>ty_files_tt.
 
 
     lt_files = mo_rest->list_files(

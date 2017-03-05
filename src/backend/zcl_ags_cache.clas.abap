@@ -4,6 +4,17 @@ class ZCL_AGS_CACHE definition
 
 public section.
 
+  types:
+    BEGIN OF ty_file,
+        filename    TYPE string,
+        sha1        TYPE zags_sha1,
+        comment     TYPE string,
+        commit_sha1 TYPE zags_sha1,
+        time        TYPE zags_unix_time,
+      END OF ty_file .
+  types:
+    ty_files_tt TYPE STANDARD TABLE OF ty_file WITH DEFAULT KEY .
+
   methods CONSTRUCTOR
     importing
       !IV_REPO type ZAGS_REPO
@@ -17,11 +28,14 @@ public section.
   methods LIST_COMMITS_BY_USER .
   methods LIST_FILES_BY_PATH
     importing
-      !IV_REPO type ZAGS_REPO_NAME
-      !IO_COMMIT type ref to ZCL_AGS_OBJ_COMMIT
       !IV_PATH type STRING
     returning
-      value(RT_FILES) type ZAGS_TREE_CACHE_DATA_TT
+      value(RT_FILES) type TY_FILES_TT
+    raising
+      ZCX_AGS_ERROR .
+  methods LIST_FILES_SIMPLE
+    returning
+      value(RT_FILES) type ZCL_AGS_CACHE=>TY_FILES_TT
     raising
       ZCX_AGS_ERROR .
 protected section.
@@ -99,22 +113,100 @@ CLASS ZCL_AGS_CACHE IMPLEMENTATION.
 
   METHOD list_files_by_path.
 
-    DATA: lv_commit_sha1 TYPE zags_sha1,
-          lv_repo        TYPE zags_tree_cache-repo.
+    DATA: lt_commits TYPE zcl_ags_obj_commit=>ty_pretty_tt,
+          lt_current TYPE ty_files_tt,
+          lv_changed TYPE abap_bool,
+          lo_cache   TYPE REF TO zcl_ags_cache,
+          lt_prev    TYPE ty_files_tt.
+
+    FIELD-SYMBOLS: <ls_current> LIKE LINE OF lt_current,
+                   <ls_prev>    LIKE LINE OF lt_prev,
+                   <ls_output>  LIKE LINE OF rt_files,
+                   <ls_commit>  LIKE LINE OF lt_commits.
+
+* todo, implement path
+    ASSERT iv_path = '/'.
+
+    lt_commits = list_commits( ).
+
+    rt_files = list_files_simple( ).
+
+    SORT lt_commits BY committer-time ASCENDING.
+
+    LOOP AT lt_commits ASSIGNING <ls_commit>.
+
+      CREATE OBJECT lo_cache
+        EXPORTING
+          iv_repo   = mv_repo
+          iv_commit = <ls_commit>-sha1.
+      lt_current = lo_cache->list_files_simple( ).
+
+      LOOP AT lt_current ASSIGNING <ls_current>.
+        lv_changed = abap_false.
+        READ TABLE lt_prev ASSIGNING <ls_prev>
+          WITH KEY filename = <ls_current>-filename.
+        IF sy-subrc <> 0
+            OR <ls_prev>-sha1 <> <ls_current>-sha1.
+          lv_changed = abap_true.
+        ENDIF.
+
+        IF lv_changed = abap_true.
+          READ TABLE rt_files ASSIGNING <ls_output>
+            WITH KEY filename = <ls_current>-filename.
+          IF sy-subrc = 0.
+            <ls_output>-comment     = <ls_commit>-text.
+            <ls_output>-commit_sha1 = <ls_commit>-sha1.
+            <ls_output>-time        = <ls_commit>-committer-time.
+          ENDIF.
+        ENDIF.
+      ENDLOOP.
+
+      lt_prev = lt_current.
+    ENDLOOP.
+
+  ENDMETHOD.
 
 
-    lv_repo = zcl_ags_repo=>get_instance( iv_repo )->get_data( )-repo.
-    lv_commit_sha1 = io_commit->zif_ags_object~sha1( ).
+  METHOD list_files_simple.
 
-* todo
-*    SELECT * FROM zags_tree_cache
-*      INTO CORRESPONDING FIELDS OF TABLE rt_files
-*      WHERE repo = lv_repo
-*      AND commit_sha1 = lv_commit_sha1
-*      AND path = iv_path.
-*    IF sy-subrc = 0.
-*      RETURN.
-*    ENDIF.
+    TYPES: BEGIN OF ty_tree,
+             sha1 TYPE zags_sha1,
+             base TYPE string,
+           END OF ty_tree.
+
+    DATA: lo_tree  TYPE REF TO zcl_ags_obj_tree,
+          lt_files TYPE zcl_ags_obj_tree=>ty_tree_tt,
+          lt_trees TYPE STANDARD TABLE OF ty_tree WITH DEFAULT KEY.
+
+    FIELD-SYMBOLS:
+      <ls_input_tree> LIKE LINE OF lt_trees,
+      <ls_input_file> LIKE LINE OF lt_files,
+      <ls_file>       LIKE LINE OF rt_files,
+      <ls_tree>       LIKE LINE OF lt_trees.
+
+
+    APPEND INITIAL LINE TO lt_trees ASSIGNING <ls_tree>.
+    <ls_tree>-sha1 = zcl_ags_obj_commit=>get_instance( mv_commit )->get( )-tree.
+    <ls_tree>-base = '/'.
+
+    LOOP AT lt_trees ASSIGNING <ls_input_tree>.
+      CREATE OBJECT lo_tree
+        EXPORTING
+          iv_sha1 = <ls_input_tree>-sha1.
+      lt_files = lo_tree->get_files( ).
+      LOOP AT lt_files ASSIGNING <ls_input_file>.
+        CASE <ls_input_file>-chmod.
+          WHEN zcl_ags_obj_tree=>c_chmod-dir.
+            APPEND INITIAL LINE TO lt_trees ASSIGNING <ls_tree>.
+            <ls_tree>-sha1 = <ls_input_file>-sha1.
+            <ls_tree>-base = <ls_input_tree>-base && <ls_input_file>-name && '/'.
+          WHEN OTHERS.
+            APPEND INITIAL LINE TO rt_files ASSIGNING <ls_file>.
+            <ls_file>-filename = <ls_input_tree>-base && <ls_input_file>-name.
+            <ls_file>-sha1 = <ls_input_file>-sha1.
+        ENDCASE.
+      ENDLOOP.
+    ENDLOOP.
 
   ENDMETHOD.
 ENDCLASS.

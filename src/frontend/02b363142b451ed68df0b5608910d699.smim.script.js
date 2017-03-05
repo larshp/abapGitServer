@@ -110,7 +110,7 @@ class REST {
   }      
 
   static readCommit(repoName, sha1, callback) {
-    const url = "commit/" + sha1;
+    const url = "commit/" + repoName + "/" + sha1;
     this.get(url, callback);
   }
 
