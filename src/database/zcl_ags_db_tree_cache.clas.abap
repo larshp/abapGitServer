@@ -60,7 +60,7 @@ CLASS ZCL_AGS_DB_TREE_CACHE IMPLEMENTATION.
       SELECT * FROM zags_tree_cache
         INTO TABLE rt_data
         WHERE repo = iv_repo
-        AND commit_sha1 = iv_commit_sha1.
+        AND commit_sha1 = iv_commit_sha1.                 "#EC CI_SUBRC
     ENDIF.
 
   ENDMETHOD.

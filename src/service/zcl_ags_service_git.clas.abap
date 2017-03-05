@@ -9,6 +9,14 @@ CLASS zcl_ags_service_git DEFINITION
   PRIVATE SECTION.
 
     TYPES:
+      BEGIN OF ty_push,
+        old    TYPE zags_sha1,
+        new    TYPE zags_sha1,
+        name   TYPE zags_branch_name,
+        length TYPE i,
+      END OF ty_push .
+
+    TYPES:
       BEGIN OF ty_request,
         want   TYPE STANDARD TABLE OF zags_sha1 WITH DEFAULT KEY,
         deepen TYPE i,
@@ -23,7 +31,7 @@ CLASS zcl_ags_service_git DEFINITION
       IMPORTING
         !iv_data       TYPE xstring
       RETURNING
-        VALUE(rs_push) TYPE zcl_ags_branch=>ty_push
+        VALUE(rs_push) TYPE ty_push
       RAISING
         zcx_ags_error.
     METHODS decode_request
@@ -303,7 +311,7 @@ CLASS ZCL_AGS_SERVICE_GIT IMPLEMENTATION.
           lt_objects TYPE zcl_ags_pack=>ty_objects_tt,
           lo_repo    TYPE REF TO zcl_ags_repo,
           lo_branch  TYPE REF TO zcl_ags_branch,
-          ls_push    TYPE zcl_ags_branch=>ty_push.
+          ls_push    TYPE ty_push.
 
 
     ls_push = decode_push( mi_server->request->get_data( ) ).
@@ -343,7 +351,8 @@ CLASS ZCL_AGS_SERVICE_GIT IMPLEMENTATION.
   METHOD unpack_ok.
 
 * todo, this is all wrong(but will work in most cases):
-    mi_server->response->set_cdata( '000eunpack ok#0019ok refs/heads/master#00000000' ) ##NO_TEXT.
+    mi_server->response->set_cdata(
+      '000eunpack ok#0019ok refs/heads/master#00000000' ) ##NO_TEXT.
 
   ENDMETHOD.
 

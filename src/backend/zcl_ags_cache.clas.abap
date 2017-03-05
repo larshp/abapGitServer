@@ -276,9 +276,11 @@ CLASS ZCL_AGS_CACHE IMPLEMENTATION.
     ENDLOOP.
 
     LOOP AT rt_files ASSIGNING <ls_file1> WHERE time IS INITIAL.
-      ls_commit = zcl_ags_obj_commit=>get_instance( <ls_file1>-last_commit_sha1 )->get_pretty( ).
+      ls_commit = zcl_ags_obj_commit=>get_instance( <ls_file1>-last_commit_sha1
+        )->get_pretty( ).
 
-      LOOP AT rt_files ASSIGNING <ls_file2> WHERE last_commit_sha1 = <ls_file1>-last_commit_sha1.
+      LOOP AT rt_files ASSIGNING <ls_file2>
+          WHERE last_commit_sha1 = <ls_file1>-last_commit_sha1.
         <ls_file2>-comment = ls_commit-text.
         <ls_file2>-time = ls_commit-author-time.
       ENDLOOP.

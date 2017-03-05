@@ -4,14 +4,6 @@ CLASS zcl_ags_branch DEFINITION
 
   PUBLIC SECTION.
 
-    TYPES:
-      BEGIN OF ty_push,
-        old    TYPE zags_sha1,
-        new    TYPE zags_sha1,
-        name   TYPE zags_branch_name,
-        length TYPE i,
-      END OF ty_push .
-
     METHODS constructor
       IMPORTING
         !io_repo TYPE REF TO zcl_ags_repo
@@ -32,13 +24,17 @@ CLASS zcl_ags_branch DEFINITION
         !it_objects TYPE zcl_ags_pack=>ty_objects_tt
       RAISING
         zcx_ags_error .
-    METHODS update_sha1
-      IMPORTING
-        !iv_sha1 TYPE zags_sha1 .
+    METHODS get_files
+      RETURNING
+        VALUE(ro_files) TYPE REF TO zcl_ags_file_operations .
   PROTECTED SECTION.
   PRIVATE SECTION.
 
-    DATA ms_data TYPE zags_branches.
+    DATA ms_data TYPE zags_branches .
+
+    METHODS update_sha1
+      IMPORTING
+        !iv_sha1 TYPE zags_sha1 .
 ENDCLASS.
 
 
@@ -89,6 +85,15 @@ CLASS ZCL_AGS_BRANCH IMPLEMENTATION.
   ENDMETHOD.
 
 
+  METHOD get_files.
+
+    CREATE OBJECT ro_files
+      EXPORTING
+        io_branch = me.
+
+  ENDMETHOD.
+
+
   METHOD push.
 
     ASSERT NOT iv_new IS INITIAL.
@@ -99,7 +104,7 @@ CLASS ZCL_AGS_BRANCH IMPLEMENTATION.
 * new commit should exist in objects
     ASSERT sy-subrc = 0.
 
-    ASSERT get_data( )-sha1 = iv_old.
+    ASSERT ms_data-sha1 = iv_old.
 
 * todo, add object validations?
     zcl_ags_pack=>save( it_objects ).
@@ -112,6 +117,8 @@ CLASS ZCL_AGS_BRANCH IMPLEMENTATION.
   METHOD update_sha1.
 
     ASSERT NOT iv_sha1 IS INITIAL.
+
+    ms_data-sha1 = iv_sha1.
 
     zcl_ags_db=>get_branches( )->update_sha1(
       iv_sha1   = iv_sha1

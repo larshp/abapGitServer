@@ -99,7 +99,8 @@ CLASS ZCL_AGS_SERVICE_STATIC IMPLEMENTATION.
       IMPORTING
         e_content_last_changed = lv_changed
       EXCEPTIONS
-        not_found              = 1 ).
+        not_found              = 1 ).                     "#EC CI_SUBRC
+    ASSERT sy-subrc = 0.
 
     rv_changed = lv_changed.
 

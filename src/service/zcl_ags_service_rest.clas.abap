@@ -309,6 +309,7 @@ CLASS ZCL_AGS_SERVICE_REST IMPLEMENTATION.
       zcl_ags_obj_commit=>get_instance( iv_commit )->get_pretty( )
       TO rs_data.
 
+* todo, handle 2 parents, i.e. merge commit?
     rs_data-files = list_changes(
       iv_repo = iv_repo
       iv_new  = iv_commit

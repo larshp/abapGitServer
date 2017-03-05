@@ -56,6 +56,9 @@ CLASS zcl_ags_obj_tree DEFINITION
     METHODS get_files
       RETURNING
         VALUE(rt_files) TYPE ty_tree_tt .
+    METHODS set_files
+      IMPORTING
+        VALUE(it_files) TYPE ty_tree_tt .
   PROTECTED SECTION.
   PRIVATE SECTION.
 
@@ -72,6 +75,14 @@ CLASS ZCL_AGS_OBJ_TREE IMPLEMENTATION.
 
     FIELD-SYMBOLS: <ls_data> LIKE LINE OF mt_data.
 
+    ASSERT mv_new = abap_true.
+
+    READ TABLE mt_data WITH KEY
+      chmod = iv_chmod
+      name = iv_name
+      sha1 = iv_sha1
+      TRANSPORTING NO FIELDS.
+    ASSERT sy-subrc <> 0.
 
     APPEND INITIAL LINE TO mt_data ASSIGNING <ls_data>.
     <ls_data>-chmod = iv_chmod.
@@ -105,6 +116,16 @@ CLASS ZCL_AGS_OBJ_TREE IMPLEMENTATION.
     CREATE OBJECT ro_tree
       EXPORTING
         iv_sha1 = iv_sha1.
+
+  ENDMETHOD.
+
+
+  METHOD set_files.
+
+    ASSERT mv_new = abap_true.
+    ASSERT lines( mt_data ) = 0.
+
+    mt_data = it_files.
 
   ENDMETHOD.
 
