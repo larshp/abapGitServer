@@ -1,59 +1,66 @@
 CLASS zcl_ags_obj_tree DEFINITION
   PUBLIC
   FINAL
-  CREATE PUBLIC.
+  CREATE PUBLIC .
 
   PUBLIC SECTION.
 
-    INTERFACES zif_ags_object.
+    INTERFACES zif_ags_object .
 
     ALIASES c_newline
-      FOR zif_ags_object~c_newline.
+      FOR zif_ags_object~c_newline .
     ALIASES deserialize
-      FOR zif_ags_object~deserialize.
+      FOR zif_ags_object~deserialize .
     ALIASES save
-      FOR zif_ags_object~save.
+      FOR zif_ags_object~save .
     ALIASES serialize
-      FOR zif_ags_object~serialize.
+      FOR zif_ags_object~serialize .
     ALIASES sha1
-      FOR zif_ags_object~sha1.
+      FOR zif_ags_object~sha1 .
 
     TYPES:
-      ty_chmod TYPE c LENGTH 6.
+      ty_chmod TYPE c LENGTH 6 .
     TYPES:
       BEGIN OF ty_tree,
         chmod TYPE ty_chmod,
         name  TYPE string,
         sha1  TYPE zags_sha1,
-      END OF ty_tree.
+      END OF ty_tree .
     TYPES:
-      ty_tree_tt TYPE STANDARD TABLE OF ty_tree WITH DEFAULT KEY.
+      ty_tree_tt TYPE STANDARD TABLE OF ty_tree WITH DEFAULT KEY .
 
     CONSTANTS:
       BEGIN OF c_chmod,
         file       TYPE ty_chmod VALUE '100644',
         executable TYPE ty_chmod VALUE '100755',
         dir        TYPE ty_chmod VALUE '40000',
-      END OF c_chmod.
+      END OF c_chmod .
 
+    CLASS-METHODS get_instance
+      IMPORTING
+        !iv_sha1       TYPE zags_sha1
+      RETURNING
+        VALUE(ro_tree) TYPE REF TO zcl_ags_obj_tree
+      RAISING
+        zcx_ags_error .
     METHODS add_file
       IMPORTING
         !iv_chmod TYPE ty_chmod
         !iv_name  TYPE ty_tree-name
-        !iv_sha1  TYPE ty_tree-sha1.
-    METHODS get_files
-      RETURNING
-        VALUE(rt_files) TYPE ty_tree_tt.
+        !iv_sha1  TYPE ty_tree-sha1 .
     METHODS constructor
       IMPORTING
         !iv_sha1 TYPE zags_sha1 OPTIONAL
       RAISING
-        zcx_ags_error.
+        zcx_ags_error .
+    METHODS get_files
+      RETURNING
+        VALUE(rt_files) TYPE ty_tree_tt .
   PROTECTED SECTION.
   PRIVATE SECTION.
 
-    DATA mt_data TYPE ty_tree_tt.
-    DATA mv_new TYPE abap_bool.
+    DATA mt_data TYPE ty_tree_tt .
+    DATA mv_new TYPE abap_bool .
 ENDCLASS.
 
 
@@ -89,6 +96,15 @@ CLASS ZCL_AGS_OBJ_TREE IMPLEMENTATION.
   METHOD get_files.
 
     rt_files = mt_data.
+
+  ENDMETHOD.
+
+
+  METHOD get_instance.
+
+    CREATE OBJECT ro_tree
+      EXPORTING
+        iv_sha1 = iv_sha1.
 
   ENDMETHOD.
 

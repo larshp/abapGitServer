@@ -795,12 +795,12 @@ class FilesList extends React.Component {
   }
   
   file(e) {
-    let url = this.props.params.repo + "/" + this.props.params.branch + "/blob" + e.FILENAME;
+    let url = this.props.params.repo + "/" + this.props.params.branch + "/blob" + e.PATH + e.FILENAME;
     let commit = this.props.params.repo + "/commit/" + e.COMMIT_SHA1;
     return (
       <tr>
       <td>{Octicons.file()}</td>
-      <td><Link to={url}>{e.FILENAME}</Link></td>
+      <td><Link to={url}>{e.PATH + e.FILENAME}</Link></td>
       <td><Link to={commit}>{e.COMMENT}</Link></td>
       <td>{Time.ago(Time.parse(e.TIME))}</td>
       </tr>);

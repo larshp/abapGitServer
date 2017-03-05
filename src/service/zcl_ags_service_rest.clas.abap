@@ -167,8 +167,8 @@ CLASS ZCL_AGS_SERVICE_REST IMPLEMENTATION.
 
   METHOD list_changes.
 
-    DATA: lt_new   TYPE zcl_ags_cache=>ty_files_tt,
-          lt_old   TYPE zcl_ags_cache=>ty_files_tt,
+    DATA: lt_new   TYPE zcl_ags_cache=>ty_files_simple_tt,
+          lt_old   TYPE zcl_ags_cache=>ty_files_simple_tt,
           lo_cache TYPE REF TO zcl_ags_cache,
           ls_new   LIKE LINE OF lt_new,
           ls_old   LIKE LINE OF lt_old.
@@ -261,18 +261,27 @@ CLASS ZCL_AGS_SERVICE_REST IMPLEMENTATION.
 
   METHOD read_blob.
 
-    DATA: lt_files TYPE zcl_ags_cache=>ty_files_tt,
-          lv_tmp   TYPE string.
+    DATA: lt_files    TYPE zcl_ags_cache=>ty_files_simple_tt,
+          lv_path     TYPE string,
+          lv_tmp      TYPE string,
+          lv_filename TYPE string.
 
     FIELD-SYMBOLS: <ls_file> LIKE LINE OF lt_files.
 
 
+    lv_filename = iv_filename.
+    lv_path = '/'.
+    WHILE lv_filename CA '/'.
+      SPLIT lv_filename AT '/' INTO lv_tmp lv_filename.
+      CONCATENATE lv_path lv_tmp '/' INTO lv_path.
+    ENDWHILE.
+
     lt_files = zcl_ags_repo=>get_instance( iv_repo )->get_branch(
       iv_branch )->get_cache( )->list_files_simple( ).
 
-    lv_tmp = '/' && iv_filename.
     READ TABLE lt_files ASSIGNING <ls_file>
-      WITH KEY filename = lv_tmp.
+      WITH KEY filename = lv_filename
+      path = lv_path.
     IF sy-subrc <> 0.
       RAISE EXCEPTION TYPE zcx_ags_error
         EXPORTING
