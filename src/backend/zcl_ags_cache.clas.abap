@@ -89,6 +89,15 @@ CLASS ZCL_AGS_CACHE IMPLEMENTATION.
 
     FIELD-SYMBOLS: <ls_commit> LIKE LINE OF lt_commits.
 
+
+    lt_cache = zcl_ags_db=>get_tree_cache( )->select(
+      iv_repo        = mv_repo
+      iv_commit_sha1 = mv_commit
+      iv_max         = 1 ).
+    IF lines( lt_cache ) > 0.
+      RETURN.
+    ENDIF.
+
 * todo, this will break if the git history is rewritten?
     lt_commits = list_commits( ).
 
