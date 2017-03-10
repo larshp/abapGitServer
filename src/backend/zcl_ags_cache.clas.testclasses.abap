@@ -101,7 +101,8 @@ CLASS ltcl_list_files_by_path DEFINITION
       check_filled IMPORTING it_files TYPE zcl_ags_cache=>ty_files_tt,
       test01 FOR TESTING RAISING zcx_ags_error,
       test02 FOR TESTING RAISING zcx_ags_error,
-      test03 FOR TESTING RAISING zcx_ags_error.
+      test03 FOR TESTING RAISING zcx_ags_error,
+      test04 FOR TESTING RAISING zcx_ags_error.
 
 ENDCLASS.       "ltcl_List_Files_By_Path
 
@@ -206,6 +207,30 @@ CLASS ltcl_list_files_by_path IMPLEMENTATION.
 
     READ TABLE lt_files WITH KEY comment = lc_latest TRANSPORTING NO FIELDS.
     cl_abap_unit_assert=>assert_subrc( ).
+
+  ENDMETHOD.
+
+  METHOD test04.
+
+    CONSTANTS: lc_latest TYPE string VALUE 'LATEST'.
+
+    DATA: lt_files TYPE zcl_ags_cache=>ty_files_tt.
+
+
+    mo_branch->get_files( )->add(
+      iv_filename       = 'NEW.TXT'
+      iv_path           = c_root
+      iv_file_contents  = 'WELLO'
+      iv_commit_message = 'BLAH' ).
+
+    check( 2 ).
+
+    mo_branch->get_files( )->delete(
+      iv_filename       = 'NEW.TXT'
+      iv_path           = c_root
+      iv_commit_message = lc_latest ).
+
+    check( 1 ).
 
   ENDMETHOD.
 

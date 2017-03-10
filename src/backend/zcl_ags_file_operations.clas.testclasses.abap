@@ -6,9 +6,7 @@ CLASS ltcl_test DEFINITION FOR TESTING DURATION SHORT RISK LEVEL HARMLESS FINAL.
 
     METHODS:
       setup RAISING zcx_ags_error,
-      add FOR TESTING RAISING zcx_ags_error,
-      delete FOR TESTING RAISING zcx_ags_error,
-      modify FOR TESTING RAISING zcx_ags_error.
+      add FOR TESTING RAISING zcx_ags_error.
 
 ENDCLASS.       "ltcl_Test
 
@@ -48,16 +46,6 @@ CLASS ltcl_test IMPLEMENTATION.
     READ TABLE lt_after WITH KEY filename = lc_filename TRANSPORTING NO FIELDS.
     cl_abap_unit_assert=>assert_subrc( ).
 
-  ENDMETHOD.
-
-  METHOD delete.
-* todo
-    RETURN.
-  ENDMETHOD.
-
-  METHOD modify.
-* todo
-    RETURN.
   ENDMETHOD.
 
 ENDCLASS.
