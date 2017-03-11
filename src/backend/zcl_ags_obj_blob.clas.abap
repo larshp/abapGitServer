@@ -1,45 +1,48 @@
-CLASS zcl_ags_obj_blob DEFINITION
-  PUBLIC
-  CREATE PUBLIC .
+class ZCL_AGS_OBJ_BLOB definition
+  public
+  create public .
 
-  PUBLIC SECTION.
+public section.
 
-    INTERFACES zif_ags_object .
+  interfaces ZIF_AGS_OBJECT .
 
-    ALIASES c_newline
-      FOR zif_ags_object~c_newline .
-    ALIASES deserialize
-      FOR zif_ags_object~deserialize .
-    ALIASES save
-      FOR zif_ags_object~save .
-    ALIASES serialize
-      FOR zif_ags_object~serialize .
-    ALIASES sha1
-      FOR zif_ags_object~sha1 .
+  aliases C_NEWLINE
+    for ZIF_AGS_OBJECT~C_NEWLINE .
+  aliases DESERIALIZE
+    for ZIF_AGS_OBJECT~DESERIALIZE .
+  aliases SAVE
+    for ZIF_AGS_OBJECT~SAVE .
+  aliases SERIALIZE
+    for ZIF_AGS_OBJECT~SERIALIZE .
+  aliases SHA1
+    for ZIF_AGS_OBJECT~SHA1 .
 
-    METHODS get_data
-      RETURNING
-        VALUE(rv_data) TYPE xstring .
-    METHODS set_data
-      IMPORTING
-        !iv_data TYPE xstring .
-    METHODS constructor
-      IMPORTING
-        !iv_sha1 TYPE zags_sha1 OPTIONAL
-      RAISING
-        zcx_ags_error .
-    CLASS-METHODS get_instance
-      IMPORTING
-        !iv_sha1       TYPE zags_sha1
-      RETURNING
-        VALUE(ro_blob) TYPE REF TO zcl_ags_obj_blob
-      RAISING
-        zcx_ags_error .
+  methods GET_DATA
+    returning
+      value(RV_DATA) type XSTRING .
+  methods SET_DATA
+    importing
+      !IV_DATA type XSTRING .
+  methods CONSTRUCTOR
+    importing
+      !IV_REPO type ZAGS_OBJECTS-REPO
+      !IV_SHA1 type ZAGS_OBJECTS-SHA1 optional
+    raising
+      ZCX_AGS_ERROR .
+  class-methods GET_INSTANCE
+    importing
+      !IV_REPO type ZAGS_OBJECTS-REPO
+      !IV_SHA1 type ZAGS_OBJECTS-SHA1
+    returning
+      value(RO_BLOB) type ref to ZCL_AGS_OBJ_BLOB
+    raising
+      ZCX_AGS_ERROR .
   PROTECTED SECTION.
-  PRIVATE SECTION.
+private section.
 
-    DATA mv_data TYPE xstring .
-    DATA mv_new TYPE abap_bool .
+  data MV_DATA type XSTRING .
+  data MV_NEW type ABAP_BOOL .
+  data MV_REPO type ZAGS_OBJECTS-REPO .
 ENDCLASS.
 
 
@@ -49,11 +52,14 @@ CLASS ZCL_AGS_OBJ_BLOB IMPLEMENTATION.
 
   METHOD constructor.
 
+    ASSERT NOT iv_repo IS INITIAL.
+
     IF iv_sha1 IS INITIAL.
       mv_new = abap_true.
+      mv_repo = iv_repo.
     ELSE.
       mv_new = abap_false.
-      deserialize( zcl_ags_db=>get_objects( )->single( iv_sha1 )-data_raw ).
+      deserialize( zcl_ags_db=>get_objects( )->single( iv_repo = iv_repo iv_sha1 = iv_sha1 )-data_raw ).
     ENDIF.
 
   ENDMETHOD.
@@ -70,6 +76,7 @@ CLASS ZCL_AGS_OBJ_BLOB IMPLEMENTATION.
 
     CREATE OBJECT ro_blob
       EXPORTING
+        iv_repo = iv_repo
         iv_sha1 = iv_sha1.
 
   ENDMETHOD.
@@ -93,8 +100,10 @@ CLASS ZCL_AGS_OBJ_BLOB IMPLEMENTATION.
 
     DATA: ls_object TYPE zags_objects.
 
+
     ASSERT mv_new = abap_true.
 
+    ls_object-repo = mv_repo.
     ls_object-sha1 = sha1( ).
     ls_object-type = zif_ags_constants=>c_type-blob.
     ls_object-data_raw = serialize( ).

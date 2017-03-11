@@ -1,51 +1,53 @@
-CLASS zcl_ags_pack DEFINITION
-  PUBLIC
-  FINAL
-  CREATE PUBLIC .
+class ZCL_AGS_PACK definition
+  public
+  final
+  create public .
 
-  PUBLIC SECTION.
+public section.
 
-    TYPES:
-      BEGIN OF ty_object,
+  types:
+    BEGIN OF ty_object,
         sha1 TYPE zags_sha1,
         type TYPE zags_type,
         data TYPE xstring,
       END OF ty_object .
-    TYPES:
-      ty_objects_tt TYPE STANDARD TABLE OF ty_object WITH DEFAULT KEY .
-    TYPES:
-      ty_adler32 TYPE x LENGTH 4 .
+  types:
+    ty_objects_tt TYPE STANDARD TABLE OF ty_object WITH DEFAULT KEY .
+  types:
+    ty_adler32 TYPE x LENGTH 4 .
 
-    CLASS-METHODS to_object
-      IMPORTING
-        !ii_object       TYPE REF TO zif_ags_object
-      RETURNING
-        VALUE(rs_object) TYPE ty_object
-      RAISING
-        zcx_ags_error .
-    CLASS-METHODS encode
-      IMPORTING
-        !it_objects    TYPE ty_objects_tt
-      RETURNING
-        VALUE(rv_data) TYPE xstring .
-    CLASS-METHODS decode
-      IMPORTING
-        !iv_data          TYPE xstring
-      RETURNING
-        VALUE(rt_objects) TYPE ty_objects_tt .
-    CLASS-METHODS save
-      IMPORTING
-        !it_objects TYPE ty_objects_tt
-      RAISING
-        zcx_ags_error .
-    CLASS-METHODS explode
-      IMPORTING
-        !ii_object        TYPE REF TO zif_ags_object
-        !iv_deepen        TYPE i DEFAULT 0
-      RETURNING
-        VALUE(rt_objects) TYPE ty_objects_tt
-      RAISING
-        zcx_ags_error .
+  class-methods TO_OBJECT
+    importing
+      !II_OBJECT type ref to ZIF_AGS_OBJECT
+    returning
+      value(RS_OBJECT) type TY_OBJECT
+    raising
+      ZCX_AGS_ERROR .
+  class-methods ENCODE
+    importing
+      !IT_OBJECTS type TY_OBJECTS_TT
+    returning
+      value(RV_DATA) type XSTRING .
+  class-methods DECODE
+    importing
+      !IV_DATA type XSTRING
+    returning
+      value(RT_OBJECTS) type TY_OBJECTS_TT .
+  class-methods SAVE
+    importing
+      !IV_REPO type ZAGS_REPOS-REPO
+      !IT_OBJECTS type TY_OBJECTS_TT
+    raising
+      ZCX_AGS_ERROR .
+  class-methods EXPLODE
+    importing
+      !IV_REPO type ZAGS_REPOS-REPO
+      !II_OBJECT type ref to ZIF_AGS_OBJECT
+      !IV_DEEPEN type I default 0
+    returning
+      value(RT_OBJECTS) type TY_OBJECTS_TT
+    raising
+      ZCX_AGS_ERROR .
   PROTECTED SECTION.
   PRIVATE SECTION.
 ENDCLASS.
@@ -85,20 +87,20 @@ CLASS ZCL_AGS_PACK IMPLEMENTATION.
            END OF ty_visit.
 
     DEFINE _visit_commit.
-      CREATE OBJECT lo_parent EXPORTING iv_sha1 = &1.
+      CREATE OBJECT lo_parent EXPORTING iv_repo = iv_repo iv_sha1 = &1.
       APPEND INITIAL LINE TO lt_visit ASSIGNING <ls_new>.
       <ls_new>-object = lo_parent.
       <ls_new>-deepen = <ls_visit>-deepen - 1.
     END-OF-DEFINITION.
 
     DEFINE _visit_tree.
-      CREATE OBJECT lo_sub EXPORTING iv_sha1 = &1.
+      CREATE OBJECT lo_sub EXPORTING iv_repo = iv_repo iv_sha1 = &1.
       APPEND INITIAL LINE TO lt_visit ASSIGNING <ls_new>.
       <ls_new>-object = lo_sub.
     END-OF-DEFINITION.
 
     DEFINE _visit_blob.
-      CREATE OBJECT lo_blob EXPORTING iv_sha1 = &1.
+      CREATE OBJECT lo_blob EXPORTING iv_repo = iv_repo iv_sha1 = &1.
       APPEND INITIAL LINE TO lt_visit ASSIGNING <ls_new>.
       <ls_new>-object = lo_blob.
     END-OF-DEFINITION.
@@ -116,6 +118,8 @@ CLASS ZCL_AGS_PACK IMPLEMENTATION.
                    <ls_new>   LIKE LINE OF lt_visit,
                    <ls_file>  LIKE LINE OF lt_files.
 
+
+    ASSERT NOT iv_repo IS INITIAL.
 
     APPEND INITIAL LINE TO lt_visit ASSIGNING <ls_visit>.
     <ls_visit>-object = ii_object.
@@ -163,16 +167,24 @@ CLASS ZCL_AGS_PACK IMPLEMENTATION.
     FIELD-SYMBOLS: <ls_object> LIKE LINE OF it_objects.
 
 
+    ASSERT NOT iv_repo IS INITIAL.
+
     LOOP AT it_objects ASSIGNING <ls_object>.
       CASE <ls_object>-type.
         WHEN zif_ags_constants=>c_type-blob.
-          CREATE OBJECT lo_blob.
+          CREATE OBJECT lo_blob
+            EXPORTING
+              iv_repo = iv_repo.
           li_object = lo_blob.
         WHEN zif_ags_constants=>c_type-tree.
-          CREATE OBJECT lo_tree.
+          CREATE OBJECT lo_tree
+            EXPORTING
+              iv_repo = iv_repo.
           li_object = lo_tree.
         WHEN zif_ags_constants=>c_type-commit.
-          CREATE OBJECT lo_commit.
+          CREATE OBJECT lo_commit
+            EXPORTING
+              iv_repo = iv_repo.
           li_object = lo_commit.
         WHEN OTHERS.
           RAISE EXCEPTION TYPE zcx_ags_error

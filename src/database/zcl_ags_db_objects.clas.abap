@@ -1,28 +1,32 @@
-CLASS zcl_ags_db_objects DEFINITION
-  PUBLIC
-  CREATE PRIVATE
+class ZCL_AGS_DB_OBJECTS definition
+  public
+  create private
 
-  GLOBAL FRIENDS zcl_ags_db .
+  global friends ZCL_AGS_DB .
 
-  PUBLIC SECTION.
+public section.
 
-    METHODS single
-      IMPORTING
-        !iv_sha1       TYPE zags_objects-sha1
-      RETURNING
-        VALUE(rs_data) TYPE zags_objects
-      RAISING
-        zcx_ags_error .
-    METHODS modify
-      IMPORTING
-        !is_data TYPE zags_objects .
+  methods LIST
+    returning
+      value(RT_OBJECTS) type ZAGS_OBJECTS_TT .
+  methods MODIFY
+    importing
+      value(IS_DATA) type ZAGS_OBJECTS .
+  methods SINGLE
+    importing
+      !IV_REPO type ZAGS_OBJECTS-REPO
+      !IV_SHA1 type ZAGS_OBJECTS-SHA1
+    returning
+      value(RS_DATA) type ZAGS_OBJECTS
+    raising
+      ZCX_AGS_ERROR .
   PROTECTED SECTION.
-  PRIVATE SECTION.
+private section.
 
-    DATA mt_objects TYPE zags_objects_tt .
-    DATA mv_fake TYPE abap_bool .
+  data MT_OBJECTS type ZAGS_OBJECTS_TT .
+  data MV_FAKE type ABAP_BOOL .
 
-    METHODS set_fake .
+  methods SET_FAKE .
 ENDCLASS.
 
 
@@ -30,10 +34,26 @@ ENDCLASS.
 CLASS ZCL_AGS_DB_OBJECTS IMPLEMENTATION.
 
 
-  METHOD modify.
+  METHOD list.
+* used in migration program, see https://github.com/larshp/abapGitServer/issues/41
 
     IF mv_fake = abap_true.
-      DELETE mt_objects WHERE sha1 = is_data-sha1.
+      rt_objects = mt_objects.
+    ELSE.
+      SELECT * FROM zags_objects
+        INTO CORRESPONDING FIELDS OF TABLE rt_objects.    "#EC CI_SUBRC
+    ENDIF.
+
+  ENDMETHOD.
+
+
+  METHOD modify.
+
+    ASSERT NOT is_data-repo IS INITIAL.
+    ASSERT NOT is_data-sha1 IS INITIAL.
+
+    IF mv_fake = abap_true.
+      DELETE mt_objects WHERE sha1 = is_data-sha1 AND repo = is_data-repo.
       INSERT is_data INTO TABLE mt_objects.
     ELSE.
       MODIFY zags_objects FROM is_data.                   "#EC CI_SUBRC
@@ -54,11 +74,13 @@ CLASS ZCL_AGS_DB_OBJECTS IMPLEMENTATION.
 
     IF mv_fake = abap_true.
       READ TABLE mt_objects INTO rs_data
-        WITH KEY sha1 = iv_sha1.                          "#EC CI_SUBRC
+        WITH KEY repo = iv_repo
+        sha1 = iv_sha1.                                   "#EC CI_SUBRC
     ELSE.
       SELECT SINGLE * FROM zags_objects
         INTO rs_data
-        WHERE sha1 = iv_sha1.
+        WHERE repo = iv_repo
+        AND sha1 = iv_sha1.
     ENDIF.
     IF sy-subrc <> 0.
       RAISE EXCEPTION TYPE zcx_ags_error

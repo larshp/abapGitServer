@@ -60,21 +60,29 @@ CLASS ZCL_AGS_FILE_OPERATIONS IMPLEMENTATION.
     ASSERT iv_path = '/'.
 
     lt_old = zcl_ags_obj_tree=>get_instance(
-      zcl_ags_obj_commit=>get_instance(
-      mo_branch->get_data( )-sha1
+      iv_repo = mo_branch->get_data( )-repo
+      iv_sha1 = zcl_ags_obj_commit=>get_instance(
+      iv_repo = mo_branch->get_data( )-repo
+      iv_sha1 = mo_branch->get_data( )-sha1
       )->get( )-tree )->get_files( ).
 
-    CREATE OBJECT lo_blob.
+    CREATE OBJECT lo_blob
+      EXPORTING
+        iv_repo = mo_branch->get_data( )-repo.
     lo_blob->set_data( zcl_ags_util=>string_to_xstring_utf8( iv_file_contents ) ).
 
-    CREATE OBJECT lo_tree.
+    CREATE OBJECT lo_tree
+      EXPORTING
+        iv_repo = mo_branch->get_data( )-repo.
     lo_tree->set_files( lt_old ).
     lo_tree->add_file(
       iv_chmod = zcl_ags_obj_tree=>c_chmod-file
       iv_name  = iv_filename
       iv_sha1  = lo_blob->sha1( ) ).
 
-    CREATE OBJECT lo_commit.
+    CREATE OBJECT lo_commit
+      EXPORTING
+        iv_repo = mo_branch->get_data( )-repo.
     lo_commit->set_tree( lo_tree->sha1( ) ).
     set_author_and_committer( lo_commit ).
     lo_commit->set_body( iv_commit_message ).
@@ -111,8 +119,10 @@ CLASS ZCL_AGS_FILE_OPERATIONS IMPLEMENTATION.
     ASSERT iv_path = '/'.
 
     lt_old = zcl_ags_obj_tree=>get_instance(
-      zcl_ags_obj_commit=>get_instance(
-      mo_branch->get_data( )-sha1
+      iv_repo = mo_branch->get_data( )-repo
+      iv_sha1 = zcl_ags_obj_commit=>get_instance(
+      iv_repo = mo_branch->get_data( )-repo
+      iv_sha1 = mo_branch->get_data( )-sha1
       )->get( )-tree )->get_files( ).
 
     READ TABLE lt_old ASSIGNING <ls_old> WITH KEY
@@ -122,10 +132,14 @@ CLASS ZCL_AGS_FILE_OPERATIONS IMPLEMENTATION.
     DELETE lt_old INDEX sy-tabix.
     ASSERT sy-subrc = 0.
 
-    CREATE OBJECT lo_tree.
+    CREATE OBJECT lo_tree
+      EXPORTING
+        iv_repo = mo_branch->get_data( )-repo.
     lo_tree->set_files( lt_old ).
 
-    CREATE OBJECT lo_commit.
+    CREATE OBJECT lo_commit
+      EXPORTING
+        iv_repo = mo_branch->get_data( )-repo.
     lo_commit->set_tree( lo_tree->sha1( ) ).
     set_author_and_committer( lo_commit ).
     lo_commit->set_body( iv_commit_message ).
@@ -157,11 +171,15 @@ CLASS ZCL_AGS_FILE_OPERATIONS IMPLEMENTATION.
     ASSERT iv_path = '/'.
 
     lt_old = zcl_ags_obj_tree=>get_instance(
-      zcl_ags_obj_commit=>get_instance(
-      mo_branch->get_data( )-sha1
+      iv_repo = mo_branch->get_data( )-repo
+      iv_sha1 = zcl_ags_obj_commit=>get_instance(
+      iv_repo = mo_branch->get_data( )-repo
+      iv_sha1 = mo_branch->get_data( )-sha1
       )->get( )-tree )->get_files( ).
 
-    CREATE OBJECT lo_blob.
+    CREATE OBJECT lo_blob
+      EXPORTING
+        iv_repo = mo_branch->get_data( )-repo.
     lo_blob->set_data( zcl_ags_util=>string_to_xstring_utf8( iv_file_contents ) ).
 
     READ TABLE lt_old ASSIGNING <ls_old> WITH KEY
@@ -170,10 +188,14 @@ CLASS ZCL_AGS_FILE_OPERATIONS IMPLEMENTATION.
     ASSERT sy-subrc = 0.
     <ls_old>-sha1 = lo_blob->sha1( ).
 
-    CREATE OBJECT lo_tree.
+    CREATE OBJECT lo_tree
+      EXPORTING
+        iv_repo = mo_branch->get_data( )-repo.
     lo_tree->set_files( lt_old ).
 
-    CREATE OBJECT lo_commit.
+    CREATE OBJECT lo_commit
+      EXPORTING
+        iv_repo = mo_branch->get_data( )-repo.
     lo_commit->set_tree( lo_tree->sha1( ) ).
     set_author_and_committer( lo_commit ).
     lo_commit->set_body( iv_commit_message ).

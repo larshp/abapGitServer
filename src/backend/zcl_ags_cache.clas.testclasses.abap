@@ -212,11 +212,6 @@ CLASS ltcl_list_files_by_path IMPLEMENTATION.
 
   METHOD test04.
 
-    CONSTANTS: lc_latest TYPE string VALUE 'LATEST'.
-
-    DATA: lt_files TYPE zcl_ags_cache=>ty_files_tt.
-
-
     mo_branch->get_files( )->add(
       iv_filename       = 'NEW.TXT'
       iv_path           = c_root
@@ -228,7 +223,7 @@ CLASS ltcl_list_files_by_path IMPLEMENTATION.
     mo_branch->get_files( )->delete(
       iv_filename       = 'NEW.TXT'
       iv_path           = c_root
-      iv_commit_message = lc_latest ).
+      iv_commit_message = 'MOO' ).
 
     check( 1 ).
 

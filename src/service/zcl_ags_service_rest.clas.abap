@@ -1,102 +1,103 @@
-CLASS zcl_ags_service_rest DEFINITION
-  PUBLIC
-  CREATE PUBLIC .
+class ZCL_AGS_SERVICE_REST definition
+  public
+  create public .
 
-  PUBLIC SECTION.
+public section.
 
-    INTERFACES zif_ags_service .
-    INTERFACES zif_swag_handler .
+  interfaces ZIF_AGS_SERVICE .
+  interfaces ZIF_SWAG_HANDLER .
 
-    TYPES:
-      BEGIN OF ty_create,
+  types:
+    BEGIN OF ty_create,
         name        TYPE zags_repos-name,
         description TYPE zags_repos-description,
       END OF ty_create .
-    TYPES:
-      BEGIN OF ty_branch,
+  types:
+    BEGIN OF ty_branch,
         name   TYPE zags_branch_name,
         time   TYPE zags_unix_time,
         commit TYPE zags_sha1,
         head   TYPE abap_bool,
       END OF ty_branch .
-    TYPES:
-      BEGIN OF ty_changed_file,
+  types:
+    BEGIN OF ty_changed_file,
         filename TYPE string,
         old_blob TYPE zags_sha1,
         new_blob TYPE zags_sha1,
       END OF ty_changed_file .
-    TYPES:
-      ty_changed_files_tt TYPE STANDARD TABLE OF ty_changed_file WITH DEFAULT KEY .
-    TYPES:
-      BEGIN OF ty_commit.
+  types:
+    ty_changed_files_tt TYPE STANDARD TABLE OF ty_changed_file WITH DEFAULT KEY .
+  types:
+    BEGIN OF ty_commit.
             INCLUDE TYPE zcl_ags_obj_commit=>ty_pretty.
     TYPES: files TYPE ty_changed_files_tt,
            END OF ty_commit .
-    TYPES:
-      ty_branches_tt TYPE STANDARD TABLE OF ty_branch WITH DEFAULT KEY .
+  types:
+    ty_branches_tt TYPE STANDARD TABLE OF ty_branch WITH DEFAULT KEY .
 
-    METHODS create_repo
-      IMPORTING
-        !is_data TYPE ty_create
-      RAISING
-        zcx_ags_error .
-    METHODS edit_repo
-      IMPORTING
-        !is_data TYPE ty_create
-      RAISING
-        zcx_ags_error .
-    METHODS list_branches
-      IMPORTING
-        !iv_repo           TYPE zags_repo_name
-      RETURNING
-        VALUE(rt_branches) TYPE ty_branches_tt
-      RAISING
-        zcx_ags_error .
-    METHODS list_commits
-      IMPORTING
-        !iv_repo          TYPE zags_repo_name
-        !iv_branch        TYPE zags_branch_name
-      RETURNING
-        VALUE(rt_commits) TYPE zcl_ags_obj_commit=>ty_pretty_tt
-      RAISING
-        zcx_ags_error .
-    METHODS list_files
-      IMPORTING
-        !iv_repo        TYPE zags_repo_name
-        !iv_branch      TYPE zags_branch_name
-      RETURNING
-        VALUE(rt_files) TYPE zcl_ags_cache=>ty_files_tt
-      RAISING
-        zcx_ags_error .
-    METHODS list_repos
-      RETURNING
-        VALUE(rt_list) TYPE zags_repos_tt
-      RAISING
-        zcx_ags_error .
-    METHODS read_blob
-      IMPORTING
-        !iv_repo           TYPE zags_repo_name
-        !iv_branch         TYPE zags_branch_name
-        !iv_filename       TYPE string
-      RETURNING
-        VALUE(rv_contents) TYPE xstring
-      RAISING
-        zcx_ags_error .
-    METHODS read_blob_sha1
-      IMPORTING
-        !iv_sha1           TYPE zags_sha1
-      RETURNING
-        VALUE(rv_contents) TYPE xstring
-      RAISING
-        zcx_ags_error .
-    METHODS read_commit
-      IMPORTING
-        !iv_repo       TYPE zags_repo
-        !iv_commit     TYPE zags_sha1
-      RETURNING
-        VALUE(rs_data) TYPE ty_commit
-      RAISING
-        zcx_ags_error .
+  methods CREATE_REPO
+    importing
+      !IS_DATA type TY_CREATE
+    raising
+      ZCX_AGS_ERROR .
+  methods EDIT_REPO
+    importing
+      !IS_DATA type TY_CREATE
+    raising
+      ZCX_AGS_ERROR .
+  methods LIST_BRANCHES
+    importing
+      !IV_REPO type ZAGS_REPO_NAME
+    returning
+      value(RT_BRANCHES) type TY_BRANCHES_TT
+    raising
+      ZCX_AGS_ERROR .
+  methods LIST_COMMITS
+    importing
+      !IV_REPO type ZAGS_REPO_NAME
+      !IV_BRANCH type ZAGS_BRANCH_NAME
+    returning
+      value(RT_COMMITS) type ZCL_AGS_OBJ_COMMIT=>TY_PRETTY_TT
+    raising
+      ZCX_AGS_ERROR .
+  methods LIST_FILES
+    importing
+      !IV_REPO type ZAGS_REPO_NAME
+      !IV_BRANCH type ZAGS_BRANCH_NAME
+    returning
+      value(RT_FILES) type ZCL_AGS_CACHE=>TY_FILES_TT
+    raising
+      ZCX_AGS_ERROR .
+  methods LIST_REPOS
+    returning
+      value(RT_LIST) type ZAGS_REPOS_TT
+    raising
+      ZCX_AGS_ERROR .
+  methods READ_BLOB
+    importing
+      !IV_REPO type ZAGS_REPO_NAME
+      !IV_BRANCH type ZAGS_BRANCH_NAME
+      !IV_FILENAME type STRING
+    returning
+      value(RV_CONTENTS) type XSTRING
+    raising
+      ZCX_AGS_ERROR .
+  methods READ_BLOB_SHA1
+    importing
+      !IV_REPO type ZAGS_REPOS-NAME
+      !IV_SHA1 type ZAGS_OBJECTS-SHA1
+    returning
+      value(RV_CONTENTS) type XSTRING
+    raising
+      ZCX_AGS_ERROR .
+  methods READ_COMMIT
+    importing
+      !IV_REPO type ZAGS_REPO
+      !IV_COMMIT type ZAGS_SHA1
+    returning
+      value(RS_DATA) type TY_COMMIT
+    raising
+      ZCX_AGS_ERROR .
   PROTECTED SECTION.
   PRIVATE SECTION.
 
@@ -154,7 +155,9 @@ CLASS ZCL_AGS_SERVICE_REST IMPLEMENTATION.
       <ls_output>-name = <lo_branch>->get_data( )-name.
 
 * add information about last commit
-      lo_commit = zcl_ags_obj_commit=>get_instance( <lo_branch>->get_data( )-sha1 ).
+      lo_commit = zcl_ags_obj_commit=>get_instance(
+        iv_repo = lo_repo->get_data( )-repo
+        iv_sha1 = <lo_branch>->get_data( )-sha1 ).
       <ls_output>-time = lo_commit->get_pretty( )-committer-time.
       <ls_output>-commit = lo_commit->sha1( ).
       IF <ls_output>-name = lv_head.
@@ -262,6 +265,7 @@ CLASS ZCL_AGS_SERVICE_REST IMPLEMENTATION.
   METHOD read_blob.
 
     DATA: lt_files    TYPE zcl_ags_cache=>ty_files_simple_tt,
+          lo_repo     TYPE REF TO zcl_ags_repo,
           lv_path     TYPE string,
           lv_tmp      TYPE string,
           lv_filename TYPE string.
@@ -276,7 +280,9 @@ CLASS ZCL_AGS_SERVICE_REST IMPLEMENTATION.
       CONCATENATE lv_path lv_tmp '/' INTO lv_path.
     ENDWHILE.
 
-    lt_files = zcl_ags_repo=>get_instance( iv_repo )->get_branch(
+    lo_repo = zcl_ags_repo=>get_instance( iv_repo ).
+
+    lt_files = lo_repo->get_branch(
       iv_branch )->get_cache( )->list_files_simple( ).
 
     READ TABLE lt_files ASSIGNING <ls_file>
@@ -288,25 +294,38 @@ CLASS ZCL_AGS_SERVICE_REST IMPLEMENTATION.
           textid = zcx_ags_error=>m011.
     ENDIF.
 
-    rv_contents = zcl_ags_obj_blob=>get_instance( <ls_file>-blob_sha1 )->get_data( ).
+    rv_contents = zcl_ags_obj_blob=>get_instance(
+      iv_repo = lo_repo->get_data( )-repo
+      iv_sha1 = <ls_file>-blob_sha1 )->get_data( ).
 
   ENDMETHOD.
 
 
   METHOD read_blob_sha1.
 
-    rv_contents = zcl_ags_obj_blob=>get_instance( iv_sha1 )->get_data( ).
+    DATA: lo_repo TYPE REF TO zcl_ags_repo.
+
+
+    lo_repo = zcl_ags_repo=>get_instance( iv_repo ).
+
+    rv_contents = zcl_ags_obj_blob=>get_instance(
+      iv_repo = lo_repo->get_data( )-repo
+      iv_sha1 = iv_sha1 )->get_data( ).
 
   ENDMETHOD.
 
 
   METHOD read_commit.
 
+* todo, change IV_REPO type to name of repo?
+
     ASSERT NOT iv_repo IS INITIAL.
     ASSERT NOT iv_commit IS INITIAL.
 
     MOVE-CORRESPONDING
-      zcl_ags_obj_commit=>get_instance( iv_commit )->get_pretty( )
+      zcl_ags_obj_commit=>get_instance(
+        iv_repo = iv_repo
+        iv_sha1 = iv_commit )->get_pretty( )
       TO rs_data.
 
 * todo, handle 2 parents, i.e. merge commit?

@@ -26,16 +26,18 @@ CLASS ltcl_encode IMPLEMENTATION.
 
     CONSTANTS: lc_data TYPE xstring VALUE '12345'.
 
-    DATA: lo_blob TYPE REF TO zcl_ags_obj_blob,
-          lv_raw TYPE xstring,
+    DATA: lo_blob    TYPE REF TO zcl_ags_obj_blob,
+          lv_raw     TYPE xstring,
           lt_objects TYPE zcl_ags_pack=>ty_objects_tt,
-          lt_result TYPE zcl_ags_pack=>ty_objects_tt.
+          lt_result  TYPE zcl_ags_pack=>ty_objects_tt.
 
 
-    CREATE OBJECT lo_blob.
+    CREATE OBJECT lo_blob
+      EXPORTING
+        iv_repo = 'test'.
     lo_blob->set_data( lc_data ).
 
-    lt_objects = zcl_ags_pack=>explode( lo_blob ).
+    lt_objects = zcl_ags_pack=>explode( iv_repo = 'test' ii_object = lo_blob ).
 
     lv_raw = zcl_ags_pack=>encode( lt_objects ).
     lt_result = zcl_ags_pack=>decode( lv_raw ).
@@ -57,10 +59,7 @@ ENDCLASS.                    "ltcl_encode IMPLEMENTATION
 *----------------------------------------------------------------------*
 *
 *----------------------------------------------------------------------*
-CLASS ltcl_explode DEFINITION FOR TESTING
-  DURATION SHORT
-  RISK LEVEL HARMLESS
-  FINAL.
+CLASS ltcl_explode DEFINITION FOR TESTING DURATION SHORT RISK LEVEL HARMLESS FINAL.
 
   PRIVATE SECTION.
     METHODS:
@@ -79,12 +78,14 @@ CLASS ltcl_explode IMPLEMENTATION.
   METHOD test1.
 
     DATA: lt_result TYPE zcl_ags_pack=>ty_objects_tt,
-          lo_blob TYPE REF TO zcl_ags_obj_blob.
+          lo_blob   TYPE REF TO zcl_ags_obj_blob.
 
 
-    CREATE OBJECT lo_blob.
+    CREATE OBJECT lo_blob
+      EXPORTING
+        iv_repo = 'test'.
 
-    lt_result = zcl_ags_pack=>explode( lo_blob ).
+    lt_result = zcl_ags_pack=>explode( iv_repo = 'test' ii_object = lo_blob ).
 
     cl_abap_unit_assert=>assert_not_initial( lt_result ).
 

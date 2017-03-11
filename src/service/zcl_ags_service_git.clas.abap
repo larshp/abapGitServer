@@ -6,52 +6,51 @@ CLASS zcl_ags_service_git DEFINITION
 
     INTERFACES zif_ags_service.
   PROTECTED SECTION.
-  PRIVATE SECTION.
+private section.
 
-    TYPES:
-      BEGIN OF ty_push,
+  types:
+    BEGIN OF ty_push,
         old    TYPE zags_sha1,
         new    TYPE zags_sha1,
         name   TYPE zags_branch_name,
         length TYPE i,
       END OF ty_push .
-
-    TYPES:
-      BEGIN OF ty_request,
+  types:
+    BEGIN OF ty_request,
         want   TYPE STANDARD TABLE OF zags_sha1 WITH DEFAULT KEY,
         deepen TYPE i,
-      END OF ty_request.
+      END OF ty_request .
 
-    DATA mi_server TYPE REF TO if_http_server.
+  data MI_SERVER type ref to IF_HTTP_SERVER .
 
-    METHODS branch_list
-      RAISING
-        zcx_ags_error.
-    METHODS decode_push
-      IMPORTING
-        !iv_data       TYPE xstring
-      RETURNING
-        VALUE(rs_push) TYPE ty_push
-      RAISING
-        zcx_ags_error.
-    METHODS decode_request
-      IMPORTING
-        !iv_string        TYPE string
-      RETURNING
-        VALUE(rs_request) TYPE ty_request.
-    METHODS get_null
-      RETURNING
-        VALUE(rv_char) TYPE char1.
-    METHODS pack
-      RAISING
-        zcx_ags_error.
-    METHODS repo_name
-      RETURNING
-        VALUE(rv_name) TYPE zags_repos-name.
-    METHODS unpack
-      RAISING
-        zcx_ags_error.
-    METHODS unpack_ok.
+  methods BRANCH_LIST
+    raising
+      ZCX_AGS_ERROR .
+  methods DECODE_PUSH
+    importing
+      !IV_DATA type XSTRING
+    returning
+      value(RS_PUSH) type TY_PUSH
+    raising
+      ZCX_AGS_ERROR .
+  methods DECODE_REQUEST
+    importing
+      !IV_STRING type STRING
+    returning
+      value(RS_REQUEST) type TY_REQUEST .
+  methods GET_NULL
+    returning
+      value(RV_CHAR) type CHAR1 .
+  methods PACK
+    raising
+      ZCX_AGS_ERROR .
+  methods REPO_NAME
+    returning
+      value(RV_NAME) type ZAGS_REPOS-NAME .
+  methods UNPACK
+    raising
+      ZCX_AGS_ERROR .
+  methods UNPACK_OK .
 ENDCLASS.
 
 
@@ -236,6 +235,7 @@ CLASS ZCL_AGS_SERVICE_GIT IMPLEMENTATION.
           lv_encoded  TYPE zags_hex4,
           lt_objects  TYPE zcl_ags_pack=>ty_objects_tt,
           lv_pack     TYPE xstring,
+          lv_repo     TYPE zags_repos-repo,
           ls_request  TYPE ty_request,
           lv_branch   LIKE LINE OF ls_request-want,
           lv_length   TYPE i.
@@ -247,12 +247,16 @@ CLASS ZCL_AGS_SERVICE_GIT IMPLEMENTATION.
     lv_encoded = lcl_length=>encode( xstrlen( lv_pack ) + 4 ).
     CONCATENATE lv_response lv_encoded lv_pack INTO lv_response IN BYTE MODE.
 
+    lv_repo = zcl_ags_repo=>get_instance( repo_name( ) )->get_data( )-repo.
+
     LOOP AT ls_request-want INTO lv_branch.
       CREATE OBJECT lo_commit
         EXPORTING
+          iv_repo = lv_repo
           iv_sha1 = lv_branch.
 
       APPEND LINES OF zcl_ags_pack=>explode(
+        iv_repo = lv_repo
         ii_object = lo_commit
         iv_deepen = ls_request-deepen ) TO lt_objects.
     ENDLOOP.

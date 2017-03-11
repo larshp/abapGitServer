@@ -1,69 +1,72 @@
-CLASS zcl_ags_obj_tree DEFINITION
-  PUBLIC
-  FINAL
-  CREATE PUBLIC .
+class ZCL_AGS_OBJ_TREE definition
+  public
+  final
+  create public .
 
-  PUBLIC SECTION.
+public section.
 
-    INTERFACES zif_ags_object .
+  interfaces ZIF_AGS_OBJECT .
 
-    ALIASES c_newline
-      FOR zif_ags_object~c_newline .
-    ALIASES deserialize
-      FOR zif_ags_object~deserialize .
-    ALIASES save
-      FOR zif_ags_object~save .
-    ALIASES serialize
-      FOR zif_ags_object~serialize .
-    ALIASES sha1
-      FOR zif_ags_object~sha1 .
+  aliases C_NEWLINE
+    for ZIF_AGS_OBJECT~C_NEWLINE .
+  aliases DESERIALIZE
+    for ZIF_AGS_OBJECT~DESERIALIZE .
+  aliases SAVE
+    for ZIF_AGS_OBJECT~SAVE .
+  aliases SERIALIZE
+    for ZIF_AGS_OBJECT~SERIALIZE .
+  aliases SHA1
+    for ZIF_AGS_OBJECT~SHA1 .
 
-    TYPES:
-      ty_chmod TYPE c LENGTH 6 .
-    TYPES:
-      BEGIN OF ty_tree,
+  types:
+    ty_chmod TYPE c LENGTH 6 .
+  types:
+    BEGIN OF ty_tree,
         chmod TYPE ty_chmod,
         name  TYPE string,
         sha1  TYPE zags_sha1,
       END OF ty_tree .
-    TYPES:
-      ty_tree_tt TYPE STANDARD TABLE OF ty_tree WITH DEFAULT KEY .
+  types:
+    ty_tree_tt TYPE STANDARD TABLE OF ty_tree WITH DEFAULT KEY .
 
-    CONSTANTS:
-      BEGIN OF c_chmod,
+  constants:
+    BEGIN OF c_chmod,
         file       TYPE ty_chmod VALUE '100644',
         executable TYPE ty_chmod VALUE '100755',
         dir        TYPE ty_chmod VALUE '40000',
       END OF c_chmod .
 
-    CLASS-METHODS get_instance
-      IMPORTING
-        !iv_sha1       TYPE zags_sha1
-      RETURNING
-        VALUE(ro_tree) TYPE REF TO zcl_ags_obj_tree
-      RAISING
-        zcx_ags_error .
-    METHODS add_file
-      IMPORTING
-        !iv_chmod TYPE ty_chmod
-        !iv_name  TYPE ty_tree-name
-        !iv_sha1  TYPE ty_tree-sha1 .
-    METHODS constructor
-      IMPORTING
-        !iv_sha1 TYPE zags_sha1 OPTIONAL
-      RAISING
-        zcx_ags_error .
-    METHODS get_files
-      RETURNING
-        VALUE(rt_files) TYPE ty_tree_tt .
-    METHODS set_files
-      IMPORTING
-        VALUE(it_files) TYPE ty_tree_tt .
+  class-methods GET_INSTANCE
+    importing
+      !IV_REPO type ZAGS_OBJECTS-REPO
+      !IV_SHA1 type ZAGS_OBJECTS-SHA1
+    returning
+      value(RO_TREE) type ref to ZCL_AGS_OBJ_TREE
+    raising
+      ZCX_AGS_ERROR .
+  methods ADD_FILE
+    importing
+      !IV_CHMOD type TY_CHMOD
+      !IV_NAME type TY_TREE-NAME
+      !IV_SHA1 type TY_TREE-SHA1 .
+  methods CONSTRUCTOR
+    importing
+      !IV_REPO type ZAGS_OBJECTS-REPO
+      !IV_SHA1 type ZAGS_OBJECTS-SHA1 optional
+    raising
+      ZCX_AGS_ERROR .
+  methods GET_FILES
+    returning
+      value(RT_FILES) type TY_TREE_TT .
+  methods SET_FILES
+    importing
+      value(IT_FILES) type TY_TREE_TT .
   PROTECTED SECTION.
-  PRIVATE SECTION.
+private section.
 
-    DATA mt_data TYPE ty_tree_tt .
-    DATA mv_new TYPE abap_bool .
+  data MT_DATA type TY_TREE_TT .
+  data MV_NEW type ABAP_BOOL .
+  data MV_REPO type ZAGS_OBJECTS-REPO .
 ENDCLASS.
 
 
@@ -94,11 +97,16 @@ CLASS ZCL_AGS_OBJ_TREE IMPLEMENTATION.
 
   METHOD constructor.
 
+    ASSERT NOT iv_repo IS INITIAL.
+
     IF iv_sha1 IS INITIAL.
       mv_new = abap_true.
+      mv_repo = iv_repo.
     ELSE.
       mv_new = abap_false.
-      deserialize( zcl_ags_db=>get_objects( )->single( iv_sha1 )-data_raw ).
+      deserialize( zcl_ags_db=>get_objects( )->single(
+        iv_repo = iv_repo
+        iv_sha1 = iv_sha1 )-data_raw ).
     ENDIF.
 
   ENDMETHOD.
@@ -115,6 +123,7 @@ CLASS ZCL_AGS_OBJ_TREE IMPLEMENTATION.
 
     CREATE OBJECT ro_tree
       EXPORTING
+        iv_repo = iv_repo
         iv_sha1 = iv_sha1.
 
   ENDMETHOD.
@@ -147,6 +156,7 @@ CLASS ZCL_AGS_OBJ_TREE IMPLEMENTATION.
 
     ASSERT mv_new = abap_true.
 
+    ls_object-repo = mv_repo.
     ls_object-sha1 = sha1( ).
     ls_object-type = zif_ags_constants=>c_type-tree.
     ls_object-data_raw = serialize( ).
