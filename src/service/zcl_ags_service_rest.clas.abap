@@ -92,7 +92,7 @@ public section.
       ZCX_AGS_ERROR .
   methods READ_COMMIT
     importing
-      !IV_REPO type ZAGS_REPO
+      !IV_REPO type ZAGS_REPOS-NAME
       !IV_COMMIT type ZAGS_SHA1
     returning
       value(RS_DATA) type TY_COMMIT
@@ -317,20 +317,23 @@ CLASS ZCL_AGS_SERVICE_REST IMPLEMENTATION.
 
   METHOD read_commit.
 
-* todo, change IV_REPO type to name of repo?
+    DATA: lo_repo TYPE REF TO zcl_ags_repo.
+
 
     ASSERT NOT iv_repo IS INITIAL.
     ASSERT NOT iv_commit IS INITIAL.
 
+    lo_repo = zcl_ags_repo=>get_instance( iv_repo ).
+
     MOVE-CORRESPONDING
       zcl_ags_obj_commit=>get_instance(
-        iv_repo = iv_repo
+        iv_repo = lo_repo->get_data( )-repo
         iv_sha1 = iv_commit )->get_pretty( )
       TO rs_data.
 
 * todo, handle 2 parents, i.e. merge commit?
     rs_data-files = list_changes(
-      iv_repo = iv_repo
+      iv_repo = lo_repo->get_data( )-repo
       iv_new  = iv_commit
       iv_old  = rs_data-parent ).
 
@@ -402,7 +405,8 @@ CLASS ZCL_AGS_SERVICE_REST IMPLEMENTATION.
 
     APPEND INITIAL LINE TO rt_meta ASSIGNING <ls_meta>.
     <ls_meta>-summary   = 'Read blob via SHA1'(012).
-    <ls_meta>-url-regex = '/blob/(\w+)$'.
+    <ls_meta>-url-regex = '/blob/(\w+)/(\w+)$'.
+    APPEND 'IV_REPO' TO <ls_meta>-url-group_names.
     APPEND 'IV_SHA1' TO <ls_meta>-url-group_names.
     <ls_meta>-method    = zcl_swag=>c_method-get.
     <ls_meta>-handler   = 'READ_BLOB_SHA1'.

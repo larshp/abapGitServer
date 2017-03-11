@@ -72,6 +72,8 @@ CLASS ZCL_AGS_DB_OBJECTS IMPLEMENTATION.
 
   METHOD single.
 
+    ASSERT NOT iv_repo IS INITIAL.
+
     IF mv_fake = abap_true.
       READ TABLE mt_objects INTO rs_data
         WITH KEY repo = iv_repo
