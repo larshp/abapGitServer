@@ -69,6 +69,12 @@
      <ENTRY>Read blob via SHA1</ENTRY>
      <LENGTH>28</LENGTH>
     </item>
+    <item>
+     <ID>I</ID>
+     <KEY>013</KEY>
+     <ENTRY>Read history</ENTRY>
+     <LENGTH>22</LENGTH>
+    </item>
    </TPOOL>
   </asx:values>
  </asx:abap>

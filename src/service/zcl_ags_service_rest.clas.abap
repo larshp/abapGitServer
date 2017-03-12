@@ -12,6 +12,10 @@ CLASS zcl_ags_service_rest DEFINITION
         name        TYPE zags_repos-name,
         description TYPE zags_repos-description,
       END OF ty_create .
+    TYPES: BEGIN OF ty_filename_and_path,
+             filename TYPE zags_repos-name,
+             path     TYPE zags_repos-description,
+           END OF ty_filename_and_path.
     TYPES:
       BEGIN OF ty_branch,
         name   TYPE zags_branch_name,
@@ -29,7 +33,7 @@ CLASS zcl_ags_service_rest DEFINITION
       ty_changed_files_tt TYPE STANDARD TABLE OF ty_changed_file WITH DEFAULT KEY .
     TYPES:
       BEGIN OF ty_commit.
-        INCLUDE TYPE zcl_ags_obj_commit=>ty_pretty.
+            INCLUDE TYPE zcl_ags_obj_commit=>ty_pretty.
     TYPES: files TYPE ty_changed_files_tt,
            END OF ty_commit .
     TYPES:
@@ -99,11 +103,25 @@ CLASS zcl_ags_service_rest DEFINITION
         VALUE(rs_data) TYPE ty_commit
       RAISING
         zcx_ags_error .
+    METHODS read_history
+      IMPORTING
+        !iv_repo          TYPE zags_repo_name
+        !iv_branch        TYPE zags_branch_name
+        !iv_filename      TYPE string
+      RETURNING
+        VALUE(rt_commits) TYPE zcl_ags_obj_commit=>ty_pretty_tt
+      RAISING
+        zcx_ags_error .
   PROTECTED SECTION.
   PRIVATE SECTION.
 
     CONSTANTS c_base TYPE string VALUE '/sap/zabapgitserver/rest' ##NO_TEXT.
 
+    METHODS to_filename_and_path
+      IMPORTING
+        !iv_filename   TYPE string
+      RETURNING
+        VALUE(rs_data) TYPE ty_filename_and_path .
     METHODS list_changes
       IMPORTING
         !iv_repo        TYPE zags_repo
@@ -265,21 +283,14 @@ CLASS ZCL_AGS_SERVICE_REST IMPLEMENTATION.
 
   METHOD read_blob.
 
-    DATA: lt_files    TYPE zcl_ags_cache=>ty_files_simple_tt,
-          lo_repo     TYPE REF TO zcl_ags_repo,
-          lv_path     TYPE string,
-          lv_tmp      TYPE string,
-          lv_filename TYPE string.
+    DATA: lt_files TYPE zcl_ags_cache=>ty_files_simple_tt,
+          lo_repo  TYPE REF TO zcl_ags_repo,
+          ls_fpath TYPE ty_filename_and_path.
 
     FIELD-SYMBOLS: <ls_file> LIKE LINE OF lt_files.
 
 
-    lv_filename = iv_filename.
-    lv_path = '/'.
-    WHILE lv_filename CA '/'.
-      SPLIT lv_filename AT '/' INTO lv_tmp lv_filename.
-      CONCATENATE lv_path lv_tmp '/' INTO lv_path.
-    ENDWHILE.
+    ls_fpath = to_filename_and_path( iv_filename ).
 
     lo_repo = zcl_ags_repo=>get_instance( iv_repo ).
 
@@ -287,8 +298,8 @@ CLASS ZCL_AGS_SERVICE_REST IMPLEMENTATION.
       iv_branch )->get_cache( )->list_files_simple( ).
 
     READ TABLE lt_files ASSIGNING <ls_file>
-      WITH KEY filename = lv_filename
-      path = lv_path.
+      WITH KEY filename = ls_fpath-filename
+      path = ls_fpath-path.
     IF sy-subrc <> 0.
       RAISE EXCEPTION TYPE zcx_ags_error
         EXPORTING
@@ -337,6 +348,40 @@ CLASS ZCL_AGS_SERVICE_REST IMPLEMENTATION.
       iv_repo = lo_repo->get_data( )-repo
       iv_new  = iv_commit
       iv_old  = rs_data-parent ).
+
+  ENDMETHOD.
+
+
+  METHOD read_history.
+
+    DATA: lo_repo  TYPE REF TO zcl_ags_repo,
+          lv_path  TYPE string,
+          ls_fpath TYPE ty_filename_and_path.
+
+    FIELD-SYMBOLS: <ls_commit> LIKE LINE OF rt_commits.
+
+
+    ls_fpath = to_filename_and_path( iv_filename ).
+
+    lo_repo = zcl_ags_repo=>get_instance( iv_repo ).
+
+    APPEND INITIAL LINE TO rt_commits ASSIGNING <ls_commit>.
+    <ls_commit>-text = 'todo' && ls_fpath-filename.
+    <ls_commit>-body = 'todo' && ls_fpath-path.
+
+  ENDMETHOD.
+
+
+  METHOD to_filename_and_path.
+
+    DATA: lv_tmp TYPE string.
+
+    rs_data-filename = iv_filename.
+    rs_data-path = '/'.
+    WHILE rs_data-filename CA '/'.
+      SPLIT rs_data-filename AT '/' INTO lv_tmp rs_data-filename.
+      CONCATENATE rs_data-path lv_tmp '/' INTO rs_data-path.
+    ENDWHILE.
 
   ENDMETHOD.
 
@@ -404,6 +449,15 @@ CLASS ZCL_AGS_SERVICE_REST IMPLEMENTATION.
     APPEND 'IV_FILENAME' TO <ls_meta>-url-group_names.
     <ls_meta>-method    = zcl_swag=>c_method-get.
     <ls_meta>-handler   = 'READ_BLOB'.
+
+    APPEND INITIAL LINE TO rt_meta ASSIGNING <ls_meta>.
+    <ls_meta>-summary   = 'Read history'(013).
+    <ls_meta>-url-regex = '/history/(\w*)/(\w+)/(.*)$'.
+    APPEND 'IV_REPO' TO <ls_meta>-url-group_names.
+    APPEND 'IV_BRANCH' TO <ls_meta>-url-group_names.
+    APPEND 'IV_FILENAME' TO <ls_meta>-url-group_names.
+    <ls_meta>-method    = zcl_swag=>c_method-get.
+    <ls_meta>-handler   = 'READ_HISTORY'.
 
     APPEND INITIAL LINE TO rt_meta ASSIGNING <ls_meta>.
     <ls_meta>-summary   = 'Read blob via SHA1'(012).

@@ -107,7 +107,12 @@ class REST {
     const url = "blob/" + repoName + "/" + branch + "/" + filename;
     this.get(url, callback, false);
   }
-      
+   
+  static readHistory(repoName, branch, filename, callback) {
+    const url = "history/" + repoName + "/" + branch + "/" + filename;
+    this.get(url, callback, false);
+  }
+   
   static readBlobSHA1(repoName, sha1, callback) {
     const url = "blob/" + repoName + "/" + sha1;
     this.get(url, callback, false);
@@ -627,6 +632,31 @@ class BranchList extends React.Component {
   }
 }              
 
+class BlobHistory extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = {data: [], spinner: true };
+
+    REST.readHistory(props.params.repo, 
+                     props.params.branch, 
+                     props.params.splat,
+                     this.update.bind(this));
+  }
+      
+  update(d) {
+    this.setState({data: d, spinner: false});
+  }
+  
+  render() {
+    return(<div>
+      <Breadcrumb routes={this.props.routes} params={this.props.params} />
+      <h1>History - {this.props.params.splat}</h1>
+      todo
+      {this.state.spinner?<Spinner />:"todo"}             
+      </div>);
+  }
+} 
+
 class Blob extends React.Component {
   constructor(props) {
     super(props);
@@ -654,9 +684,11 @@ class Blob extends React.Component {
       
   render() {
     let lang = this.determineLanguage();
+    let history = this.props.params.repo + "/history/" + this.props.params.branch + "/" + this.props.params.splat;
     return(<div>
       <Breadcrumb routes={this.props.routes} params={this.props.params} />
       <h1>{this.props.params.splat}</h1>
+      <Link to={history}>File History</Link>
       {this.state.spinner?<Spinner />:<pre><code className={lang}>{this.state.data}</code></pre>}             
       </div>);
   }
@@ -871,6 +903,7 @@ class Router extends React.Component {
 * /(name)/files/(branch)/(*)        FilesList       list files in branch 
 * /(name)/commits/(branch)/         CommitList      list commits
 * /(name)/blob/(branch)/(*)         Blob            display blob
+* /(name)/history/(branch)/(*)      BlobHistory     blob history
 */
 
     return (
@@ -899,6 +932,12 @@ class Router extends React.Component {
               <ReactRouter.Route path=":branch">
                 <ReactRouter.IndexRoute component={NoMatch} />
                 <ReactRouter.Route path="*" component={Blob} />
+              </ReactRouter.Route>      
+            </ReactRouter.Route>
+            <ReactRouter.Route path="history">
+              <ReactRouter.Route path=":branch">
+                <ReactRouter.IndexRoute component={NoMatch} />
+                <ReactRouter.Route path="*" component={BlobHistory} />
               </ReactRouter.Route>      
             </ReactRouter.Route>
           </ReactRouter.Route>
