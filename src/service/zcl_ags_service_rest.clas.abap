@@ -84,14 +84,15 @@ CLASS zcl_ags_service_rest DEFINITION
         zcx_ags_error .
     METHODS read_blob_sha1
       IMPORTING
-        !iv_sha1           TYPE zags_sha1
+        !iv_repo           TYPE zags_repos-name
+        !iv_sha1           TYPE zags_objects-sha1
       RETURNING
         VALUE(rv_contents) TYPE xstring
       RAISING
         zcx_ags_error .
     METHODS read_commit
       IMPORTING
-        !iv_repo       TYPE zags_repo
+        !iv_repo       TYPE zags_repos-name
         !iv_commit     TYPE zags_sha1
       RETURNING
         VALUE(rs_data) TYPE ty_commit
@@ -154,7 +155,9 @@ CLASS ZCL_AGS_SERVICE_REST IMPLEMENTATION.
       <ls_output>-name = <lo_branch>->get_data( )-name.
 
 * add information about last commit
-      lo_commit = zcl_ags_obj_commit=>get_instance( <lo_branch>->get_data( )-sha1 ).
+      lo_commit = zcl_ags_obj_commit=>get_instance(
+        iv_repo = lo_repo->get_data( )-repo
+        iv_sha1 = <lo_branch>->get_data( )-sha1 ).
       <ls_output>-time = lo_commit->get_pretty( )-committer-time.
       <ls_output>-commit = lo_commit->sha1( ).
       IF <ls_output>-name = lv_head.
@@ -262,6 +265,7 @@ CLASS ZCL_AGS_SERVICE_REST IMPLEMENTATION.
   METHOD read_blob.
 
     DATA: lt_files    TYPE zcl_ags_cache=>ty_files_simple_tt,
+          lo_repo     TYPE REF TO zcl_ags_repo,
           lv_path     TYPE string,
           lv_tmp      TYPE string,
           lv_filename TYPE string.
@@ -276,7 +280,9 @@ CLASS ZCL_AGS_SERVICE_REST IMPLEMENTATION.
       CONCATENATE lv_path lv_tmp '/' INTO lv_path.
     ENDWHILE.
 
-    lt_files = zcl_ags_repo=>get_instance( iv_repo )->get_branch(
+    lo_repo = zcl_ags_repo=>get_instance( iv_repo ).
+
+    lt_files = lo_repo->get_branch(
       iv_branch )->get_cache( )->list_files_simple( ).
 
     READ TABLE lt_files ASSIGNING <ls_file>
@@ -288,30 +294,46 @@ CLASS ZCL_AGS_SERVICE_REST IMPLEMENTATION.
           textid = zcx_ags_error=>m011.
     ENDIF.
 
-    rv_contents = zcl_ags_obj_blob=>get_instance( <ls_file>-blob_sha1 )->get_data( ).
+    rv_contents = zcl_ags_obj_blob=>get_instance(
+      iv_repo = lo_repo->get_data( )-repo
+      iv_sha1 = <ls_file>-blob_sha1 )->get_data( ).
 
   ENDMETHOD.
 
 
   METHOD read_blob_sha1.
 
-    rv_contents = zcl_ags_obj_blob=>get_instance( iv_sha1 )->get_data( ).
+    DATA: lo_repo TYPE REF TO zcl_ags_repo.
+
+
+    lo_repo = zcl_ags_repo=>get_instance( iv_repo ).
+
+    rv_contents = zcl_ags_obj_blob=>get_instance(
+      iv_repo = lo_repo->get_data( )-repo
+      iv_sha1 = iv_sha1 )->get_data( ).
 
   ENDMETHOD.
 
 
   METHOD read_commit.
 
+    DATA: lo_repo TYPE REF TO zcl_ags_repo.
+
+
     ASSERT NOT iv_repo IS INITIAL.
     ASSERT NOT iv_commit IS INITIAL.
 
+    lo_repo = zcl_ags_repo=>get_instance( iv_repo ).
+
     MOVE-CORRESPONDING
-      zcl_ags_obj_commit=>get_instance( iv_commit )->get_pretty( )
+      zcl_ags_obj_commit=>get_instance(
+        iv_repo = lo_repo->get_data( )-repo
+        iv_sha1 = iv_commit )->get_pretty( )
       TO rs_data.
 
 * todo, handle 2 parents, i.e. merge commit?
     rs_data-files = list_changes(
-      iv_repo = iv_repo
+      iv_repo = lo_repo->get_data( )-repo
       iv_new  = iv_commit
       iv_old  = rs_data-parent ).
 
@@ -383,7 +405,8 @@ CLASS ZCL_AGS_SERVICE_REST IMPLEMENTATION.
 
     APPEND INITIAL LINE TO rt_meta ASSIGNING <ls_meta>.
     <ls_meta>-summary   = 'Read blob via SHA1'(012).
-    <ls_meta>-url-regex = '/blob/(\w+)$'.
+    <ls_meta>-url-regex = '/blob/(\w+)/(\w+)$'.
+    APPEND 'IV_REPO' TO <ls_meta>-url-group_names.
     APPEND 'IV_SHA1' TO <ls_meta>-url-group_names.
     <ls_meta>-method    = zcl_swag=>c_method-get.
     <ls_meta>-handler   = 'READ_BLOB_SHA1'.

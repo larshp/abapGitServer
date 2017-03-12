@@ -137,7 +137,9 @@ CLASS ZCL_AGS_CACHE IMPLEMENTATION.
                    <ls_prev>    LIKE LINE OF lt_prev.
 
 * todo, handle multiple 2 parent(merge commits)
-    lv_parent = zcl_ags_obj_commit=>get_instance( iv_commit )->get( )-parent.
+    lv_parent = zcl_ags_obj_commit=>get_instance(
+      iv_repo = mv_repo
+      iv_sha1 = iv_commit )->get( )-parent.
 
     CREATE OBJECT lo_cache
       EXPORTING
@@ -191,7 +193,9 @@ CLASS ZCL_AGS_CACHE IMPLEMENTATION.
     APPEND mv_commit TO lt_visit.
 
     LOOP AT lt_visit INTO lv_commit.
-      ls_data = zcl_ags_obj_commit=>get_instance( lv_commit )->get_pretty( ).
+      ls_data = zcl_ags_obj_commit=>get_instance(
+        iv_repo = mv_repo
+        iv_sha1 = lv_commit )->get_pretty( ).
 
       APPEND ls_data TO rt_commits.
 
@@ -267,11 +271,15 @@ CLASS ZCL_AGS_CACHE IMPLEMENTATION.
 
 
     APPEND INITIAL LINE TO lt_trees ASSIGNING <ls_tree>.
-    <ls_tree>-sha1 = zcl_ags_obj_commit=>get_instance( mv_commit )->get( )-tree.
+    <ls_tree>-sha1 = zcl_ags_obj_commit=>get_instance(
+      iv_repo = mv_repo
+      iv_sha1 = mv_commit )->get( )-tree.
     <ls_tree>-path = '/'.
 
     LOOP AT lt_trees ASSIGNING <ls_input_tree>.
-      lt_files = zcl_ags_obj_tree=>get_instance( <ls_input_tree>-sha1 )->get_files( ).
+      lt_files = zcl_ags_obj_tree=>get_instance(
+        iv_repo = mv_repo
+        iv_sha1 = <ls_input_tree>-sha1 )->get_files( ).
       LOOP AT lt_files ASSIGNING <ls_input_file>.
         CASE <ls_input_file>-chmod.
           WHEN zcl_ags_obj_tree=>c_chmod-dir.
@@ -311,7 +319,9 @@ CLASS ZCL_AGS_CACHE IMPLEMENTATION.
     ENDLOOP.
 
     LOOP AT rt_files ASSIGNING <ls_file1> WHERE time IS INITIAL.
-      ls_commit = zcl_ags_obj_commit=>get_instance( <ls_file1>-last_commit_sha1
+      ls_commit = zcl_ags_obj_commit=>get_instance(
+        iv_repo = mv_repo
+        iv_sha1 = <ls_file1>-last_commit_sha1
         )->get_pretty( ).
 
       LOOP AT rt_files ASSIGNING <ls_file2>

@@ -73,6 +73,7 @@ CLASS zcl_ags_repo DEFINITION
 
     CLASS-METHODS initial_commit
       IMPORTING
+        !iv_repo         TYPE zags_repos-repo
         !iv_name         TYPE clike
       RETURNING
         VALUE(rv_commit) TYPE zags_sha1
@@ -120,7 +121,9 @@ CLASS ZCL_AGS_REPO IMPLEMENTATION.
 
     ro_repo->create_branch(
       iv_name   = ls_repo-head
-      iv_commit = initial_commit( iv_name ) ).
+      iv_commit = initial_commit(
+        iv_repo = ls_repo-repo
+        iv_name = iv_name ) ).
 
   ENDMETHOD.
 
@@ -130,7 +133,9 @@ CLASS ZCL_AGS_REPO IMPLEMENTATION.
     DATA: ls_branch TYPE zags_branches.
 
 * validate that iv_commit exists?
-    zcl_ags_obj_commit=>get_instance( iv_commit ).
+    zcl_ags_obj_commit=>get_instance(
+      iv_repo = ms_data-repo
+      iv_sha1 = iv_commit ).
 
     ls_branch-repo   = ms_data-repo.
     ls_branch-branch = zcl_ags_util=>uuid( ).
@@ -210,12 +215,16 @@ CLASS ZCL_AGS_REPO IMPLEMENTATION.
           lv_user   TYPE string.
 
 
-    CREATE OBJECT lo_blob.
+    CREATE OBJECT lo_blob
+      EXPORTING
+        iv_repo = iv_repo.
     lv_str = iv_name.
     lo_blob->set_data( zcl_ags_util=>string_to_xstring_utf8( lv_str ) ).
     lo_blob->save( ).
 
-    CREATE OBJECT lo_tree.
+    CREATE OBJECT lo_tree
+      EXPORTING
+        iv_repo = iv_repo.
     lo_tree->add_file( iv_chmod = zcl_ags_obj_tree=>c_chmod-file
                        iv_name  = 'README.md'
                        iv_sha1  = lo_blob->sha1( ) ) ##no_text.
@@ -223,7 +232,9 @@ CLASS ZCL_AGS_REPO IMPLEMENTATION.
 
     lv_user = |initial <foo@bar.com> { zcl_ags_util=>get_time( ) }|.
 
-    CREATE OBJECT lo_commit.
+    CREATE OBJECT lo_commit
+      EXPORTING
+        iv_repo = iv_repo.
     lo_commit->set_tree( lo_tree->sha1( ) ).
     lo_commit->set_author( lv_user ).
     lo_commit->set_committer( lv_user ).

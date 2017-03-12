@@ -9,8 +9,8 @@ CLASS ltcl_test DEFINITION FOR TESTING
 
     METHODS: serialize FOR TESTING
       RAISING zcx_ags_error.
-ENDCLASS.       "ltcl_Test
 
+ENDCLASS.       "ltcl_Test
 
 CLASS ltcl_test IMPLEMENTATION.
 
@@ -21,7 +21,9 @@ CLASS ltcl_test IMPLEMENTATION.
           lv_xstr TYPE xstring.
 
 
-    CREATE OBJECT lo_old.
+    CREATE OBJECT lo_old
+      EXPORTING
+        iv_repo = 'test'.
     lo_old->add_file(
       iv_chmod = zcl_ags_obj_tree=>c_chmod-file
       iv_name  = 'foobar.txt'
@@ -29,7 +31,9 @@ CLASS ltcl_test IMPLEMENTATION.
 
     lv_xstr = lo_old->zif_ags_object~serialize( ).
 
-    CREATE OBJECT lo_new.
+    CREATE OBJECT lo_new
+      EXPORTING
+        iv_repo = 'test'.
     lo_new->zif_ags_object~deserialize( lv_xstr ).
 
     cl_abap_unit_assert=>assert_equals(

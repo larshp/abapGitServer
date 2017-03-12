@@ -6,16 +6,20 @@ CLASS zcl_ags_db_objects DEFINITION
 
   PUBLIC SECTION.
 
+    METHODS list
+      RETURNING
+        VALUE(rt_objects) TYPE zags_objects_tt .
+    METHODS modify
+      IMPORTING
+        VALUE(is_data) TYPE zags_objects .
     METHODS single
       IMPORTING
+        !iv_repo       TYPE zags_objects-repo
         !iv_sha1       TYPE zags_objects-sha1
       RETURNING
         VALUE(rs_data) TYPE zags_objects
       RAISING
         zcx_ags_error .
-    METHODS modify
-      IMPORTING
-        !is_data TYPE zags_objects .
   PROTECTED SECTION.
   PRIVATE SECTION.
 
@@ -30,10 +34,26 @@ ENDCLASS.
 CLASS ZCL_AGS_DB_OBJECTS IMPLEMENTATION.
 
 
-  METHOD modify.
+  METHOD list.
+* used in migration program, see https://github.com/larshp/abapGitServer/issues/41
 
     IF mv_fake = abap_true.
-      DELETE mt_objects WHERE sha1 = is_data-sha1.
+      rt_objects = mt_objects.
+    ELSE.
+      SELECT * FROM zags_objects
+        INTO CORRESPONDING FIELDS OF TABLE rt_objects.    "#EC CI_SUBRC
+    ENDIF.
+
+  ENDMETHOD.
+
+
+  METHOD modify.
+
+    ASSERT NOT is_data-repo IS INITIAL.
+    ASSERT NOT is_data-sha1 IS INITIAL.
+
+    IF mv_fake = abap_true.
+      DELETE mt_objects WHERE sha1 = is_data-sha1 AND repo = is_data-repo.
       INSERT is_data INTO TABLE mt_objects.
     ELSE.
       MODIFY zags_objects FROM is_data.                   "#EC CI_SUBRC
@@ -52,13 +72,17 @@ CLASS ZCL_AGS_DB_OBJECTS IMPLEMENTATION.
 
   METHOD single.
 
+    ASSERT NOT iv_repo IS INITIAL.
+
     IF mv_fake = abap_true.
       READ TABLE mt_objects INTO rs_data
-        WITH KEY sha1 = iv_sha1.                          "#EC CI_SUBRC
+        WITH KEY repo = iv_repo
+        sha1 = iv_sha1.                                   "#EC CI_SUBRC
     ELSE.
       SELECT SINGLE * FROM zags_objects
         INTO rs_data
-        WHERE sha1 = iv_sha1.
+        WHERE repo = iv_repo
+        AND sha1 = iv_sha1.
     ENDIF.
     IF sy-subrc <> 0.
       RAISE EXCEPTION TYPE zcx_ags_error

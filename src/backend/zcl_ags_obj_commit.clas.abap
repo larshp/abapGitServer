@@ -50,14 +50,16 @@ CLASS zcl_ags_obj_commit DEFINITION
 
     CLASS-METHODS get_instance
       IMPORTING
-        !iv_sha1         TYPE zags_sha1
+        !iv_repo         TYPE zags_objects-repo
+        !iv_sha1         TYPE zags_objects-sha1
       RETURNING
         VALUE(ro_commit) TYPE REF TO zcl_ags_obj_commit
       RAISING
         zcx_ags_error .
     METHODS constructor
       IMPORTING
-        !iv_sha1 TYPE zags_sha1 OPTIONAL
+        !iv_repo TYPE zags_objects-repo
+        !iv_sha1 TYPE zags_objects-sha1 OPTIONAL
       RAISING
         zcx_ags_error .
     METHODS get
@@ -96,6 +98,7 @@ CLASS zcl_ags_obj_commit DEFINITION
     DATA ms_data TYPE ty_commit .
     DATA mv_new TYPE abap_bool .
     DATA mv_sha1 TYPE zags_sha1 .
+    DATA mv_repo TYPE zags_objects-repo .
 
     METHODS parse_userfield
       IMPORTING
@@ -113,12 +116,15 @@ CLASS ZCL_AGS_OBJ_COMMIT IMPLEMENTATION.
 
   METHOD constructor.
 
+    ASSERT NOT iv_repo IS INITIAL.
+
     IF iv_sha1 IS INITIAL.
       mv_new = abap_true.
+      mv_repo = iv_repo.
     ELSE.
       mv_new = abap_false.
       mv_sha1 = iv_sha1.
-      deserialize( zcl_ags_db=>get_objects( )->single( iv_sha1 )-data_raw ).
+      deserialize( zcl_ags_db=>get_objects( )->single( iv_repo = iv_repo iv_sha1 = iv_sha1 )-data_raw ).
     ENDIF.
 
   ENDMETHOD.
@@ -135,6 +141,7 @@ CLASS ZCL_AGS_OBJ_COMMIT IMPLEMENTATION.
 
     CREATE OBJECT ro_commit
       EXPORTING
+        iv_repo = iv_repo
         iv_sha1 = iv_sha1.
 
   ENDMETHOD.
@@ -270,6 +277,7 @@ CLASS ZCL_AGS_OBJ_COMMIT IMPLEMENTATION.
 
     ASSERT mv_new = abap_true.
 
+    ls_object-repo = mv_repo.
     ls_object-sha1 = sha1( ).
     ls_object-type = zif_ags_constants=>c_type-commit.
     ls_object-data_raw = serialize( ).

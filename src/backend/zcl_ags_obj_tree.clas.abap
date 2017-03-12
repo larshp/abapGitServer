@@ -38,7 +38,8 @@ CLASS zcl_ags_obj_tree DEFINITION
 
     CLASS-METHODS get_instance
       IMPORTING
-        !iv_sha1       TYPE zags_sha1
+        !iv_repo       TYPE zags_objects-repo
+        !iv_sha1       TYPE zags_objects-sha1
       RETURNING
         VALUE(ro_tree) TYPE REF TO zcl_ags_obj_tree
       RAISING
@@ -50,7 +51,8 @@ CLASS zcl_ags_obj_tree DEFINITION
         !iv_sha1  TYPE ty_tree-sha1 .
     METHODS constructor
       IMPORTING
-        !iv_sha1 TYPE zags_sha1 OPTIONAL
+        !iv_repo TYPE zags_objects-repo
+        !iv_sha1 TYPE zags_objects-sha1 OPTIONAL
       RAISING
         zcx_ags_error .
     METHODS get_files
@@ -64,6 +66,7 @@ CLASS zcl_ags_obj_tree DEFINITION
 
     DATA mt_data TYPE ty_tree_tt .
     DATA mv_new TYPE abap_bool .
+    DATA mv_repo TYPE zags_objects-repo .
 ENDCLASS.
 
 
@@ -94,11 +97,16 @@ CLASS ZCL_AGS_OBJ_TREE IMPLEMENTATION.
 
   METHOD constructor.
 
+    ASSERT NOT iv_repo IS INITIAL.
+
     IF iv_sha1 IS INITIAL.
       mv_new = abap_true.
+      mv_repo = iv_repo.
     ELSE.
       mv_new = abap_false.
-      deserialize( zcl_ags_db=>get_objects( )->single( iv_sha1 )-data_raw ).
+      deserialize( zcl_ags_db=>get_objects( )->single(
+        iv_repo = iv_repo
+        iv_sha1 = iv_sha1 )-data_raw ).
     ENDIF.
 
   ENDMETHOD.
@@ -115,6 +123,7 @@ CLASS ZCL_AGS_OBJ_TREE IMPLEMENTATION.
 
     CREATE OBJECT ro_tree
       EXPORTING
+        iv_repo = iv_repo
         iv_sha1 = iv_sha1.
 
   ENDMETHOD.
@@ -147,6 +156,7 @@ CLASS ZCL_AGS_OBJ_TREE IMPLEMENTATION.
 
     ASSERT mv_new = abap_true.
 
+    ls_object-repo = mv_repo.
     ls_object-sha1 = sha1( ).
     ls_object-type = zif_ags_constants=>c_type-tree.
     ls_object-data_raw = serialize( ).

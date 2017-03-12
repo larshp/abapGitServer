@@ -104,8 +104,8 @@ class REST {
     this.get(url, callback, false);
   }
       
-  static readBlobSHA1(sha1, callback) {
-    const url = "blob/" + sha1;
+  static readBlobSHA1(repoName, sha1, callback) {
+    const url = "blob/" + repoName + "/" + sha1;
     this.get(url, callback, false);
   }      
 
@@ -437,14 +437,16 @@ class Diff extends React.Component {
       this.old = "";
     } else {
       this.old = null;
-      REST.readBlobSHA1(props.old,
+      REST.readBlobSHA1(props.repo,
+                        props.old,
                         this.oldd.bind(this));
     }
     if (props.new === "") {
       this.new = "";
     } else {
       this.new = null;
-      REST.readBlobSHA1(props.new,
+      REST.readBlobSHA1(props.repo,
+                        props.new,
                         this.newd.bind(this));     
     }     
   }
@@ -520,6 +522,7 @@ class Commit extends React.Component {
     return (<Diff 
       filename={e.FILENAME} 
       fileNumber={this.i++} 
+      repo={ this.props.params.repo }
       old={ e.OLD_BLOB } 
       new={ e.NEW_BLOB } />);
   }

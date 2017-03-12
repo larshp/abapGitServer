@@ -35,7 +35,9 @@ CLASS ltcl_test IMPLEMENTATION.
           lv_xstr TYPE xstring.
 
 
-    CREATE OBJECT lo_old.
+    CREATE OBJECT lo_old
+      EXPORTING
+        iv_repo = 'test'.
     lo_old->set_author( lc_field ).
     lo_old->set_body( 'body' ).
     lo_old->set_committer( lc_field ).
@@ -43,7 +45,9 @@ CLASS ltcl_test IMPLEMENTATION.
     lo_old->set_tree( c_sha1 ).
     lv_xstr = lo_old->zif_ags_object~serialize( ).
 
-    CREATE OBJECT lo_new.
+    CREATE OBJECT lo_new
+      EXPORTING
+        iv_repo = 'test'.
     lo_new->zif_ags_object~deserialize( lv_xstr ).
 
     cl_abap_unit_assert=>assert_equals(
@@ -107,7 +111,9 @@ ENDCLASS.       "ltcl_Userfield
 CLASS ltcl_userfield IMPLEMENTATION.
 
   METHOD setup.
-    CREATE OBJECT mo_commit.
+    CREATE OBJECT mo_commit
+      EXPORTING
+        iv_repo = 'test'.
   ENDMETHOD.                    "setup
 
   METHOD parse_userfield1.
