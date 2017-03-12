@@ -87,11 +87,14 @@ FORM run RAISING zcx_ags_error.
   lt_repos = zcl_ags_repo=>list( ).
 
   LOOP AT lt_repos ASSIGNING <ls_repo>.
+    CLEAR lt_sha1.
+
     lt_branches = zcl_ags_repo=>get_instance( <ls_repo>-name )->list_branches( ).
     LOOP AT lt_branches ASSIGNING <lo_branch>.
       APPEND <lo_branch>->get_data( )-sha1 TO lt_sha1.
     ENDLOOP.
 
+    CLEAR lt_result.
     lt_result = lcl_visitor=>visit( lt_sha1 ).
     PERFORM save USING <ls_repo>-repo lt_result.
   ENDLOOP.
