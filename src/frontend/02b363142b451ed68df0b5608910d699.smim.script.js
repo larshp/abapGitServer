@@ -596,7 +596,7 @@ class BranchList extends React.Component {
     return (<tr>
       <td>{Octicons.branch()}</td>
       <td>
-      <Link className={cla} to={this.props.params.repo + "/" + e.NAME}>
+      <Link className={cla} to={this.props.params.repo + "/files/" + e.NAME}>
       {e.NAME}
       </Link>
       </td>
@@ -798,7 +798,7 @@ class FilesList extends React.Component {
   }
   
   file(e) {
-    let url = this.props.params.repo + "/" + this.props.params.branch + "/blob" + e.PATH + e.FILENAME;
+    let url = this.props.params.repo + "/blob/" + this.props.params.branch + e.PATH + e.FILENAME;
     let commit = this.props.params.repo + "/commit/" + e.LAST_COMMIT_SHA1;
     return (
       <tr>
@@ -810,7 +810,7 @@ class FilesList extends React.Component {
   }
                            
   render() {
-    let list = this.props.params.repo + "/" + this.props.params.branch + "/commits";
+    let list = this.props.params.repo + "/commits/" + this.props.params.branch;
       
     return (
       <div>
@@ -843,9 +843,9 @@ class Router extends React.Component {
 * /user/(name)                      User            display user information/list commits
 * /(name)/                          BranchList      list branches
 * /(name)/commit/(sha1)             Commit          display commit
-* /(name)/(branch)/                 FilesList       list files in branch 
-* /(name)/(branch)/commits          CommitList      list commits
-* /(name)/(branch)/blob/(filename)  Blob            display blob
+* /(name)/files/(branch)/           FilesList       list files in branch 
+* /(name)/commits/(branch)/         CommitList      list commits
+* /(name)/blob/(branch)/(filename)  Blob            display blob
 */
 
     return (
@@ -860,10 +860,14 @@ class Router extends React.Component {
             <ReactRouter.Route path="commit">
               <ReactRouter.Route path=":sha1" component={Commit}  />
             </ReactRouter.Route>
-            <ReactRouter.Route path=":branch">
-              <ReactRouter.IndexRoute component={FilesList} />
-              <ReactRouter.Route path="commits" component={CommitList} bread="Commits" />
-              <ReactRouter.Route path="blob">
+            <ReactRouter.Route path="files">
+              <ReactRouter.Route path=":branch" component={FilesList}  />
+            </ReactRouter.Route>
+            <ReactRouter.Route path="commits">
+              <ReactRouter.Route path=":branch" component={CommitList}  />
+            </ReactRouter.Route>
+            <ReactRouter.Route path="blob">
+              <ReactRouter.Route path=":branch">
                 <ReactRouter.Route path="*" component={Blob} />
               </ReactRouter.Route>      
             </ReactRouter.Route>
