@@ -37,7 +37,7 @@ CLASS lcl_visitor IMPLEMENTATION.
       ASSERT sy-subrc = 0.
 
       CASE <ls_object>-type.
-        WHEN 'tree'.
+        WHEN zif_ags_constants=>c_type-tree.
           CALL METHOD ('\PROGRAM=ZABAPGIT\CLASS=LCL_GIT_PACK')=>decode_tree
             EXPORTING
               iv_data  = <ls_object>-data_raw
@@ -46,7 +46,7 @@ CLASS lcl_visitor IMPLEMENTATION.
           LOOP AT lt_tree ASSIGNING <ls_tree>.
             APPEND <ls_tree>-sha1 TO rt_sha1.
           ENDLOOP.
-        WHEN 'commit'.
+        WHEN zif_ags_constants=>c_type-commit.
           CALL METHOD ('\PROGRAM=ZABAPGIT\CLASS=LCL_GIT_PACK')=>decode_commit
             EXPORTING
               iv_data   = <ls_object>-data_raw
@@ -59,7 +59,7 @@ CLASS lcl_visitor IMPLEMENTATION.
             APPEND ls_commit-parent2 TO rt_sha1.
           ENDIF.
           APPEND ls_commit-tree TO rt_sha1.
-        WHEN 'blob'.
+        WHEN zif_ags_constants=>c_type-blob.
           CONTINUE.
         WHEN OTHERS.
           ASSERT 0 = 1.

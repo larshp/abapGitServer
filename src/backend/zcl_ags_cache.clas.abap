@@ -185,18 +185,33 @@ CLASS ZCL_AGS_CACHE IMPLEMENTATION.
 
   METHOD list_commits.
 
-    DATA: lt_visit  TYPE STANDARD TABLE OF zags_sha1,
-          ls_data   TYPE zcl_ags_obj_commit=>ty_pretty,
-          lv_commit LIKE LINE OF lt_visit.
+    DATA: lt_visit   TYPE STANDARD TABLE OF zags_sha1,
+          ls_data    TYPE zcl_ags_obj_commit=>ty_pretty,
+          lt_objects TYPE zags_objects_tt,
+          lo_commit  TYPE REF TO zcl_ags_obj_commit,
+          lv_commit  LIKE LINE OF lt_visit.
 
+    FIELD-SYMBOLS: <ls_object> LIKE LINE OF lt_objects.
+
+
+* load all commits from repository, this should scale better
+* than doing SELECT SINGLE
+    lt_objects = zcl_ags_db=>get_objects( )->list_by_type(
+      iv_repo = mv_repo
+      iv_type = zif_ags_constants=>c_type-commit ).
 
     APPEND mv_commit TO lt_visit.
 
     LOOP AT lt_visit INTO lv_commit.
-      ls_data = zcl_ags_obj_commit=>get_instance(
-        iv_repo = mv_repo
-        iv_sha1 = lv_commit )->get_pretty( ).
+      READ TABLE lt_objects ASSIGNING <ls_object>
+        WITH KEY repo = mv_repo sha1 = lv_commit.
+      ASSERT sy-subrc = 0.
 
+      CREATE OBJECT lo_commit
+        EXPORTING
+          iv_repo = mv_repo.
+      lo_commit->deserialize( <ls_object>-data_raw ).
+      ls_data = lo_commit->get_pretty( ).
       APPEND ls_data TO rt_commits.
 
       IF NOT ls_data-parent IS INITIAL.

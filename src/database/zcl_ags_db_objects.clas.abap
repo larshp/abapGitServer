@@ -9,6 +9,12 @@ CLASS zcl_ags_db_objects DEFINITION
     METHODS list
       RETURNING
         VALUE(rt_objects) TYPE zags_objects_tt .
+    METHODS list_by_type
+      IMPORTING
+        !iv_repo          TYPE zags_objects-repo
+        !iv_type          TYPE zags_objects-type
+      RETURNING
+        VALUE(rt_objects) TYPE zags_objects_tt .
     METHODS modify
       IMPORTING
         VALUE(is_data) TYPE zags_objects .
@@ -42,6 +48,23 @@ CLASS ZCL_AGS_DB_OBJECTS IMPLEMENTATION.
     ELSE.
       SELECT * FROM zags_objects
         INTO CORRESPONDING FIELDS OF TABLE rt_objects.    "#EC CI_SUBRC
+    ENDIF.
+
+  ENDMETHOD.
+
+
+  METHOD list_by_type.
+
+    ASSERT NOT iv_repo IS INITIAL.
+
+    IF mv_fake = abap_true.
+      rt_objects = mt_objects.
+      DELETE rt_objects WHERE repo <> iv_repo OR type <> iv_type.
+    ELSE.
+      SELECT * FROM zags_objects
+        INTO CORRESPONDING FIELDS OF TABLE rt_objects
+        WHERE repo = iv_repo
+        AND type = iv_type.                               "#EC CI_SUBRC
     ENDIF.
 
   ENDMETHOD.
