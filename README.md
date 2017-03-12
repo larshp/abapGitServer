@@ -9,6 +9,9 @@ Install via [abapGit](http://www.abapgit.org)
 
 Start web frontend via SICF service ZABAPGITSERVER
 
+### News
+2017-03-12: Key field REPO added in database table ZAGS_OBJECTS, use conversion program ZAGS_MIGRATION_01 to convert old repositories.
+
 ### Requirements
 - https://github.com/larshp/ABAP-Swagger
 - https://github.com/larshp/abapGit
