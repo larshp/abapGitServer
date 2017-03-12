@@ -22,6 +22,12 @@
      <LANGU>E</LANGU>
      <DESCRIPT>Branch</DESCRIPT>
     </SEOCOMPOTX>
+    <SEOCOMPOTX>
+     <CLSNAME>ZCL_AGS_FILE_OPERATIONS</CLSNAME>
+     <CMPNAME>TY_TREE</CMPNAME>
+     <LANGU>E</LANGU>
+     <DESCRIPT>Single-Character Flag</DESCRIPT>
+    </SEOCOMPOTX>
    </DESCRIPTIONS>
   </asx:values>
  </asx:abap>

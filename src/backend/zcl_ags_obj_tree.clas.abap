@@ -73,6 +73,7 @@ CLASS ZCL_AGS_OBJ_TREE IMPLEMENTATION.
 
 
   METHOD add_file.
+* todo, rename method to "ADD"? as it can also be used to add folders/directories
 
     FIELD-SYMBOLS: <ls_data> LIKE LINE OF mt_data.
 
