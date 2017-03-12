@@ -142,7 +142,7 @@ class REST {
 
 class NoMatch extends React.Component {
   render() {
-    return (<h1>router, no match</h1>);
+    return (<div><h1>404</h1><h3>Router, no match</h3></div>);
   }
 }
 
@@ -693,7 +693,11 @@ class Breadcrumb extends React.Component {
       }
     } else if (e.path) {
       name = this.lookupParam(e.path)
-      this.path = this.path + name + "/";
+      if(!name) {
+        this.path = this.path + e.path + "/";
+      } else {
+        this.path = this.path + name + "/";
+      }
     } else {
       return;
     }
@@ -893,6 +897,7 @@ class Router extends React.Component {
             </ReactRouter.Route>
             <ReactRouter.Route path="blob">
               <ReactRouter.Route path=":branch">
+                <ReactRouter.IndexRoute component={NoMatch} />
                 <ReactRouter.Route path="*" component={Blob} />
               </ReactRouter.Route>      
             </ReactRouter.Route>
