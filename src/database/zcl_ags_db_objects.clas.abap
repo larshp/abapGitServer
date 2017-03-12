@@ -47,7 +47,7 @@ CLASS ZCL_AGS_DB_OBJECTS IMPLEMENTATION.
       rt_objects = mt_objects.
     ELSE.
       SELECT * FROM zags_objects
-        INTO CORRESPONDING FIELDS OF TABLE rt_objects.    "#EC CI_SUBRC
+        INTO CORRESPONDING FIELDS OF TABLE rt_objects. "#EC CI_SUBRC "#EC CI_NOWHERE
     ENDIF.
 
   ENDMETHOD.

@@ -36,7 +36,7 @@ CLASS ZCL_AGS_SICF IMPLEMENTATION.
 
         COMMIT WORK.
       CATCH zcx_ags_error INTO lx_error.
-        ROLLBACK WORK.
+        ROLLBACK WORK.                                 "#EC CI_ROLLBACK
         server->response->set_cdata( '500, error' ) ##NO_TEXT.
         server->response->set_status( code   = 500
                                       reason = 'Error' ) ##no_text.

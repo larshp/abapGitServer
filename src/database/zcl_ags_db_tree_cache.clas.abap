@@ -48,7 +48,7 @@ CLASS ZCL_AGS_DB_TREE_CACHE IMPLEMENTATION.
     IF mv_fake = abap_true.
       CLEAR mt_cache.
     ELSE.
-      DELETE FROM zags_tree_cache.                        "#EC CI_SUBRC
+      DELETE FROM zags_tree_cache.        "#EC CI_SUBRC "#EC CI_NOWHERE
     ENDIF.
 
   ENDMETHOD.
