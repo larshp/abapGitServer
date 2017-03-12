@@ -1,34 +1,34 @@
-class ZCL_AGS_DB_TREE_CACHE definition
-  public
-  create private
+CLASS zcl_ags_db_tree_cache DEFINITION
+  PUBLIC
+  CREATE PRIVATE
 
-  global friends ZCL_AGS_DB .
+  GLOBAL FRIENDS zcl_ags_db .
 
-public section.
+  PUBLIC SECTION.
 
-  methods DELETE_ALL .
-  methods INSERT
-    importing
-      !IT_DATA type ZAGS_TREE_CACHE_TT .
-  methods SELECT
-    importing
-      !IV_REPO type ZAGS_TREE_CACHE-REPO
-      !IV_COMMIT_SHA1 type ZAGS_TREE_CACHE-COMMIT_SHA1
-      !IV_MAX type I default 0
-    returning
-      value(RT_DATA) type ZAGS_TREE_CACHE_TT
-    raising
-      ZCX_AGS_ERROR .
-  methods SELECT_BY_PATH
-    importing
-      !IV_REPO type ZAGS_TREE_CACHE-REPO
-      !IV_COMMIT_SHA1 type ZAGS_TREE_CACHE-COMMIT_SHA1
-      !IV_PATH type ZAGS_TREE_CACHE-PATH
-      !IV_MAX type I default 0
-    returning
-      value(RT_DATA) type ZAGS_TREE_CACHE_TT
-    raising
-      ZCX_AGS_ERROR .
+    METHODS delete_all .
+    METHODS insert
+      IMPORTING
+        !it_data TYPE zags_tree_cache_tt .
+    METHODS select
+      IMPORTING
+        !iv_repo        TYPE zags_tree_cache-repo
+        !iv_commit_sha1 TYPE zags_tree_cache-commit_sha1
+        !iv_max         TYPE i DEFAULT 0
+      RETURNING
+        VALUE(rt_data)  TYPE zags_tree_cache_tt
+      RAISING
+        zcx_ags_error .
+    METHODS select_by_path
+      IMPORTING
+        !iv_repo        TYPE zags_tree_cache-repo
+        !iv_commit_sha1 TYPE zags_tree_cache-commit_sha1
+        !iv_path        TYPE zags_tree_cache-path
+        !iv_max         TYPE i DEFAULT 0
+      RETURNING
+        VALUE(rt_data)  TYPE zags_tree_cache_tt
+      RAISING
+        zcx_ags_error .
   PROTECTED SECTION.
   PRIVATE SECTION.
 
@@ -99,7 +99,7 @@ CLASS ZCL_AGS_DB_TREE_CACHE IMPLEMENTATION.
   ENDMETHOD.
 
 
-  METHOD SELECT_BY_PATH.
+  METHOD select_by_path.
 
     FIELD-SYMBOLS: <ls_cache> LIKE LINE OF mt_cache.
 
