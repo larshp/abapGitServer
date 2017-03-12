@@ -1,72 +1,72 @@
-class ZCL_AGS_OBJ_TREE definition
-  public
-  final
-  create public .
+CLASS zcl_ags_obj_tree DEFINITION
+  PUBLIC
+  FINAL
+  CREATE PUBLIC .
 
-public section.
+  PUBLIC SECTION.
 
-  interfaces ZIF_AGS_OBJECT .
+    INTERFACES zif_ags_object .
 
-  aliases C_NEWLINE
-    for ZIF_AGS_OBJECT~C_NEWLINE .
-  aliases DESERIALIZE
-    for ZIF_AGS_OBJECT~DESERIALIZE .
-  aliases SAVE
-    for ZIF_AGS_OBJECT~SAVE .
-  aliases SERIALIZE
-    for ZIF_AGS_OBJECT~SERIALIZE .
-  aliases SHA1
-    for ZIF_AGS_OBJECT~SHA1 .
+    ALIASES c_newline
+      FOR zif_ags_object~c_newline .
+    ALIASES deserialize
+      FOR zif_ags_object~deserialize .
+    ALIASES save
+      FOR zif_ags_object~save .
+    ALIASES serialize
+      FOR zif_ags_object~serialize .
+    ALIASES sha1
+      FOR zif_ags_object~sha1 .
 
-  types:
-    ty_chmod TYPE c LENGTH 6 .
-  types:
-    BEGIN OF ty_tree,
+    TYPES:
+      ty_chmod TYPE c LENGTH 6 .
+    TYPES:
+      BEGIN OF ty_tree,
         chmod TYPE ty_chmod,
         name  TYPE string,
         sha1  TYPE zags_sha1,
       END OF ty_tree .
-  types:
-    ty_tree_tt TYPE STANDARD TABLE OF ty_tree WITH DEFAULT KEY .
+    TYPES:
+      ty_tree_tt TYPE STANDARD TABLE OF ty_tree WITH DEFAULT KEY .
 
-  constants:
-    BEGIN OF c_chmod,
+    CONSTANTS:
+      BEGIN OF c_chmod,
         file       TYPE ty_chmod VALUE '100644',
         executable TYPE ty_chmod VALUE '100755',
         dir        TYPE ty_chmod VALUE '40000',
       END OF c_chmod .
 
-  class-methods GET_INSTANCE
-    importing
-      !IV_REPO type ZAGS_OBJECTS-REPO
-      !IV_SHA1 type ZAGS_OBJECTS-SHA1
-    returning
-      value(RO_TREE) type ref to ZCL_AGS_OBJ_TREE
-    raising
-      ZCX_AGS_ERROR .
-  methods ADD_FILE
-    importing
-      !IV_CHMOD type TY_CHMOD
-      !IV_NAME type TY_TREE-NAME
-      !IV_SHA1 type TY_TREE-SHA1 .
-  methods CONSTRUCTOR
-    importing
-      !IV_REPO type ZAGS_OBJECTS-REPO
-      !IV_SHA1 type ZAGS_OBJECTS-SHA1 optional
-    raising
-      ZCX_AGS_ERROR .
-  methods GET_FILES
-    returning
-      value(RT_FILES) type TY_TREE_TT .
-  methods SET_FILES
-    importing
-      value(IT_FILES) type TY_TREE_TT .
+    CLASS-METHODS get_instance
+      IMPORTING
+        !iv_repo       TYPE zags_objects-repo
+        !iv_sha1       TYPE zags_objects-sha1
+      RETURNING
+        VALUE(ro_tree) TYPE REF TO zcl_ags_obj_tree
+      RAISING
+        zcx_ags_error .
+    METHODS add_file
+      IMPORTING
+        !iv_chmod TYPE ty_chmod
+        !iv_name  TYPE ty_tree-name
+        !iv_sha1  TYPE ty_tree-sha1 .
+    METHODS constructor
+      IMPORTING
+        !iv_repo TYPE zags_objects-repo
+        !iv_sha1 TYPE zags_objects-sha1 OPTIONAL
+      RAISING
+        zcx_ags_error .
+    METHODS get_files
+      RETURNING
+        VALUE(rt_files) TYPE ty_tree_tt .
+    METHODS set_files
+      IMPORTING
+        VALUE(it_files) TYPE ty_tree_tt .
   PROTECTED SECTION.
-private section.
+  PRIVATE SECTION.
 
-  data MT_DATA type TY_TREE_TT .
-  data MV_NEW type ABAP_BOOL .
-  data MV_REPO type ZAGS_OBJECTS-REPO .
+    DATA mt_data TYPE ty_tree_tt .
+    DATA mv_new TYPE abap_bool .
+    DATA mv_repo TYPE zags_objects-repo .
 ENDCLASS.
 
 

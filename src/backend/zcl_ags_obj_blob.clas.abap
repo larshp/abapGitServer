@@ -1,48 +1,48 @@
-class ZCL_AGS_OBJ_BLOB definition
-  public
-  create public .
+CLASS zcl_ags_obj_blob DEFINITION
+  PUBLIC
+  CREATE PUBLIC .
 
-public section.
+  PUBLIC SECTION.
 
-  interfaces ZIF_AGS_OBJECT .
+    INTERFACES zif_ags_object .
 
-  aliases C_NEWLINE
-    for ZIF_AGS_OBJECT~C_NEWLINE .
-  aliases DESERIALIZE
-    for ZIF_AGS_OBJECT~DESERIALIZE .
-  aliases SAVE
-    for ZIF_AGS_OBJECT~SAVE .
-  aliases SERIALIZE
-    for ZIF_AGS_OBJECT~SERIALIZE .
-  aliases SHA1
-    for ZIF_AGS_OBJECT~SHA1 .
+    ALIASES c_newline
+      FOR zif_ags_object~c_newline .
+    ALIASES deserialize
+      FOR zif_ags_object~deserialize .
+    ALIASES save
+      FOR zif_ags_object~save .
+    ALIASES serialize
+      FOR zif_ags_object~serialize .
+    ALIASES sha1
+      FOR zif_ags_object~sha1 .
 
-  methods GET_DATA
-    returning
-      value(RV_DATA) type XSTRING .
-  methods SET_DATA
-    importing
-      !IV_DATA type XSTRING .
-  methods CONSTRUCTOR
-    importing
-      !IV_REPO type ZAGS_OBJECTS-REPO
-      !IV_SHA1 type ZAGS_OBJECTS-SHA1 optional
-    raising
-      ZCX_AGS_ERROR .
-  class-methods GET_INSTANCE
-    importing
-      !IV_REPO type ZAGS_OBJECTS-REPO
-      !IV_SHA1 type ZAGS_OBJECTS-SHA1
-    returning
-      value(RO_BLOB) type ref to ZCL_AGS_OBJ_BLOB
-    raising
-      ZCX_AGS_ERROR .
+    METHODS get_data
+      RETURNING
+        VALUE(rv_data) TYPE xstring .
+    METHODS set_data
+      IMPORTING
+        !iv_data TYPE xstring .
+    METHODS constructor
+      IMPORTING
+        !iv_repo TYPE zags_objects-repo
+        !iv_sha1 TYPE zags_objects-sha1 OPTIONAL
+      RAISING
+        zcx_ags_error .
+    CLASS-METHODS get_instance
+      IMPORTING
+        !iv_repo       TYPE zags_objects-repo
+        !iv_sha1       TYPE zags_objects-sha1
+      RETURNING
+        VALUE(ro_blob) TYPE REF TO zcl_ags_obj_blob
+      RAISING
+        zcx_ags_error .
   PROTECTED SECTION.
-private section.
+  PRIVATE SECTION.
 
-  data MV_DATA type XSTRING .
-  data MV_NEW type ABAP_BOOL .
-  data MV_REPO type ZAGS_OBJECTS-REPO .
+    DATA mv_data TYPE xstring .
+    DATA mv_new TYPE abap_bool .
+    DATA mv_repo TYPE zags_objects-repo .
 ENDCLASS.
 
 
