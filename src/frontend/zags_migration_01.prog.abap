@@ -31,7 +31,9 @@ CLASS lcl_visitor IMPLEMENTATION.
     rt_sha1 = it_sha1.
 
     LOOP AT rt_sha1 ASSIGNING <lv_sha1>.
-      READ TABLE gt_objects WITH KEY sha1 = <lv_sha1> ASSIGNING <ls_object>.
+      READ TABLE gt_objects WITH KEY
+        repo = '' sha1 = <lv_sha1>
+        ASSIGNING <ls_object>.
       ASSERT sy-subrc = 0.
 
       CASE <ls_object>-type.
@@ -107,10 +109,14 @@ FORM save USING pv_repo TYPE zags_repos-repo
                  <ls_object> LIKE LINE OF gt_objects.
 
 
+  SORT pt_sha1 ASCENDING.
+  DELETE ADJACENT DUPLICATES FROM pt_sha1.
+
   ASSERT NOT pv_repo IS INITIAL.
 
   LOOP AT pt_sha1 ASSIGNING <lv_sha1>.
-    READ TABLE gt_objects ASSIGNING <ls_object> WITH KEY sha1 = <lv_sha1>.
+    READ TABLE gt_objects ASSIGNING <ls_object>
+      WITH KEY repo = '' sha1 = <lv_sha1>.
     ASSERT sy-subrc = 0.
 
 * note that in the old setup an object could be shared between repos
