@@ -1,24 +1,34 @@
-CLASS zcl_ags_db_tree_cache DEFINITION
-  PUBLIC
-  CREATE PRIVATE
+class ZCL_AGS_DB_TREE_CACHE definition
+  public
+  create private
 
-  GLOBAL FRIENDS zcl_ags_db .
+  global friends ZCL_AGS_DB .
 
-  PUBLIC SECTION.
+public section.
 
-    METHODS delete_all .
-    METHODS insert
-      IMPORTING
-        !it_data TYPE zags_tree_cache_tt .
-    METHODS select
-      IMPORTING
-        !iv_repo        TYPE zags_tree_cache-repo
-        !iv_commit_sha1 TYPE zags_tree_cache-commit_sha1
-        !iv_max         TYPE i DEFAULT 0
-      RETURNING
-        VALUE(rt_data)  TYPE zags_tree_cache_tt
-      RAISING
-        zcx_ags_error .
+  methods DELETE_ALL .
+  methods INSERT
+    importing
+      !IT_DATA type ZAGS_TREE_CACHE_TT .
+  methods SELECT
+    importing
+      !IV_REPO type ZAGS_TREE_CACHE-REPO
+      !IV_COMMIT_SHA1 type ZAGS_TREE_CACHE-COMMIT_SHA1
+      !IV_MAX type I default 0
+    returning
+      value(RT_DATA) type ZAGS_TREE_CACHE_TT
+    raising
+      ZCX_AGS_ERROR .
+  methods SELECT_BY_PATH
+    importing
+      !IV_REPO type ZAGS_TREE_CACHE-REPO
+      !IV_COMMIT_SHA1 type ZAGS_TREE_CACHE-COMMIT_SHA1
+      !IV_PATH type ZAGS_TREE_CACHE-PATH
+      !IV_MAX type I default 0
+    returning
+      value(RT_DATA) type ZAGS_TREE_CACHE_TT
+    raising
+      ZCX_AGS_ERROR .
   PROTECTED SECTION.
   PRIVATE SECTION.
 
@@ -71,7 +81,8 @@ CLASS ZCL_AGS_DB_TREE_CACHE IMPLEMENTATION.
 
     IF mv_fake = abap_true.
       LOOP AT mt_cache ASSIGNING <ls_cache>
-          WHERE repo = iv_repo AND commit_sha1 = iv_commit_sha1.
+          WHERE repo = iv_repo
+          AND commit_sha1 = iv_commit_sha1.
         APPEND <ls_cache> TO rt_data.
         IF iv_max <> 0 AND lines( rt_data ) = iv_max.
           RETURN.
@@ -82,6 +93,36 @@ CLASS ZCL_AGS_DB_TREE_CACHE IMPLEMENTATION.
         INTO TABLE rt_data
         UP TO iv_max ROWS
         WHERE repo = iv_repo
+        AND commit_sha1 = iv_commit_sha1.                 "#EC CI_SUBRC
+    ENDIF.
+
+  ENDMETHOD.
+
+
+  METHOD SELECT_BY_PATH.
+
+    FIELD-SYMBOLS: <ls_cache> LIKE LINE OF mt_cache.
+
+
+    ASSERT NOT iv_repo IS INITIAL.
+    ASSERT NOT iv_commit_sha1 IS INITIAL.
+
+    IF mv_fake = abap_true.
+      LOOP AT mt_cache ASSIGNING <ls_cache>
+          WHERE repo = iv_repo
+          AND commit_sha1 = iv_commit_sha1
+          AND path = iv_path.
+        APPEND <ls_cache> TO rt_data.
+        IF iv_max <> 0 AND lines( rt_data ) = iv_max.
+          RETURN.
+        ENDIF.
+      ENDLOOP.
+    ELSE.
+      SELECT * FROM zags_tree_cache
+        INTO TABLE rt_data
+        UP TO iv_max ROWS
+        WHERE repo = iv_repo
+        AND path = iv_path
         AND commit_sha1 = iv_commit_sha1.                 "#EC CI_SUBRC
     ENDIF.
 

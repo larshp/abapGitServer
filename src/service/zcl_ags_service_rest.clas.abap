@@ -29,7 +29,7 @@ CLASS zcl_ags_service_rest DEFINITION
       ty_changed_files_tt TYPE STANDARD TABLE OF ty_changed_file WITH DEFAULT KEY .
     TYPES:
       BEGIN OF ty_commit.
-            INCLUDE TYPE zcl_ags_obj_commit=>ty_pretty.
+        INCLUDE TYPE zcl_ags_obj_commit=>ty_pretty.
     TYPES: files TYPE ty_changed_files_tt,
            END OF ty_commit .
     TYPES:
@@ -64,6 +64,7 @@ CLASS zcl_ags_service_rest DEFINITION
       IMPORTING
         !iv_repo        TYPE zags_repo_name
         !iv_branch      TYPE zags_branch_name
+        !iv_path        TYPE string
       RETURNING
         VALUE(rt_files) TYPE zcl_ags_cache=>ty_files_tt
       RAISING
@@ -250,7 +251,7 @@ CLASS ZCL_AGS_SERVICE_REST IMPLEMENTATION.
     rt_files = zcl_ags_repo=>get_instance( iv_repo
       )->get_branch( iv_branch
       )->get_cache(
-      )->list_files_by_path( '/' ).
+      )->list_files_by_path( '/' && iv_path ).
 
   ENDMETHOD.
 
@@ -388,9 +389,10 @@ CLASS ZCL_AGS_SERVICE_REST IMPLEMENTATION.
 
     APPEND INITIAL LINE TO rt_meta ASSIGNING <ls_meta>.
     <ls_meta>-summary   = 'List files'(004).
-    <ls_meta>-url-regex = '/tree/(\w*)/(\w*)$'.
+    <ls_meta>-url-regex = '/tree/(\w*)/(\w*)/(.*)$'.
     APPEND 'IV_REPO' TO <ls_meta>-url-group_names.
     APPEND 'IV_BRANCH' TO <ls_meta>-url-group_names.
+    APPEND 'IV_PATH' TO <ls_meta>-url-group_names.
     <ls_meta>-method    = zcl_swag=>c_method-get.
     <ls_meta>-handler   = 'LIST_FILES'.
 

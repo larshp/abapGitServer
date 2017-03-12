@@ -19,10 +19,8 @@ CLASS zcl_ags_obj_tree DEFINITION
       FOR zif_ags_object~sha1 .
 
     TYPES:
-      ty_chmod TYPE c LENGTH 6 .
-    TYPES:
       BEGIN OF ty_tree,
-        chmod TYPE ty_chmod,
+        chmod TYPE zags_chmod,
         name  TYPE string,
         sha1  TYPE zags_sha1,
       END OF ty_tree .
@@ -31,9 +29,9 @@ CLASS zcl_ags_obj_tree DEFINITION
 
     CONSTANTS:
       BEGIN OF c_chmod,
-        file       TYPE ty_chmod VALUE '100644',
-        executable TYPE ty_chmod VALUE '100755',
-        dir        TYPE ty_chmod VALUE '40000',
+        file       TYPE zags_chmod VALUE '100644',
+        executable TYPE zags_chmod VALUE '100755',
+        dir        TYPE zags_chmod VALUE '40000',
       END OF c_chmod .
 
     CLASS-METHODS get_instance
@@ -46,7 +44,7 @@ CLASS zcl_ags_obj_tree DEFINITION
         zcx_ags_error .
     METHODS add_file
       IMPORTING
-        !iv_chmod TYPE ty_chmod
+        !iv_chmod TYPE zags_chmod
         !iv_name  TYPE ty_tree-name
         !iv_sha1  TYPE ty_tree-sha1 .
     METHODS constructor

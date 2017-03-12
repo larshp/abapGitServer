@@ -39,7 +39,8 @@ CLASS ltcl_rest IMPLEMENTATION.
 
     lt_files = mo_rest->list_files(
       iv_repo   = c_name
-      iv_branch = mo_repo->get_data( )-head ).
+      iv_branch = mo_repo->get_data( )-head
+      iv_path   =  '/' ).
 
     cl_abap_unit_assert=>assert_not_initial( lt_files ).
 

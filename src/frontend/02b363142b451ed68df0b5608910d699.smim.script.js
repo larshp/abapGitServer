@@ -13,6 +13,10 @@ class Octicons {
   static file() {
     return (<span className="octicon octicon-file-code"></span>);
   }       
+
+  static directory() {
+    return (<span className="octicon octicon-file-directory"></span>);
+  } 
             
   static commit() {
     return (<span className="octicon octicon-git-commit"></span>);
@@ -91,8 +95,8 @@ class REST {
     this.get("branches/" + repoName, callback);    
   }
   
-  static listFiles(repoName, branch, callback) {
-    this.get("tree/" + repoName + "/" + branch, callback);
+  static listFiles(repoName, branch, path, callback) {
+    this.get("tree/" + repoName + "/" + branch + path, callback);
   }
 
   static listCommits(repoName, branch, callback) {
@@ -789,21 +793,37 @@ class User extends React.Component {
 class FilesList extends React.Component {
   constructor(props) {
     super(props);
-    this.state = {data: [], spinner: true};
-    REST.listFiles(props.params.repo, props.params.branch, this.update.bind(this));      
+    this.init(props);
   }
+
+  init(props) {
+    this.state = {data: [], spinner: true};
+    this.path = props.params.splat?"/" + props.params.splat + "/":"/";
+    REST.listFiles(props.params.repo, props.params.branch, this.path, this.update.bind(this));      
+  }
+
+  componentWillReceiveProps(props) {
+    this.init(props);
+  } 
 
   update(d) {
     this.setState({data: d, spinner: false});
   }
   
   file(e) {
-    let url = this.props.params.repo + "/blob/" + this.props.params.branch + e.PATH + e.FILENAME;
+    let url = "";
+    if(e.CHMOD === "40000") {
+      url = this.props.params.repo + "/files/" + this.props.params.branch + this.path + e.FILENAME;
+    } else {
+      url = this.props.params.repo + "/blob/" + this.props.params.branch + e.PATH + e.FILENAME;
+    }
     let commit = this.props.params.repo + "/commit/" + e.LAST_COMMIT_SHA1;
+    let icon = e.CHMOD === "40000"?Octicons.directory():Octicons.file();
+
     return (
       <tr>
-      <td>{Octicons.file()}</td>
-      <td><Link to={url}>{e.PATH + e.FILENAME}</Link></td>
+      <td>{icon}</td>
+      <td><Link to={url}>{e.FILENAME}</Link></td>
       <td><Link to={commit}>{e.COMMENT}</Link></td>
       <td>{Time.ago(Time.parse(e.TIME))}</td>
       </tr>);
@@ -811,12 +831,13 @@ class FilesList extends React.Component {
                            
   render() {
     let list = this.props.params.repo + "/commits/" + this.props.params.branch;
-      
+
     return (
       <div>
       <Breadcrumb routes={this.props.routes} params={this.props.params} />
       <h1>{this.props.params.repo}</h1>
       {Octicons.commit()} <Link to={list}>list commits</Link><br />
+      path: {this.path}<br />
       <br />
       <table>
       {this.state.spinner?<Spinner />:this.state.data.map(this.file.bind(this))}
@@ -843,9 +864,9 @@ class Router extends React.Component {
 * /user/(name)                      User            display user information/list commits
 * /(name)/                          BranchList      list branches
 * /(name)/commit/(sha1)             Commit          display commit
-* /(name)/files/(branch)/           FilesList       list files in branch 
+* /(name)/files/(branch)/(*)        FilesList       list files in branch 
 * /(name)/commits/(branch)/         CommitList      list commits
-* /(name)/blob/(branch)/(filename)  Blob            display blob
+* /(name)/blob/(branch)/(*)         Blob            display blob
 */
 
     return (
@@ -861,7 +882,11 @@ class Router extends React.Component {
               <ReactRouter.Route path=":sha1" component={Commit}  />
             </ReactRouter.Route>
             <ReactRouter.Route path="files">
-              <ReactRouter.Route path=":branch" component={FilesList}  />
+              <ReactRouter.IndexRoute component={NoMatch} />
+              <ReactRouter.Route path=":branch">
+                <ReactRouter.IndexRoute component={FilesList} />
+                <ReactRouter.Route path="*" component={FilesList} />
+              </ReactRouter.Route> 
             </ReactRouter.Route>
             <ReactRouter.Route path="commits">
               <ReactRouter.Route path=":branch" component={CommitList}  />

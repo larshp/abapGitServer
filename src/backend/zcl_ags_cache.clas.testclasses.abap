@@ -230,3 +230,59 @@ CLASS ltcl_list_files_by_path IMPLEMENTATION.
   ENDMETHOD.
 
 ENDCLASS.
+
+CLASS ltcl_list_files_simple DEFINITION FOR TESTING DURATION SHORT RISK LEVEL HARMLESS FINAL.
+
+  PRIVATE SECTION.
+    DATA: mo_branch TYPE REF TO zcl_ags_branch.
+
+    METHODS:
+      setup RAISING zcx_ags_error,
+      list_files_simple FOR TESTING RAISING zcx_ags_error.
+
+ENDCLASS.       "ltcl_List_Files_Simple
+
+CLASS ltcl_list_files_simple IMPLEMENTATION.
+
+  METHOD setup.
+    zcl_ags_db=>set_fake( ).
+
+    mo_branch = zcl_ags_repo=>create(
+      iv_name        = 'UNITTEST'
+      iv_description = 'FOOBAR' )->get_default_branch( ).
+  ENDMETHOD.
+
+  METHOD list_files_simple.
+
+* todo, extra handling needed in mo_branch->get_files( )->add
+
+*    CONSTANTS: lc_path TYPE string VALUE '/foo/'.
+*
+*    DATA: lt_files TYPE zcl_ags_cache=>ty_files_simple_tt.
+*
+*
+*    mo_branch->get_files( )->add(
+*      iv_filename       = 'NEW.TXT'
+*      iv_path           = lc_path
+*      iv_file_contents  = 'WELLO'
+*      iv_commit_message = 'BLAH' ).
+*
+*    lt_files = mo_branch->get_cache( )->list_files_simple( ).
+*
+*    READ TABLE lt_files WITH KEY
+*      filename = 'NEW.TXT'
+*      path = lc_path
+*      chmod = zcl_ags_obj_tree=>c_chmod-file
+*      TRANSPORTING NO FIELDS.
+*    cl_abap_unit_assert=>assert_subrc( ).
+*
+*    READ TABLE lt_files WITH KEY
+*      filename = 'foo'
+*      path = '/'
+*      chmod = zcl_ags_obj_tree=>c_chmod-dir
+*      TRANSPORTING NO FIELDS.
+*    cl_abap_unit_assert=>assert_subrc( ).
+
+  ENDMETHOD.
+
+ENDCLASS.

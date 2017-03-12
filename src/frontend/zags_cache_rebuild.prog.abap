@@ -33,7 +33,7 @@ FORM build RAISING zcx_ags_error.
   LOOP AT lt_repos ASSIGNING <ls_repo>.
     lt_branches = zcl_ags_repo=>get_instance( <ls_repo>-name )->list_branches( ).
     LOOP AT lt_branches INTO lo_branch.
-      lo_branch->get_cache( )->build( ).
+      lo_branch->get_cache( )->build( abap_true ).
     ENDLOOP.
   ENDLOOP.
 

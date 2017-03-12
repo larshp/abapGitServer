@@ -6,7 +6,7 @@ CLASS zcl_ags_cache DEFINITION
 
     TYPES:
       BEGIN OF ty_file.
-            INCLUDE TYPE zags_tree_cache_data.
+        INCLUDE TYPE zags_tree_cache_data.
     TYPES: comment TYPE string,
            time    TYPE zags_unix_time,
            END OF ty_file .
@@ -17,11 +17,14 @@ CLASS zcl_ags_cache DEFINITION
         filename  TYPE string,
         path      TYPE string,
         blob_sha1 TYPE zags_sha1,
+        chmod     TYPE zags_chmod,
       END OF ty_file_simple .
     TYPES:
       ty_files_simple_tt TYPE STANDARD TABLE OF ty_file_simple WITH DEFAULT KEY .
 
     METHODS build
+      IMPORTING
+        !iv_show_progress TYPE abap_bool DEFAULT abap_false
       RAISING
         zcx_ags_error .
     METHODS constructor
@@ -115,6 +118,14 @@ CLASS ZCL_AGS_CACHE IMPLEMENTATION.
 
     lv_index = lines( lt_missing ).
     DO lines( lt_missing ) TIMES.
+      IF iv_show_progress = abap_true.
+        cl_progress_indicator=>progress_indicate(
+          i_text               = |Building { mv_repo }|
+          i_processed          = sy-index
+          i_total              = lines( lt_missing )
+          i_output_immediately = abap_true ).
+      ENDIF.
+
 * start with the oldest
       READ TABLE lt_missing INDEX lv_index INTO lv_commit.
       build_tree_cache( lv_commit ).
@@ -257,9 +268,6 @@ CLASS ZCL_AGS_CACHE IMPLEMENTATION.
 
   METHOD list_files_by_path.
 
-* todo, implement path handling, backend + frontend
-    ASSERT iv_path = '/'.
-
     build( ).
 
     rt_files = read_tree_cache(
@@ -298,6 +306,12 @@ CLASS ZCL_AGS_CACHE IMPLEMENTATION.
       LOOP AT lt_files ASSIGNING <ls_input_file>.
         CASE <ls_input_file>-chmod.
           WHEN zcl_ags_obj_tree=>c_chmod-dir.
+            APPEND INITIAL LINE TO rt_files ASSIGNING <ls_file>.
+            <ls_file>-filename  = <ls_input_file>-name.
+            <ls_file>-path      = <ls_input_tree>-path.
+*            <ls_file>-blob_sha1 = <ls_input_file>-sha1.
+            <ls_file>-chmod     = <ls_input_file>-chmod.
+
             APPEND INITIAL LINE TO lt_trees ASSIGNING <ls_tree>.
             <ls_tree>-sha1 = <ls_input_file>-sha1.
             <ls_tree>-path = <ls_input_tree>-path && <ls_input_file>-name && '/'.
@@ -306,6 +320,7 @@ CLASS ZCL_AGS_CACHE IMPLEMENTATION.
             <ls_file>-filename  = <ls_input_file>-name.
             <ls_file>-path      = <ls_input_tree>-path.
             <ls_file>-blob_sha1 = <ls_input_file>-sha1.
+            <ls_file>-chmod     = <ls_input_file>-chmod.
         ENDCASE.
       ENDLOOP.
     ENDLOOP.
@@ -322,10 +337,10 @@ CLASS ZCL_AGS_CACHE IMPLEMENTATION.
                    <ls_file1> LIKE LINE OF rt_files,
                    <ls_file2> LIKE LINE OF rt_files.
 
-* todo, iv_path
 
-    lt_cache = zcl_ags_db=>get_tree_cache( )->select(
+    lt_cache = zcl_ags_db=>get_tree_cache( )->select_by_path(
       iv_repo        = mv_repo
+      iv_path        = iv_path
       iv_commit_sha1 = iv_commit ).
 
     LOOP AT lt_cache ASSIGNING <ls_cache>.
@@ -345,6 +360,8 @@ CLASS ZCL_AGS_CACHE IMPLEMENTATION.
         <ls_file2>-time = ls_commit-author-time.
       ENDLOOP.
     ENDLOOP.
+
+    SORT rt_files BY chmod DESCENDING filename ASCENDING.
 
   ENDMETHOD.
 
