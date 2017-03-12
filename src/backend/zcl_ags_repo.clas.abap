@@ -67,18 +67,18 @@ CLASS zcl_ags_repo DEFINITION
       RAISING
         zcx_ags_error .
   PROTECTED SECTION.
-private section.
+  PRIVATE SECTION.
 
-  data MS_DATA type ZAGS_REPOS .
+    DATA ms_data TYPE zags_repos .
 
-  class-methods INITIAL_COMMIT
-    importing
-      !IV_REPO type ZAGS_REPOS-REPO
-      !IV_NAME type CLIKE
-    returning
-      value(RV_COMMIT) type ZAGS_SHA1
-    raising
-      ZCX_AGS_ERROR .
+    CLASS-METHODS initial_commit
+      IMPORTING
+        !iv_repo         TYPE zags_repos-repo
+        !iv_name         TYPE clike
+      RETURNING
+        VALUE(rv_commit) TYPE zags_sha1
+      RAISING
+        zcx_ags_error .
 ENDCLASS.
 
 
