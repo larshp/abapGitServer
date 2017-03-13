@@ -13,8 +13,8 @@ CLASS zcl_ags_service_rest DEFINITION
         description TYPE zags_repos-description,
       END OF ty_create .
     TYPES: BEGIN OF ty_filename_and_path,
-             filename TYPE zags_repos-name,
-             path     TYPE zags_repos-description,
+             filename TYPE string,
+             path     TYPE string,
            END OF ty_filename_and_path.
     TYPES:
       BEGIN OF ty_branch,
