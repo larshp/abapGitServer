@@ -303,8 +303,8 @@ class Edit extends React.Component {
 
   update(d) {
     for (let repo of d) {
-      if (repo.NAME === this.props.params.repo) {
-        this.setState({description: repo.DESCRIPTION, spinner: false});        
+      if (repo.REPO.NAME === this.props.params.repo) {
+        this.setState({description: repo.REPO.DESCRIPTION, spinner: false});        
       }
     }
   }        
