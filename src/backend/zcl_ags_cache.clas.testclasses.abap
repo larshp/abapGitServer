@@ -188,16 +188,22 @@ CLASS ltcl_list_files_by_path IMPLEMENTATION.
     mo_branch->get_cache( )->list_files_by_path( c_root ).
 
     mo_branch->get_files( )->add(
+      iv_filename       = 'ASDF.TXT'
+      iv_path           = '/BAR/'
+      iv_file_contents  = 'WELLO'
+      iv_commit_message = lc_first ).
+
+    mo_branch->get_files( )->add(
       iv_filename       = 'NEW.TXT'
       iv_path           = lc_path
       iv_file_contents  = 'WELLO'
       iv_commit_message = lc_first ).
 
     lt_files = mo_branch->get_cache( )->list_files_by_path( c_root ).
-* README.md and folder FOO at root
+* README.md and folder FOO + BAR at root
     cl_abap_unit_assert=>assert_equals(
       act = lines( lt_files )
-      exp = 2 ).
+      exp = 3 ).
 
     READ TABLE lt_files WITH KEY filename = 'FOO' ASSIGNING <ls_file>.
     cl_abap_unit_assert=>assert_subrc( ).
@@ -217,7 +223,16 @@ CLASS ltcl_list_files_by_path IMPLEMENTATION.
     lt_files = mo_branch->get_cache( )->list_files_by_path( c_root ).
     cl_abap_unit_assert=>assert_equals(
       act = lines( lt_files )
-      exp = 2 ).
+      exp = 3 ).
+
+    READ TABLE lt_files WITH KEY filename = 'BAR' ASSIGNING <ls_file>.
+    cl_abap_unit_assert=>assert_subrc( ).
+    cl_abap_unit_assert=>assert_equals(
+      act = <ls_file>-chmod
+      exp = zcl_ags_obj_tree=>c_chmod-dir ).
+    cl_abap_unit_assert=>assert_equals(
+      act = <ls_file>-comment
+      exp = lc_first ).
 
     READ TABLE lt_files WITH KEY filename = 'FOO' ASSIGNING <ls_file>.
     cl_abap_unit_assert=>assert_subrc( ).
@@ -339,7 +354,8 @@ CLASS ltcl_bubble_dir DEFINITION
     FOR TESTING DURATION SHORT RISK LEVEL HARMLESS FINAL.
 
   PRIVATE SECTION.
-    METHODS: single_step FOR TESTING,
+    METHODS:
+      single_step FOR TESTING,
       multi FOR TESTING.
 
 ENDCLASS.       "ltcl_Bubble_Dir
@@ -363,23 +379,33 @@ CLASS ltcl_bubble_dir IMPLEMENTATION.
         iv_commit = ''.
 
     ls_file-path = '/FOO/'.
-    ls_file-last_commit_sha1 = lc_last.
 
     APPEND INITIAL LINE TO lt_files ASSIGNING <ls_file>.
     <ls_file>-filename = 'FOO'.
     <ls_file>-path     = '/'.
     <ls_file>-chmod    = zcl_ags_obj_tree=>c_chmod-dir.
 
+    APPEND INITIAL LINE TO lt_files ASSIGNING <ls_file>.
+    <ls_file>-filename = 'BAR'.
+    <ls_file>-path     = '/'.
+    <ls_file>-chmod    = zcl_ags_obj_tree=>c_chmod-dir.
+
     lo_cache->bubble_dir(
-      EXPORTING is_file = ls_file
+      EXPORTING iv_commit = lc_last
+                is_file = ls_file
       CHANGING ct_files = lt_files ).
 
-    READ TABLE lt_files INDEX 1 ASSIGNING <ls_file>.
+    READ TABLE lt_files WITH KEY filename = 'FOO' ASSIGNING <ls_file>.
     cl_abap_unit_assert=>assert_subrc( ).
-
     cl_abap_unit_assert=>assert_equals(
       act = <ls_file>-last_commit_sha1
       exp = lc_last ).
+
+    READ TABLE lt_files WITH KEY filename = 'BAR' ASSIGNING <ls_file>.
+    cl_abap_unit_assert=>assert_subrc( ).
+    cl_abap_unit_assert=>assert_equals(
+      act = <ls_file>-last_commit_sha1
+      exp = '' ).
 
   ENDMETHOD.
 
@@ -400,7 +426,6 @@ CLASS ltcl_bubble_dir IMPLEMENTATION.
         iv_commit = ''.
 
     ls_file-path = '/FOO/BAR/'.
-    ls_file-last_commit_sha1 = lc_last.
 
     APPEND INITIAL LINE TO lt_files ASSIGNING <ls_file>.
     <ls_file>-filename = 'FOO'.
@@ -413,7 +438,8 @@ CLASS ltcl_bubble_dir IMPLEMENTATION.
     <ls_file>-chmod    = zcl_ags_obj_tree=>c_chmod-dir.
 
     lo_cache->bubble_dir(
-      EXPORTING is_file = ls_file
+      EXPORTING iv_commit = lc_last
+                is_file = ls_file
       CHANGING ct_files = lt_files ).
 
     cl_abap_unit_assert=>assert_equals(

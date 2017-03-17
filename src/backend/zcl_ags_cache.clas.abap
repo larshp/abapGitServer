@@ -58,9 +58,10 @@ CLASS zcl_ags_cache DEFINITION
 
     METHODS bubble_dir
       IMPORTING
-        !is_file  TYPE zags_tree_cache_data
+        !iv_commit TYPE zags_sha1
+        !is_file   TYPE zags_tree_cache_data
       CHANGING
-        !ct_files TYPE zags_tree_cache_data_tt .
+        !ct_files  TYPE zags_tree_cache_data_tt .
     METHODS find_missing
       RETURNING
         VALUE(rt_missing) TYPE zags_sha1_tt
@@ -127,7 +128,7 @@ CLASS ZCL_AGS_CACHE IMPLEMENTATION.
         path = lv_path
         chmod = zcl_ags_obj_tree=>c_chmod-dir.
       ASSERT sy-subrc = 0.
-      <ls_file>-last_commit_sha1 = is_file-last_commit_sha1.
+      <ls_file>-last_commit_sha1 = iv_commit.
 
       lv_index = lv_index - 1.
     ENDDO.
@@ -198,7 +199,9 @@ CLASS ZCL_AGS_CACHE IMPLEMENTATION.
     LOOP AT lt_current ASSIGNING <ls_current>.
       APPEND INITIAL LINE TO lt_files ASSIGNING <ls_output>.
       MOVE-CORRESPONDING <ls_current> TO <ls_output>.
-      <ls_output>-last_commit_sha1 = iv_commit.
+      IF lv_parent IS INITIAL.
+        <ls_output>-last_commit_sha1 = iv_commit.
+      ENDIF.
     ENDLOOP.
     CLEAR lt_current.
 
@@ -209,24 +212,34 @@ CLASS ZCL_AGS_CACHE IMPLEMENTATION.
       ASSERT lines( lt_prev ) > 0.
     ENDIF.
 
-    LOOP AT lt_files ASSIGNING <ls_output>
-        WHERE chmod = zcl_ags_obj_tree=>c_chmod-file.
+    LOOP AT lt_files ASSIGNING <ls_output>.
       READ TABLE lt_prev ASSIGNING <ls_prev>
         WITH KEY filename = <ls_output>-filename
-        chmod = zcl_ags_obj_tree=>c_chmod-file
+        chmod = <ls_output>-chmod
         path = <ls_output>-path.
-      IF sy-subrc = 0 AND <ls_prev>-blob_sha1 = <ls_output>-blob_sha1.
-* file not changed
-        <ls_output>-last_commit_sha1 = <ls_prev>-last_commit_sha1.
-      ELSEIF sy-subrc = 0 AND <ls_prev>-blob_sha1 <> <ls_output>-blob_sha1.
+      IF sy-subrc = 0
+          AND <ls_output>-chmod = zcl_ags_obj_tree=>c_chmod-file
+          AND <ls_prev>-blob_sha1 <> <ls_output>-blob_sha1.
 * file changed
-        bubble_dir( EXPORTING is_file = <ls_output>
+        <ls_output>-last_commit_sha1 = iv_commit.
+        bubble_dir( EXPORTING iv_commit = iv_commit
+                              is_file = <ls_output>
                     CHANGING ct_files = lt_files ).
-      ELSEIF sy-subrc <> 0.
+      ELSEIF sy-subrc <> 0
+          AND <ls_output>-chmod = zcl_ags_obj_tree=>c_chmod-file.
 * new file
-        bubble_dir( EXPORTING is_file = <ls_output>
+        <ls_output>-last_commit_sha1 = iv_commit.
+        bubble_dir( EXPORTING iv_commit = iv_commit
+                              is_file = <ls_output>
                     CHANGING ct_files = lt_files ).
+      ELSEIF sy-subrc = 0.
+* not changed, use old commit SHA1
+        <ls_output>-last_commit_sha1 = <ls_prev>-last_commit_sha1.
+      ELSE.
+        <ls_output>-last_commit_sha1 = iv_commit.
       ENDIF.
+
+      ASSERT NOT <ls_output>-last_commit_sha1 IS INITIAL.
     ENDLOOP.
 
     ASSERT lines( lt_files ) > 0.
@@ -453,6 +466,7 @@ CLASS ZCL_AGS_CACHE IMPLEMENTATION.
     LOOP AT it_data ASSIGNING <ls_data>.
       CLEAR ls_cache.
       MOVE-CORRESPONDING <ls_data> TO ls_cache.
+      ASSERT NOT ls_cache-last_commit_sha1 IS INITIAL.
       ls_cache-repo             = mv_repo.
       ls_cache-commit_sha1      = iv_commit.
       ls_cache-counter          = lv_counter.
