@@ -19,6 +19,15 @@ CLASS zcl_ags_db_tree_cache DEFINITION
         VALUE(rt_data)  TYPE zags_tree_cache_tt
       RAISING
         zcx_ags_error .
+    METHODS select_by_file
+      IMPORTING
+        !iv_repo       TYPE zags_tree_cache-repo
+        !iv_path       TYPE zags_tree_cache-path
+        !iv_filename   TYPE zags_tree_cache-filename
+      RETURNING
+        VALUE(rt_data) TYPE zags_tree_cache_tt
+      RAISING
+        zcx_ags_error .
     METHODS select_by_path
       IMPORTING
         !iv_repo        TYPE zags_tree_cache-repo
@@ -94,6 +103,33 @@ CLASS ZCL_AGS_DB_TREE_CACHE IMPLEMENTATION.
         UP TO iv_max ROWS
         WHERE repo = iv_repo
         AND commit_sha1 = iv_commit_sha1.                 "#EC CI_SUBRC
+    ENDIF.
+
+  ENDMETHOD.
+
+
+  METHOD select_by_file.
+
+    FIELD-SYMBOLS: <ls_cache> LIKE LINE OF mt_cache.
+
+
+    ASSERT NOT iv_repo IS INITIAL.
+    ASSERT NOT iv_path IS INITIAL.
+    ASSERT NOT iv_filename IS INITIAL.
+
+    IF mv_fake = abap_true.
+      LOOP AT mt_cache ASSIGNING <ls_cache>
+          WHERE repo = iv_repo
+          AND filename = iv_filename
+          AND path = iv_path.
+        APPEND <ls_cache> TO rt_data.
+      ENDLOOP.
+    ELSE.
+      SELECT * FROM zags_tree_cache
+        INTO TABLE rt_data
+        WHERE repo = iv_repo
+        AND path = iv_path
+        AND filename = iv_filename.                       "#EC CI_SUBRC
     ENDIF.
 
   ENDMETHOD.

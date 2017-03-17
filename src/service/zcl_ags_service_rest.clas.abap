@@ -363,11 +363,12 @@ CLASS ZCL_AGS_SERVICE_REST IMPLEMENTATION.
 
     ls_fpath = to_filename_and_path( iv_filename ).
 
-    lo_repo = zcl_ags_repo=>get_instance( iv_repo ).
-
-    APPEND INITIAL LINE TO rt_commits ASSIGNING <ls_commit>.
-    <ls_commit>-text = 'todo' && ls_fpath-filename.
-    <ls_commit>-body = 'todo' && ls_fpath-path.
+    rt_commits = zcl_ags_repo=>get_instance( iv_repo
+      )->get_default_branch(
+      )->get_cache(
+      )->list_commits_by_file(
+      iv_filename = ls_fpath-filename
+      iv_path     = ls_fpath-path ).
 
   ENDMETHOD.
 

@@ -36,7 +36,14 @@ CLASS zcl_ags_cache DEFINITION
         VALUE(rt_commits) TYPE zcl_ags_obj_commit=>ty_pretty_tt
       RAISING
         zcx_ags_error .
-    METHODS list_commits_by_file .
+    METHODS list_commits_by_file
+      IMPORTING
+        !iv_filename      TYPE string
+        !iv_path          TYPE string
+      RETURNING
+        VALUE(rt_commits) TYPE zcl_ags_obj_commit=>ty_pretty_tt
+      RAISING
+        zcx_ags_error .
     METHODS list_commits_by_user .
     METHODS list_files_by_path
       IMPORTING
@@ -116,7 +123,8 @@ CLASS ZCL_AGS_CACHE IMPLEMENTATION.
       ASSERT sy-subrc = 0.
       DELETE lt_split INDEX lv_index.
 
-      CONCATENATE LINES OF lt_split INTO lv_path SEPARATED BY '/'.
+      lv_path = concat_lines_of( table = lt_split
+                                 sep   = '/').
       IF lv_path IS INITIAL.
         lv_path = '/'.
       ELSE.
@@ -336,10 +344,32 @@ CLASS ZCL_AGS_CACHE IMPLEMENTATION.
 
   METHOD list_commits_by_file.
 
-* todo, return list of commits
-* inputs: path + filename
-* https://github.com/larshp/abapGitServer/issues/23
-    RETURN.
+    DATA: lt_cache  TYPE STANDARD TABLE OF zags_tree_cache WITH DEFAULT KEY,
+          ls_commit TYPE zcl_ags_obj_commit=>ty_pretty.
+
+    FIELD-SYMBOLS: <ls_cache> LIKE LINE OF lt_cache.
+
+
+    build( ).
+
+    lt_cache = zcl_ags_db=>get_tree_cache( )->select_by_file(
+      iv_repo     = mv_repo
+      iv_filename = iv_filename
+      iv_path     = iv_path ).
+
+    SORT lt_cache BY last_commit_sha1 ASCENDING.
+    DELETE ADJACENT DUPLICATES FROM lt_cache COMPARING last_commit_sha1.
+
+    LOOP AT lt_cache ASSIGNING <ls_cache>.
+      ls_commit = zcl_ags_obj_commit=>get_instance(
+        iv_repo = mv_repo
+        iv_sha1 = <ls_cache>-last_commit_sha1
+        )->get_pretty( ).
+      APPEND ls_commit TO rt_commits.
+    ENDLOOP.
+
+* todo, this is not entirely correct
+    SORT rt_commits STABLE BY author-time DESCENDING.
 
   ENDMETHOD.
 

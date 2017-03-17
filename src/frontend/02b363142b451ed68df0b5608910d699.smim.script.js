@@ -110,7 +110,7 @@ class REST {
    
   static readHistory(repoName, branch, filename, callback) {
     const url = "history/" + repoName + "/" + branch + "/" + filename;
-    this.get(url, callback, false);
+    this.get(url, callback, true);
   }
    
   static readBlobSHA1(repoName, sha1, callback) {
@@ -642,6 +642,29 @@ class BlobHistory extends React.Component {
                      props.params.splat,
                      this.update.bind(this));
   }
+
+// todo BlobHistory vs CommitList
+  commit(e) {
+    let ago = Time.ago(Time.parse(e.COMMITTER.TIME));
+    return (
+      <div>
+      <hr />
+      <table>
+      <tr>
+      <td>Description:</td>
+      <td><Link to={this.props.params.repo + "/commit/" + e.SHA1}>{e.TEXT}</Link></td>
+      </tr>
+      <tr>
+      <td>Time:</td>
+      <td>{ago}</td>
+      </tr>
+      <tr>
+      <td>Name:</td>
+      <td><Link to={"/user/" + e.COMMITTER.NAME}>{e.COMMITTER.NAME}</Link></td>
+      </tr>
+      </table>
+      </div>);
+  }
       
   update(d) {
     this.setState({data: d, spinner: false});
@@ -651,8 +674,7 @@ class BlobHistory extends React.Component {
     return(<div>
       <Breadcrumb routes={this.props.routes} params={this.props.params} />
       <h1>History - {this.props.params.splat}</h1>
-      todo
-      {this.state.spinner?<Spinner />:"todo"}             
+      {this.state.spinner?<Spinner />:this.state.data.map(this.commit.bind(this))} 
       </div>);
   }
 } 
