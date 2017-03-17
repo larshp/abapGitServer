@@ -8,14 +8,19 @@ CLASS zcl_ags_service_rest DEFINITION
     INTERFACES zif_swag_handler .
 
     TYPES:
-      BEGIN OF ty_create,
-        name        TYPE zags_repos-name,
-        description TYPE zags_repos-description,
-      END OF ty_create .
-    TYPES: BEGIN OF ty_filename_and_path,
-             filename TYPE string,
-             path     TYPE string,
-           END OF ty_filename_and_path.
+      BEGIN OF ty_repo_branch,
+        branch TYPE zags_branches,
+        latest TYPE zcl_ags_obj_commit=>ty_pretty,
+      END OF ty_repo_branch .
+    TYPES:
+      ty_repo_branches_tt TYPE STANDARD TABLE OF ty_repo_branch WITH DEFAULT KEY .
+    TYPES:
+      BEGIN OF ty_repo,
+        repo     TYPE zags_repos,
+        branches TYPE ty_repo_branches_tt,
+      END OF ty_repo .
+    TYPES:
+      ty_repos_tt TYPE STANDARD TABLE OF ty_repo WITH DEFAULT KEY .
     TYPES:
       BEGIN OF ty_branch,
         name   TYPE zags_branch_name,
@@ -23,6 +28,18 @@ CLASS zcl_ags_service_rest DEFINITION
         commit TYPE zags_sha1,
         head   TYPE abap_bool,
       END OF ty_branch .
+    TYPES:
+      ty_branches_tt TYPE STANDARD TABLE OF ty_branch WITH DEFAULT KEY .
+    TYPES:
+      BEGIN OF ty_create,
+        name        TYPE zags_repos-name,
+        description TYPE zags_repos-description,
+      END OF ty_create .
+    TYPES:
+      BEGIN OF ty_filename_and_path,
+        filename TYPE string,
+        path     TYPE string,
+      END OF ty_filename_and_path .
     TYPES:
       BEGIN OF ty_changed_file,
         filename TYPE string,
@@ -36,8 +53,6 @@ CLASS zcl_ags_service_rest DEFINITION
             INCLUDE TYPE zcl_ags_obj_commit=>ty_pretty.
     TYPES: files TYPE ty_changed_files_tt,
            END OF ty_commit .
-    TYPES:
-      ty_branches_tt TYPE STANDARD TABLE OF ty_branch WITH DEFAULT KEY .
 
     METHODS create_repo
       IMPORTING
@@ -75,7 +90,7 @@ CLASS zcl_ags_service_rest DEFINITION
         zcx_ags_error .
     METHODS list_repos
       RETURNING
-        VALUE(rt_list) TYPE zags_repos_tt
+        VALUE(rt_list) TYPE ty_repos_tt
       RAISING
         zcx_ags_error .
     METHODS read_blob
@@ -113,24 +128,24 @@ CLASS zcl_ags_service_rest DEFINITION
       RAISING
         zcx_ags_error .
   PROTECTED SECTION.
-  PRIVATE SECTION.
+PRIVATE SECTION.
 
-    CONSTANTS c_base TYPE string VALUE '/sap/zabapgitserver/rest' ##NO_TEXT.
+  CONSTANTS c_base TYPE string VALUE '/sap/zabapgitserver/rest' ##NO_TEXT.
 
-    METHODS to_filename_and_path
-      IMPORTING
-        !iv_filename   TYPE string
-      RETURNING
-        VALUE(rs_data) TYPE ty_filename_and_path .
-    METHODS list_changes
-      IMPORTING
-        !iv_repo        TYPE zags_repo
-        !iv_new         TYPE zags_sha1
-        !iv_old         TYPE zags_sha1
-      RETURNING
-        VALUE(rt_files) TYPE ty_changed_files_tt
-      RAISING
-        zcx_ags_error .
+  METHODS to_filename_and_path
+    IMPORTING
+      !iv_filename   TYPE string
+    RETURNING
+      VALUE(rs_data) TYPE ty_filename_and_path .
+  METHODS list_changes
+    IMPORTING
+      !iv_repo        TYPE zags_repo
+      !iv_new         TYPE zags_sha1
+      !iv_old         TYPE zags_sha1
+    RETURNING
+      VALUE(rt_files) TYPE ty_changed_files_tt
+    RAISING
+      zcx_ags_error .
 ENDCLASS.
 
 
@@ -276,7 +291,34 @@ CLASS ZCL_AGS_SERVICE_REST IMPLEMENTATION.
 
   METHOD list_repos.
 
-    rt_list = zcl_ags_repo=>list( ).
+    DATA: lt_repos    TYPE zags_repos_tt,
+          lo_commit   TYPE REF TO zcl_ags_obj_commit,
+          lt_branches TYPE zcl_ags_repo=>ty_branches_tt.
+
+    FIELD-SYMBOLS: <ls_repo>       LIKE LINE OF lt_repos,
+                   <lo_branch>     LIKE LINE OF lt_branches,
+                   <ls_out_repo>   LIKE LINE OF rt_list,
+                   <ls_out_branch> LIKE LINE OF <ls_out_repo>-branches.
+
+
+    lt_repos = zcl_ags_repo=>list( ).
+
+    LOOP AT lt_repos ASSIGNING <ls_repo>.
+      APPEND INITIAL LINE TO rt_list ASSIGNING <ls_out_repo>.
+      <ls_out_repo>-repo = <ls_repo>.
+
+      lt_branches = zcl_ags_repo=>get_instance( <ls_repo>-name )->list_branches( ).
+      LOOP AT lt_branches ASSIGNING <lo_branch>.
+        APPEND INITIAL LINE TO <ls_out_repo>-branches ASSIGNING <ls_out_branch>.
+        <ls_out_branch>-branch = <lo_branch>->get_data( ).
+
+        lo_commit = zcl_ags_obj_commit=>get_instance(
+          iv_repo = <ls_repo>-repo
+          iv_sha1 = <ls_out_branch>-branch-sha1 ).
+
+        <ls_out_branch>-latest = lo_commit->get_pretty( ).
+      ENDLOOP.
+    ENDLOOP.
 
   ENDMETHOD.
 

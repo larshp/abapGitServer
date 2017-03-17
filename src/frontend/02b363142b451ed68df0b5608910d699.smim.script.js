@@ -803,13 +803,25 @@ class RepoList extends React.Component {
     this.setState({data: d, spinner: false});
   }
 
+  branch(e, name) {
+    return (<div>
+      {Octicons.branch()}&nbsp;{e.BRANCH.NAME}&nbsp;
+      <Link to={name + "/files/" + e.BRANCH.NAME}>files</Link>&nbsp;
+      <Link to={name + "/commits/" + e.BRANCH.NAME}>commits</Link>
+      <br />
+      Changed {Time.ago(Time.parse(e.LATEST.AUTHOR.TIME))}
+      </div>);
+  }
+
   repo(e) {
     return (
       <div className="tile">
-      {Octicons.repo()} <Link to={e.NAME + "/"}>{e.NAME}</Link><br />
-      <div className="italic inline">{e.DESCRIPTION}       
+      {Octicons.repo()} <Link to={e.REPO.NAME + "/"}>{e.REPO.NAME}</Link><br />
+      <div className="italic inline">{e.REPO.DESCRIPTION}       
       &nbsp;
-      <Link to={"/edit/" + e.NAME}>{Octicons.pencil()}</Link></div>
+      <Link to={"/edit/" + e.REPO.NAME}>{Octicons.pencil()}</Link></div>
+      <br /><br />
+      {e.BRANCHES.map(function(b) { return this.branch(b, e.REPO.NAME); }, this)}
       </div>);
   }          
       
@@ -826,7 +838,7 @@ class RepoList extends React.Component {
       <h1>abapGitServer</h1>
       </td></tr>
       </table>          
-      {this.state.spinner?<Spinner />:this.state.data.map(this.repo)}
+      {this.state.spinner?<Spinner />:this.state.data.map(this.repo.bind(this))}
       <br />
       {Octicons.plus()} <Link to="/create">Create</Link>
       <br />
