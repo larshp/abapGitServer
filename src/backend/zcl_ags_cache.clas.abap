@@ -87,8 +87,8 @@ CLASS ZCL_AGS_CACHE IMPLEMENTATION.
     DATA: lt_commits TYPE zcl_ags_obj_commit=>ty_pretty_tt,
           lt_cache   TYPE zags_tree_cache_tt,
           lv_index   TYPE i,
-          lv_commit  TYPE zags_sha1,
-          lt_missing TYPE STANDARD TABLE OF zags_sha1 WITH DEFAULT KEY.
+          lt_missing TYPE STANDARD TABLE OF zags_sha1 WITH DEFAULT KEY,
+          lv_commit  LIKE LINE OF lt_missing.
 
     FIELD-SYMBOLS: <ls_commit> LIKE LINE OF lt_commits.
 
@@ -128,6 +128,7 @@ CLASS ZCL_AGS_CACHE IMPLEMENTATION.
 
 * start with the oldest
       READ TABLE lt_missing INDEX lv_index INTO lv_commit.
+      ASSERT sy-subrc = 0.
       build_tree_cache( lv_commit ).
       lv_index = lv_index - 1.
     ENDDO.
@@ -309,7 +310,6 @@ CLASS ZCL_AGS_CACHE IMPLEMENTATION.
             APPEND INITIAL LINE TO rt_files ASSIGNING <ls_file>.
             <ls_file>-filename  = <ls_input_file>-name.
             <ls_file>-path      = <ls_input_tree>-path.
-*            <ls_file>-blob_sha1 = <ls_input_file>-sha1.
             <ls_file>-chmod     = <ls_input_file>-chmod.
 
             APPEND INITIAL LINE TO lt_trees ASSIGNING <ls_tree>.

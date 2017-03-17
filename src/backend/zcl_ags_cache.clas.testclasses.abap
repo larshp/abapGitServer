@@ -173,14 +173,56 @@ CLASS ltcl_list_files_by_path IMPLEMENTATION.
   ENDMETHOD.
 
   METHOD test02.
+* test folder last commit
+
+    CONSTANTS: lc_path   TYPE string VALUE '/FOO/',
+               lc_first  TYPE string VALUE 'FIRST',
+               lc_second TYPE string VALUE 'SECOND'.
+
+    DATA: lt_files TYPE zcl_ags_cache=>ty_files_tt.
+
+    FIELD-SYMBOLS: <ls_file> LIKE LINE OF lt_files.
+
 
     mo_branch->get_files( )->add(
       iv_filename       = 'NEW.TXT'
-      iv_path           = c_root
+      iv_path           = lc_path
       iv_file_contents  = 'WELLO'
-      iv_commit_message = 'BLAH' ).
+      iv_commit_message = lc_first ).
 
-    check( 2 ).
+    lt_files = mo_branch->get_cache( )->list_files_by_path( c_root ).
+    cl_abap_unit_assert=>assert_equals(
+      act = lines( lt_files )
+      exp = 2 ).
+
+    READ TABLE lt_files WITH KEY filename = 'FOO' ASSIGNING <ls_file>.
+    cl_abap_unit_assert=>assert_subrc( ).
+    cl_abap_unit_assert=>assert_equals(
+      act = <ls_file>-chmod
+      exp = zcl_ags_obj_tree=>c_chmod-dir ).
+    cl_abap_unit_assert=>assert_equals(
+      act = <ls_file>-comment
+      exp = lc_first ).
+
+    mo_branch->get_files( )->add(
+      iv_filename       = 'NEW2.TXT'
+      iv_path           = lc_path
+      iv_file_contents  = 'HELLO'
+      iv_commit_message = lc_second ).
+
+    lt_files = mo_branch->get_cache( )->list_files_by_path( c_root ).
+    cl_abap_unit_assert=>assert_equals(
+      act = lines( lt_files )
+      exp = 2 ).
+
+    READ TABLE lt_files WITH KEY filename = 'FOO' ASSIGNING <ls_file>.
+    cl_abap_unit_assert=>assert_subrc( ).
+    cl_abap_unit_assert=>assert_equals(
+      act = <ls_file>-chmod
+      exp = zcl_ags_obj_tree=>c_chmod-dir ).
+    cl_abap_unit_assert=>assert_equals(
+      act = <ls_file>-comment
+      exp = lc_second ).
 
   ENDMETHOD.
 
@@ -231,7 +273,8 @@ CLASS ltcl_list_files_by_path IMPLEMENTATION.
 
 ENDCLASS.
 
-CLASS ltcl_list_files_simple DEFINITION FOR TESTING DURATION SHORT RISK LEVEL HARMLESS FINAL.
+CLASS ltcl_list_files_simple DEFINITION
+    FOR TESTING DURATION SHORT RISK LEVEL HARMLESS FINAL.
 
   PRIVATE SECTION.
     DATA: mo_branch TYPE REF TO zcl_ags_branch.
