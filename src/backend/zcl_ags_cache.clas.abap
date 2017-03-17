@@ -6,7 +6,7 @@ CLASS zcl_ags_cache DEFINITION
 
     TYPES:
       BEGIN OF ty_file.
-        INCLUDE TYPE zags_tree_cache_data.
+            INCLUDE TYPE zags_tree_cache_data.
     TYPES: comment TYPE string,
            time    TYPE zags_unix_time,
            END OF ty_file .
@@ -56,6 +56,16 @@ CLASS zcl_ags_cache DEFINITION
     DATA mv_repo TYPE zags_repo .
     DATA mv_commit TYPE zags_sha1 .
 
+    METHODS bubble_dir
+      IMPORTING
+        !is_file  TYPE zags_tree_cache_data
+      CHANGING
+        !ct_files TYPE zags_tree_cache_data_tt .
+    METHODS find_missing
+      RETURNING
+        VALUE(rt_missing) TYPE zags_sha1_tt
+      RAISING
+        zcx_ags_error .
     METHODS build_tree_cache
       IMPORTING
         !iv_commit TYPE zags_sha1
@@ -82,15 +92,55 @@ ENDCLASS.
 CLASS ZCL_AGS_CACHE IMPLEMENTATION.
 
 
+  METHOD bubble_dir.
+
+    DATA: lt_split TYPE STANDARD TABLE OF string WITH DEFAULT KEY,
+          lv_name  LIKE LINE OF lt_split,
+          lv_path  TYPE string,
+          lv_index TYPE i.
+
+    FIELD-SYMBOLS: <ls_file> LIKE LINE OF ct_files.
+
+
+    IF is_file-path = '/'.
+      RETURN.
+    ENDIF.
+
+    SPLIT is_file-path AT '/' INTO TABLE lt_split.
+    DELETE lt_split WHERE table_line = ''.
+
+    lv_index = lines( lt_split ).
+    DO lines( lt_split ) TIMES.
+      READ TABLE lt_split INDEX lv_index INTO lv_name.
+      ASSERT sy-subrc = 0.
+      DELETE lt_split INDEX lv_index.
+
+      CONCATENATE LINES OF lt_split INTO lv_path SEPARATED BY '/'.
+      IF lv_path IS INITIAL.
+        lv_path = '/'.
+      ELSE.
+        CONCATENATE '/' lv_path '/' INTO lv_path.
+      ENDIF.
+
+      READ TABLE ct_files ASSIGNING <ls_file> WITH KEY
+        filename = lv_name
+        path = lv_path
+        chmod = zcl_ags_obj_tree=>c_chmod-dir.
+      ASSERT sy-subrc = 0.
+      <ls_file>-last_commit_sha1 = is_file-last_commit_sha1.
+
+      lv_index = lv_index - 1.
+    ENDDO.
+
+  ENDMETHOD.
+
+
   METHOD build.
 
-    DATA: lt_commits TYPE zcl_ags_obj_commit=>ty_pretty_tt,
-          lt_cache   TYPE zags_tree_cache_tt,
+    DATA: lt_cache   TYPE zags_tree_cache_tt,
           lv_index   TYPE i,
-          lt_missing TYPE STANDARD TABLE OF zags_sha1 WITH DEFAULT KEY,
+          lt_missing TYPE zags_sha1_tt,
           lv_commit  LIKE LINE OF lt_missing.
-
-    FIELD-SYMBOLS: <ls_commit> LIKE LINE OF lt_commits.
 
 
     lt_cache = zcl_ags_db=>get_tree_cache( )->select(
@@ -101,20 +151,7 @@ CLASS ZCL_AGS_CACHE IMPLEMENTATION.
       RETURN.
     ENDIF.
 
-* todo, this will break if the git history is rewritten?
-    lt_commits = list_commits( ).
-
-    LOOP AT lt_commits ASSIGNING <ls_commit>.
-      lt_cache = zcl_ags_db=>get_tree_cache( )->select(
-        iv_repo        = mv_repo
-        iv_commit_sha1 = <ls_commit>-sha1
-        iv_max         = 1 ).
-      IF lines( lt_cache ) > 0.
-        EXIT. " current loop
-      ENDIF.
-
-      APPEND <ls_commit>-sha1 TO lt_missing.
-    ENDLOOP.
+    lt_missing = find_missing( ).
 
     lv_index = lines( lt_missing ).
     DO lines( lt_missing ) TIMES.
@@ -172,12 +209,23 @@ CLASS ZCL_AGS_CACHE IMPLEMENTATION.
       ASSERT lines( lt_prev ) > 0.
     ENDIF.
 
-    LOOP AT lt_files ASSIGNING <ls_output>.
+    LOOP AT lt_files ASSIGNING <ls_output>
+        WHERE chmod = zcl_ags_obj_tree=>c_chmod-file.
       READ TABLE lt_prev ASSIGNING <ls_prev>
         WITH KEY filename = <ls_output>-filename
+        chmod = zcl_ags_obj_tree=>c_chmod-file
         path = <ls_output>-path.
       IF sy-subrc = 0 AND <ls_prev>-blob_sha1 = <ls_output>-blob_sha1.
+* file not changed
         <ls_output>-last_commit_sha1 = <ls_prev>-last_commit_sha1.
+      ELSEIF sy-subrc = 0 AND <ls_prev>-blob_sha1 <> <ls_output>-blob_sha1.
+* file changed
+        bubble_dir( EXPORTING is_file = <ls_output>
+                    CHANGING ct_files = lt_files ).
+      ELSEIF sy-subrc <> 0.
+* new file
+        bubble_dir( EXPORTING is_file = <ls_output>
+                    CHANGING ct_files = lt_files ).
       ENDIF.
     ENDLOOP.
 
@@ -192,6 +240,32 @@ CLASS ZCL_AGS_CACHE IMPLEMENTATION.
 * todo, not sure about the input fields for this constructor
     mv_repo   = iv_repo.
     mv_commit = iv_commit.
+  ENDMETHOD.
+
+
+  METHOD find_missing.
+
+    DATA: lt_commits TYPE zcl_ags_obj_commit=>ty_pretty_tt,
+          lt_cache   TYPE zags_tree_cache_tt.
+
+    FIELD-SYMBOLS: <ls_commit> LIKE LINE OF lt_commits.
+
+
+* todo, this will break if the git history is rewritten?
+    lt_commits = list_commits( ).
+
+    LOOP AT lt_commits ASSIGNING <ls_commit>.
+      lt_cache = zcl_ags_db=>get_tree_cache( )->select(
+        iv_repo        = mv_repo
+        iv_commit_sha1 = <ls_commit>-sha1
+        iv_max         = 1 ).
+      IF lines( lt_cache ) > 0.
+        EXIT. " current loop
+      ENDIF.
+
+      APPEND <ls_commit>-sha1 TO rt_missing.
+    ENDLOOP.
+
   ENDMETHOD.
 
 
