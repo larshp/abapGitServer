@@ -128,24 +128,24 @@ CLASS zcl_ags_service_rest DEFINITION
       RAISING
         zcx_ags_error .
   PROTECTED SECTION.
-PRIVATE SECTION.
+  PRIVATE SECTION.
 
-  CONSTANTS c_base TYPE string VALUE '/sap/zabapgitserver/rest' ##NO_TEXT.
+    CONSTANTS c_base TYPE string VALUE '/sap/zabapgitserver/rest' ##NO_TEXT.
 
-  METHODS to_filename_and_path
-    IMPORTING
-      !iv_filename   TYPE string
-    RETURNING
-      VALUE(rs_data) TYPE ty_filename_and_path .
-  METHODS list_changes
-    IMPORTING
-      !iv_repo        TYPE zags_repo
-      !iv_new         TYPE zags_sha1
-      !iv_old         TYPE zags_sha1
-    RETURNING
-      VALUE(rt_files) TYPE ty_changed_files_tt
-    RAISING
-      zcx_ags_error .
+    METHODS to_filename_and_path
+      IMPORTING
+        !iv_filename   TYPE string
+      RETURNING
+        VALUE(rs_data) TYPE ty_filename_and_path .
+    METHODS list_changes
+      IMPORTING
+        !iv_repo        TYPE zags_repo
+        !iv_new         TYPE zags_sha1
+        !iv_old         TYPE zags_sha1
+      RETURNING
+        VALUE(rt_files) TYPE ty_changed_files_tt
+      RAISING
+        zcx_ags_error .
 ENDCLASS.
 
 
