@@ -4,6 +4,7 @@
   <asx:values>
    <URL>/SAP/PUBLIC/zgit/index.html</URL>
    <FOLDER/>
+   <CLASS>M_TEXT_L</CLASS>
   </asx:values>
  </asx:abap>
 </abapGit>

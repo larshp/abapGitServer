@@ -4,6 +4,7 @@
   <asx:values>
    <URL>/SAP/PUBLIC/zgit/logo.svg</URL>
    <FOLDER/>
+   <CLASS>M_APP_L</CLASS>
   </asx:values>
  </asx:abap>
 </abapGit>
