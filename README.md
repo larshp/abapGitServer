@@ -29,3 +29,6 @@ see https://github.com/larshp/ABAP-Swagger
 - Increased visibility over changes in system
 
 Works with 'git pull' from command line, so all objects can be exported to a different git server if needed, [guide](https://help.github.com/articles/importing-a-git-repository-using-the-command-line/)
+
+### Screenshots
+[See wiki](https://github.com/larshp/abapGitServer/wiki/Screenshots)
