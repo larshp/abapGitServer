@@ -7,7 +7,7 @@ Git server implemented in ABAP
 
 Install via [abapGit](http://www.abapgit.org)
 
-Start web frontend via SICF service ZABAPGITSERVER
+Start web frontend via transaction ZABAPGITSERVER(or via SICF service ZABAPGITSERVER)
 
 ### News
 2017-03-12: Key field REPO added in database table ZAGS_OBJECTS, use conversion program ZAGS_MIGRATION_01 to convert old repositories.
