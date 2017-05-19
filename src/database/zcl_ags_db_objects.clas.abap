@@ -59,7 +59,7 @@ CLASS ZCL_AGS_DB_OBJECTS IMPLEMENTATION.
 
     IF mv_fake = abap_true.
       rt_objects = mt_objects.
-      DELETE rt_objects WHERE repo <> iv_repo OR type <> iv_type.
+      DELETE rt_objects WHERE repo <> iv_repo OR type <> iv_type. "#EC CI_SORTSEQ
     ELSE.
       SELECT * FROM zags_objects
         INTO CORRESPONDING FIELDS OF TABLE rt_objects

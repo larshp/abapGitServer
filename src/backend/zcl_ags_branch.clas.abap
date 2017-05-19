@@ -126,7 +126,6 @@ CLASS ZCL_AGS_BRANCH IMPLEMENTATION.
       iv_sha1   = iv_sha1
       iv_repo   = ms_data-repo
       iv_branch = ms_data-branch ).
-    ASSERT sy-subrc = 0.
 
   ENDMETHOD.
 ENDCLASS.

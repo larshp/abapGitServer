@@ -379,8 +379,7 @@ CLASS ZCL_AGS_SERVICE_REST IMPLEMENTATION.
 
     lo_repo = zcl_ags_repo=>get_instance( iv_repo ).
 
-    MOVE-CORRESPONDING
-      zcl_ags_obj_commit=>get_instance(
+    MOVE-CORRESPONDING zcl_ags_obj_commit=>get_instance(
         iv_repo = lo_repo->get_data( )-repo
         iv_sha1 = iv_commit )->get_pretty( )
       TO rs_data.
@@ -396,11 +395,7 @@ CLASS ZCL_AGS_SERVICE_REST IMPLEMENTATION.
 
   METHOD read_history.
 
-    DATA: lo_repo  TYPE REF TO zcl_ags_repo,
-          lv_path  TYPE string,
-          ls_fpath TYPE ty_filename_and_path.
-
-    FIELD-SYMBOLS: <ls_commit> LIKE LINE OF rt_commits.
+    DATA: ls_fpath TYPE ty_filename_and_path.
 
 
     ls_fpath = to_filename_and_path( iv_filename ).

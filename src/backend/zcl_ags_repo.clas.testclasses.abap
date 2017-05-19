@@ -27,13 +27,13 @@ CLASS ltcl_test IMPLEMENTATION.
       iv_description = 'DESCRIPTION' ).
 
     lt_list = zcl_ags_repo=>list( ).
-    READ TABLE lt_list WITH KEY name = lc_name TRANSPORTING NO FIELDS.
+    READ TABLE lt_list WITH KEY name = lc_name TRANSPORTING NO FIELDS. "#EC CI_SORTSEQ
     cl_abap_unit_assert=>assert_subrc( ).
 
     lo_repo->delete( ).
 
     lt_list = zcl_ags_repo=>list( ).
-    READ TABLE lt_list WITH KEY name = lc_name TRANSPORTING NO FIELDS.
+    READ TABLE lt_list WITH KEY name = lc_name TRANSPORTING NO FIELDS. "#EC CI_SORTSEQ
     cl_abap_unit_assert=>assert_subrc( exp = 4 ).
 
   ENDMETHOD.

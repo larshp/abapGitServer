@@ -75,7 +75,7 @@ CLASS ZCL_AGS_DB_BRANCHES IMPLEMENTATION.
 
     IF mv_fake = abap_true.
       rt_list = mt_branches.
-      DELETE rt_list WHERE repo <> iv_repo.
+      DELETE rt_list WHERE repo <> iv_repo.             "#EC CI_SORTSEQ
     ELSE.
       SELECT * FROM zags_branches
         INTO TABLE rt_list

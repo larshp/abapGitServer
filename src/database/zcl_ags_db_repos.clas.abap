@@ -43,7 +43,7 @@ CLASS ZCL_AGS_DB_REPOS IMPLEMENTATION.
   METHOD delete.
 
     IF mv_fake = abap_true.
-      DELETE mt_repos WHERE name = iv_name.
+      DELETE mt_repos WHERE name = iv_name.             "#EC CI_SORTSEQ
     ELSE.
       DELETE FROM zags_repos WHERE name = iv_name.        "#EC CI_SUBRC
     ENDIF.
@@ -88,7 +88,7 @@ CLASS ZCL_AGS_DB_REPOS IMPLEMENTATION.
 
     IF mv_fake = abap_true.
       READ TABLE mt_repos INTO rs_repo
-        WITH KEY name = iv_name.                          "#EC CI_SUBRC
+        WITH KEY name = iv_name.          "#EC CI_SUBRC "#EC CI_SORTSEQ
     ELSE.
       SELECT SINGLE * FROM zags_repos
         INTO rs_repo

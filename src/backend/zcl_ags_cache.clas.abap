@@ -224,7 +224,7 @@ CLASS ZCL_AGS_CACHE IMPLEMENTATION.
       READ TABLE lt_prev ASSIGNING <ls_prev>
         WITH KEY filename = <ls_output>-filename
         chmod = <ls_output>-chmod
-        path = <ls_output>-path.
+        path = <ls_output>-path.                        "#EC CI_SORTSEQ
       IF sy-subrc = 0
           AND <ls_output>-chmod = zcl_ags_obj_tree=>c_chmod-file
           AND <ls_prev>-blob_sha1 <> <ls_output>-blob_sha1.
