@@ -3,7 +3,6 @@
  <asx:abap xmlns:asx="http://www.sap.com/abapxml" version="1.0">
   <asx:values>
    <URL>/SAP/PUBLIC/zgit/logo.svg</URL>
-   <FOLDER/>
    <CLASS>M_APP_L</CLASS>
   </asx:values>
  </asx:abap>
