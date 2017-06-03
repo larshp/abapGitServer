@@ -18,7 +18,6 @@
     <DATATYPE>SSTR</DATATYPE>
     <LENG>001333</LENG>
    </DD04V>
-   <TPARA/>
   </asx:values>
  </asx:abap>
 </abapGit>

@@ -11,7 +11,6 @@
     <LOWERCASE>X</LOWERCASE>
     <DDTEXT>Repository name</DDTEXT>
    </DD01V>
-   <DD07V_TAB/>
   </asx:values>
  </asx:abap>
 </abapGit>
