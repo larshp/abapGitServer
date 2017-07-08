@@ -21,7 +21,7 @@ CLASS ltcl_test IMPLEMENTATION.
 
     CONSTANTS: lc_name TYPE zags_repos-name VALUE 'TESTBLAH'.
 
-    DATA: ls_repo TYPE zags_repos ##NEEDED.
+    DATA: lv_repo TYPE zags_repo ##NEEDED.
 
 
     zcl_ags_repo=>create(
@@ -29,7 +29,7 @@ CLASS ltcl_test IMPLEMENTATION.
       iv_description = 'testblah' ).
 
 * nothing should hit the database
-    SELECT SINGLE * FROM zags_repos INTO ls_repo
+    SELECT SINGLE repo FROM zags_repos INTO lv_repo
       WHERE name = lc_name ##WARN_OK.                     "#EC CI_SUBRC
     cl_abap_unit_assert=>assert_subrc( exp = 4 ).
 
