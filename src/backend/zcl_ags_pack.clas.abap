@@ -100,19 +100,22 @@ CLASS ZCL_AGS_PACK IMPLEMENTATION.
     END-OF-DEFINITION.
 
     DEFINE _visit_blob.
-      CREATE OBJECT lo_blob EXPORTING iv_repo = iv_repo iv_sha1 = &1.
-      APPEND INITIAL LINE TO lt_visit ASSIGNING <ls_new>.
-      <ls_new>-object = lo_blob.
+      APPEND &1 TO lt_blobs_sha1.
+*      CREATE OBJECT lo_blob EXPORTING iv_repo = iv_repo iv_sha1 = &1.
+*      APPEND INITIAL LINE TO lt_visit ASSIGNING <ls_new>.
+*      <ls_new>-object = lo_blob.
     END-OF-DEFINITION.
 
-    DATA: lo_tree   TYPE REF TO zcl_ags_obj_tree,
-          lt_files  TYPE zcl_ags_obj_tree=>ty_tree_tt,
-          lo_sub    TYPE REF TO zcl_ags_obj_tree,
-          lo_blob   TYPE REF TO zcl_ags_obj_blob,
-          lo_parent TYPE REF TO zcl_ags_obj_commit,
-          ls_commit TYPE zcl_ags_obj_commit=>ty_commit,
-          lt_visit  TYPE STANDARD TABLE OF ty_visit WITH DEFAULT KEY,
-          lo_commit TYPE REF TO zcl_ags_obj_commit.
+    DATA: lo_tree       TYPE REF TO zcl_ags_obj_tree,
+          lt_files      TYPE zcl_ags_obj_tree=>ty_tree_tt,
+          lo_sub        TYPE REF TO zcl_ags_obj_tree,
+          lt_blobs_sha1 TYPE zags_sha1_tt,
+          li_object     TYPE REF TO zif_ags_object,
+          lt_blobs      TYPE zcl_ags_obj_blob=>ty_list,
+          lo_parent     TYPE REF TO zcl_ags_obj_commit,
+          ls_commit     TYPE zcl_ags_obj_commit=>ty_commit,
+          lt_visit      TYPE STANDARD TABLE OF ty_visit WITH DEFAULT KEY,
+          lo_commit     TYPE REF TO zcl_ags_obj_commit.
 
     FIELD-SYMBOLS: <ls_visit> LIKE LINE OF lt_visit,
                    <ls_new>   LIKE LINE OF lt_visit,
@@ -152,6 +155,13 @@ CLASS ZCL_AGS_PACK IMPLEMENTATION.
           ENDIF.
         ENDLOOP.
       ENDIF.
+    ENDLOOP.
+
+    lt_blobs = zcl_ags_obj_blob=>constructor_mass(
+      iv_repo = iv_repo
+      it_sha1 = lt_blobs_sha1 ).
+    LOOP AT lt_blobs INTO li_object.
+      APPEND to_object( li_object ) TO rt_objects.
     ENDLOOP.
 
   ENDMETHOD.
