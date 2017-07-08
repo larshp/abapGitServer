@@ -14,8 +14,8 @@
    <TPOOL>
     <item>
      <ID>R</ID>
-     <ENTRY>Call abapGitServer in browser window</ENTRY>
-     <LENGTH>36</LENGTH>
+     <ENTRY>abapGitServer - Call abapGitServer in browser window</ENTRY>
+     <LENGTH>52</LENGTH>
     </item>
    </TPOOL>
   </asx:values>
