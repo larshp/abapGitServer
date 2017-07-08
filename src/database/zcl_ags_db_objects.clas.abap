@@ -101,7 +101,7 @@ CLASS ZCL_AGS_DB_OBJECTS IMPLEMENTATION.
         INTO TABLE rt_list
         FOR ALL ENTRIES IN it_sha1
         WHERE repo = iv_repo
-        AND sha1 = it_sha1-table_line ##SELECT_FAE_WITH_LOB[DATA_RAW].
+        AND sha1 = it_sha1-table_line.
     ENDIF.
 
   ENDMETHOD.
