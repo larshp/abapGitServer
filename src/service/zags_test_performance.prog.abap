@@ -10,7 +10,7 @@ PARAMETERS: p_pack TYPE c RADIOBUTTON GROUP g1 DEFAULT 'X',
 START-OF-SELECTION.
   PERFORM run.
 
-FORM run.
+FORM run RAISING zcx_ags_error.
   CASE abap_true.
     WHEN p_pack.
       PERFORM pack.
@@ -19,7 +19,6 @@ FORM run.
     WHEN OTHERS.
       ASSERT 0 = 1.
   ENDCASE.
-
 ENDFORM.
 
 FORM pack RAISING zcx_ags_error.

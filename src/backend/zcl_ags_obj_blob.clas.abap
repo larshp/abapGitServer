@@ -17,6 +17,9 @@ CLASS zcl_ags_obj_blob DEFINITION
     ALIASES sha1
       FOR zif_ags_object~sha1 .
 
+    TYPES:
+      ty_list TYPE STANDARD TABLE OF REF TO zcl_ags_obj_blob WITH DEFAULT KEY .
+
     METHODS get_data
       RETURNING
         VALUE(rv_data) TYPE xstring .
@@ -35,6 +38,14 @@ CLASS zcl_ags_obj_blob DEFINITION
         !iv_sha1       TYPE zags_objects-sha1
       RETURNING
         VALUE(ro_blob) TYPE REF TO zcl_ags_obj_blob
+      RAISING
+        zcx_ags_error .
+    CLASS-METHODS constructor_mass
+      IMPORTING
+        !iv_repo       TYPE zags_objects-repo
+        !it_sha1       TYPE zags_sha1_tt
+      RETURNING
+        VALUE(rt_list) TYPE ty_list
       RAISING
         zcx_ags_error .
   PROTECTED SECTION.
@@ -61,6 +72,40 @@ CLASS ZCL_AGS_OBJ_BLOB IMPLEMENTATION.
       mv_new = abap_false.
       deserialize( zcl_ags_db=>get_objects( )->single( iv_repo = iv_repo iv_sha1 = iv_sha1 )-data_raw ).
     ENDIF.
+
+  ENDMETHOD.
+
+
+  METHOD constructor_mass.
+
+    DATA: lt_objects TYPE zags_objects_tt,
+          lo_blob    TYPE REF TO zcl_ags_obj_blob.
+
+    FIELD-SYMBOLS: <ls_object> LIKE LINE OF lt_objects.
+
+
+    ASSERT NOT iv_repo IS INITIAL.
+
+    IF lines( it_sha1 ) = 0.
+      RETURN.
+    ENDIF.
+
+    lt_objects = zcl_ags_db=>get_objects( )->mass(
+      iv_repo = iv_repo
+      it_sha1 = it_sha1 ).
+
+    LOOP AT lt_objects ASSIGNING <ls_object>.
+      ASSERT <ls_object>-type = zif_ags_constants=>c_type-blob.
+
+      CREATE OBJECT lo_blob
+        EXPORTING
+          iv_repo = iv_repo.
+* fix internal object state
+      lo_blob->mv_new = abap_false.
+      lo_blob->deserialize( <ls_object>-data_raw ).
+      APPEND lo_blob TO rt_list.
+
+    ENDLOOP.
 
   ENDMETHOD.
 
