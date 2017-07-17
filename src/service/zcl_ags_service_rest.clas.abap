@@ -248,7 +248,7 @@ CLASS ZCL_AGS_SERVICE_REST IMPLEMENTATION.
       IF sy-subrc = 0.
         DELETE lt_old INDEX sy-tabix.
         ASSERT sy-subrc = 0.
-        DELETE lt_new INDEX sy-tabix.
+        DELETE lt_new INDEX lv_index.
         ASSERT sy-subrc = 0.
 
         APPEND INITIAL LINE TO rt_files ASSIGNING <ls_file>.
