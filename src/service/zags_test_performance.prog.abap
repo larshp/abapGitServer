@@ -2,10 +2,11 @@ REPORT zags_test_performance.
 * enables easy performance trace via SE30
 
 PARAMETERS: p_name   TYPE zags_repo_name OBLIGATORY,
-            p_branch TYPE zags_branch_name OBLIGATORY DEFAULT 'master'.
+            p_branch TYPE zags_branch_name OBLIGATORY DEFAULT 'master',
+            p_sha1   TYPE zags_sha1.
 
-PARAMETERS: p_pack TYPE c RADIOBUTTON GROUP g1 DEFAULT 'X',
-            p_foo  TYPE c RADIOBUTTON GROUP g1.
+PARAMETERS: p_pack   TYPE c RADIOBUTTON GROUP g1 DEFAULT 'X',
+            p_commit TYPE c RADIOBUTTON GROUP g1.
 
 START-OF-SELECTION.
   PERFORM run.
@@ -14,11 +15,27 @@ FORM run RAISING zcx_ags_error.
   CASE abap_true.
     WHEN p_pack.
       PERFORM pack.
-    WHEN p_foo.
-      WRITE: 'todo'.
+    WHEN p_commit.
+      PERFORM read_commit.
     WHEN OTHERS.
       ASSERT 0 = 1.
   ENDCASE.
+
+  WRITE: / 'Done'.
+ENDFORM.
+
+FORM read_commit.
+
+  DATA: lo_rest TYPE REF TO zcl_ags_service_rest.
+
+  ASSERT NOT p_sha1 IS INITIAL.
+
+  CREATE OBJECT lo_rest.
+
+  lo_rest->read_commit(
+    iv_repo   = p_name
+    iv_commit = p_sha1 ).
+
 ENDFORM.
 
 FORM pack RAISING zcx_ags_error.
