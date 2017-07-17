@@ -201,13 +201,14 @@ CLASS ZCL_AGS_SERVICE_REST IMPLEMENTATION.
 
   ENDMETHOD.
 
-
   METHOD list_changes.
+* todo: file paths handled wrong and not returned
 
     DATA: lt_new   TYPE zcl_ags_cache=>ty_files_simple_tt,
           lt_old   TYPE zcl_ags_cache=>ty_files_simple_tt,
           lo_cache TYPE REF TO zcl_ags_cache,
           ls_new   LIKE LINE OF lt_new,
+          lv_index TYPE i,
           ls_old   LIKE LINE OF lt_old.
 
     FIELD-SYMBOLS: <ls_file> LIKE LINE OF rt_files.
@@ -225,23 +226,29 @@ CLASS ZCL_AGS_SERVICE_REST IMPLEMENTATION.
           iv_repo   = iv_repo
           iv_commit = iv_old.
       lt_old = lo_cache->list_files_simple( ).
+      SORT lt_old BY
+        filename ASCENDING
+        blob_sha1 ASCENDING.
     ENDIF.
 
     LOOP AT lt_new INTO ls_new.
+      lv_index = sy-tabix.
 * remove unchanged
-      DELETE lt_old WHERE filename = ls_new-filename AND blob_sha1 = ls_new-blob_sha1.
+      READ TABLE lt_old TRANSPORTING NO FIELDS
+        WITH KEY filename = ls_new-filename blob_sha1 = ls_new-blob_sha1 BINARY SEARCH.
       IF sy-subrc = 0.
-        DELETE lt_new WHERE filename = ls_new-filename AND blob_sha1 = ls_new-blob_sha1.
+        DELETE lt_old INDEX sy-tabix.
+        DELETE lt_new INDEX lv_index.
         ASSERT sy-subrc = 0.
         CONTINUE.
       ENDIF.
 
 * find changed
-      READ TABLE lt_old INTO ls_old WITH KEY filename = ls_new-filename.
+      READ TABLE lt_old INTO ls_old WITH KEY filename = ls_new-filename BINARY SEARCH.
       IF sy-subrc = 0.
-        DELETE lt_new WHERE filename = ls_new-filename.
+        DELETE lt_old INDEX sy-tabix.
         ASSERT sy-subrc = 0.
-        DELETE lt_old WHERE filename = ls_new-filename.
+        DELETE lt_new INDEX sy-tabix.
         ASSERT sy-subrc = 0.
 
         APPEND INITIAL LINE TO rt_files ASSIGNING <ls_file>.
@@ -265,7 +272,6 @@ CLASS ZCL_AGS_SERVICE_REST IMPLEMENTATION.
     ENDLOOP.
 
   ENDMETHOD.
-
 
   METHOD list_commits.
 
