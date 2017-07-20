@@ -157,7 +157,7 @@ class CommitList extends React.Component {
     this.state = {data: [], spinner: true };
     REST.listCommits(props.params.repo, 
                      props.params.branch, 
-                     this.update.bind(this));      
+                     this.update.bind(this));
   }
 
   update(d) {
@@ -185,7 +185,7 @@ class CommitList extends React.Component {
       </table>
       </div>);
   }
-    
+
   render() {
     let total = this.state.data.length;
     let view = Math.min(total, 1000);
@@ -537,7 +537,14 @@ class Commit extends React.Component {
   }
   
   diff() {
-    return (<div>{this.state.data.FILES.map(this.single.bind(this))}</div>);             
+    let total = this.state.data.FILES.length;
+    let view = Math.min(total, 50);
+    if (total !== view) {
+      this.state.data.FILES.splice(view);
+    }
+
+    return (<div>{ total } total, { this.state.data.FILES.length } shown<br />{
+      this.state.data.FILES.map(this.single.bind(this))}</div>);             
   }
   
   parentLink(parent) {
