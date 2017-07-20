@@ -373,22 +373,24 @@ CLASS ltcl_bubble_dir IMPLEMENTATION.
     FIELD-SYMBOLS: <ls_file> LIKE LINE OF lt_files.
 
 
+    ls_file-filename = 'FOO'.
+    ls_file-path     = '/'.
+    ls_file-chmod    = zcl_ags_obj_tree=>c_chmod-dir.
+    INSERT ls_file INTO TABLE lt_files.
+    CLEAR ls_file.
+
+    ls_file-filename = 'BAR'.
+    ls_file-path     = '/'.
+    ls_file-chmod    = zcl_ags_obj_tree=>c_chmod-dir.
+    INSERT ls_file INTO TABLE lt_files.
+    CLEAR ls_file.
+
     CREATE OBJECT lo_cache
       EXPORTING
         iv_repo   = ''
         iv_commit = ''.
 
     ls_file-path = '/FOO/'.
-
-    APPEND INITIAL LINE TO lt_files ASSIGNING <ls_file>.
-    <ls_file>-filename = 'FOO'.
-    <ls_file>-path     = '/'.
-    <ls_file>-chmod    = zcl_ags_obj_tree=>c_chmod-dir.
-
-    APPEND INITIAL LINE TO lt_files ASSIGNING <ls_file>.
-    <ls_file>-filename = 'BAR'.
-    <ls_file>-path     = '/'.
-    <ls_file>-chmod    = zcl_ags_obj_tree=>c_chmod-dir.
 
     lo_cache->bubble_dir(
       EXPORTING iv_commit = lc_last
@@ -420,22 +422,24 @@ CLASS ltcl_bubble_dir IMPLEMENTATION.
     FIELD-SYMBOLS: <ls_file> LIKE LINE OF lt_files.
 
 
+    ls_file-filename = 'FOO'.
+    ls_file-path     = '/'.
+    ls_file-chmod    = zcl_ags_obj_tree=>c_chmod-dir.
+    INSERT ls_file INTO TABLE lt_files.
+    CLEAR ls_file.
+
+    ls_file-filename = 'BAR'.
+    ls_file-path     = '/FOO/'.
+    ls_file-chmod    = zcl_ags_obj_tree=>c_chmod-dir.
+    INSERT ls_file INTO TABLE lt_files.
+    CLEAR ls_file.
+
     CREATE OBJECT lo_cache
       EXPORTING
         iv_repo   = ''
         iv_commit = ''.
 
     ls_file-path = '/FOO/BAR/'.
-
-    APPEND INITIAL LINE TO lt_files ASSIGNING <ls_file>.
-    <ls_file>-filename = 'FOO'.
-    <ls_file>-path     = '/'.
-    <ls_file>-chmod    = zcl_ags_obj_tree=>c_chmod-dir.
-
-    APPEND INITIAL LINE TO lt_files ASSIGNING <ls_file>.
-    <ls_file>-filename = 'BAR'.
-    <ls_file>-path     = '/FOO/'.
-    <ls_file>-chmod    = zcl_ags_obj_tree=>c_chmod-dir.
 
     lo_cache->bubble_dir(
       EXPORTING iv_commit = lc_last
