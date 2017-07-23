@@ -17,8 +17,10 @@ CLASS zcl_ags_service_git DEFINITION
       END OF ty_push .
     TYPES:
       BEGIN OF ty_request,
-        want   TYPE STANDARD TABLE OF zags_sha1 WITH DEFAULT KEY,
-        deepen TYPE i,
+        want         TYPE STANDARD TABLE OF zags_sha1 WITH DEFAULT KEY,
+        have         TYPE STANDARD TABLE OF zags_sha1 WITH DEFAULT KEY,
+        capabilities TYPE STANDARD TABLE OF string WITH DEFAULT KEY,
+        deepen       TYPE i,
       END OF ty_request .
 
     DATA mi_server TYPE REF TO if_http_server .
@@ -174,11 +176,13 @@ CLASS ZCL_AGS_SERVICE_GIT IMPLEMENTATION.
 
 
   METHOD decode_request.
+* todo: add unit tests
 
-    DATA: lv_line    TYPE string,
-          lv_command TYPE string,
-          lv_rest    TYPE string,
-          lt_lines   TYPE TABLE OF string.
+    DATA: lv_line         TYPE string,
+          lv_command      TYPE string,
+          lv_rest         TYPE string,
+          lv_capabilities TYPE string,
+          lt_lines        TYPE TABLE OF string.
 
 
     SPLIT iv_string AT cl_abap_char_utilities=>newline INTO TABLE lt_lines.
@@ -186,17 +190,27 @@ CLASS ZCL_AGS_SERVICE_GIT IMPLEMENTATION.
     LOOP AT lt_lines INTO lv_line.
 
       SPLIT lv_line AT space INTO lv_command lv_rest.
-      IF lv_command(4) = '0000'.
-        RETURN.
-      ENDIF.
 
-      lv_command = lv_command+4.
+      IF lv_command(4) = '0000'.
+        lv_command = lv_command+4.
+      ENDIF.
+      IF strlen( lv_command ) >= 4.
+        lv_command = lv_command+4.
+      ENDIF.
 
       CASE lv_command.
         WHEN 'want'.
+          IF lines( rs_request-want ) = 0.
+            SPLIT lv_rest AT space INTO lv_rest lv_capabilities.
+            SPLIT lv_capabilities AT space INTO TABLE rs_request-capabilities.
+          ENDIF.
           APPEND lv_rest TO rs_request-want.
+        WHEN 'have'.
+          APPEND lv_rest TO rs_request-have.
         WHEN 'deepen'.
           rs_request-deepen = lv_rest.
+        WHEN '' OR 'done'.
+          RETURN.
         WHEN OTHERS.
 * todo, unknown command
           ASSERT 0 = 1.
