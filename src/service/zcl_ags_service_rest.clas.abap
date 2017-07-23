@@ -43,6 +43,7 @@ CLASS zcl_ags_service_rest DEFINITION
     TYPES:
       BEGIN OF ty_changed_file,
         filename TYPE string,
+        path     TYPE string,
         old_blob TYPE zags_sha1,
         new_blob TYPE zags_sha1,
       END OF ty_changed_file .
@@ -50,7 +51,7 @@ CLASS zcl_ags_service_rest DEFINITION
       ty_changed_files_tt TYPE STANDARD TABLE OF ty_changed_file WITH DEFAULT KEY .
     TYPES:
       BEGIN OF ty_commit.
-            INCLUDE TYPE zcl_ags_obj_commit=>ty_pretty.
+        INCLUDE TYPE zcl_ags_obj_commit=>ty_pretty.
     TYPES: files TYPE ty_changed_files_tt,
            END OF ty_commit .
 
@@ -203,7 +204,6 @@ CLASS ZCL_AGS_SERVICE_REST IMPLEMENTATION.
 
 
   METHOD list_changes.
-* todo: file paths handled wrong and not returned
 
     DATA: lt_new   TYPE zcl_ags_cache=>ty_files_simple_tt,
           lt_old   TYPE zcl_ags_cache=>ty_files_simple_tt,
@@ -229,14 +229,17 @@ CLASS ZCL_AGS_SERVICE_REST IMPLEMENTATION.
       lt_old = lo_cache->list_files_simple( ).
       SORT lt_old BY
         filename ASCENDING
+        path ascending
         blob_sha1 ASCENDING.
     ENDIF.
 
     LOOP AT lt_new INTO ls_new WHERE chmod <> zcl_ags_obj_tree=>c_chmod-dir.
       lv_index = sy-tabix.
 * remove unchanged
-      READ TABLE lt_old TRANSPORTING NO FIELDS
-        WITH KEY filename = ls_new-filename blob_sha1 = ls_new-blob_sha1 BINARY SEARCH.
+      READ TABLE lt_old TRANSPORTING NO FIELDS WITH KEY
+        filename = ls_new-filename
+        path = ls_new-path
+        blob_sha1 = ls_new-blob_sha1 BINARY SEARCH.
       IF sy-subrc = 0.
         DELETE lt_old INDEX sy-tabix.
         DELETE lt_new INDEX lv_index.
@@ -245,7 +248,9 @@ CLASS ZCL_AGS_SERVICE_REST IMPLEMENTATION.
       ENDIF.
 
 * find changed
-      READ TABLE lt_old INTO ls_old WITH KEY filename = ls_new-filename BINARY SEARCH.
+      READ TABLE lt_old INTO ls_old WITH KEY
+        filename = ls_new-filename
+        path = ls_new-path BINARY SEARCH.
       IF sy-subrc = 0.
         DELETE lt_old INDEX sy-tabix.
         ASSERT sy-subrc = 0.
@@ -254,6 +259,7 @@ CLASS ZCL_AGS_SERVICE_REST IMPLEMENTATION.
 
         APPEND INITIAL LINE TO rt_files ASSIGNING <ls_file>.
         <ls_file>-filename = ls_new-filename.
+        <ls_file>-path     = ls_new-path.
         <ls_file>-old_blob = ls_old-blob_sha1.
         <ls_file>-new_blob = ls_new-blob_sha1.
         CONTINUE.
@@ -262,6 +268,7 @@ CLASS ZCL_AGS_SERVICE_REST IMPLEMENTATION.
 * find new
       APPEND INITIAL LINE TO rt_files ASSIGNING <ls_file>.
       <ls_file>-filename = ls_new-filename.
+      <ls_file>-path     = ls_new-path.
       <ls_file>-new_blob = ls_new-blob_sha1.
     ENDLOOP.
 
@@ -269,6 +276,7 @@ CLASS ZCL_AGS_SERVICE_REST IMPLEMENTATION.
     LOOP AT lt_old INTO ls_old WHERE chmod <> zcl_ags_obj_tree=>c_chmod-dir.
       APPEND INITIAL LINE TO rt_files ASSIGNING <ls_file>.
       <ls_file>-filename = ls_old-filename.
+      <ls_file>-path     = ls_old-path.
       <ls_file>-old_blob = ls_old-blob_sha1.
     ENDLOOP.
 

@@ -463,7 +463,10 @@ class Diff extends React.Component {
   runDiff() {
     if (this.old !== null && this.new !== null) {
       let diff = JsDiff.createTwoFilesPatch(
-        this.props.filename, this.props.filename, this.old, this.new);
+        this.props.path + this.props.filename, 
+        this.props.path + this.props.filename, 
+        this.old, 
+        this.new);
       
 // hack to make diff2html show added and deleted marker      
       if (this.props.old === "") {
@@ -530,6 +533,7 @@ class Commit extends React.Component {
   single(e) {
     return (<Diff 
       filename={e.FILENAME} 
+      path={e.PATH}
       fileNumber={this.i++} 
       repo={ this.props.params.repo }
       old={ e.OLD_BLOB } 
