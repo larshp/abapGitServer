@@ -201,6 +201,7 @@ CLASS ZCL_AGS_SERVICE_REST IMPLEMENTATION.
 
   ENDMETHOD.
 
+
   METHOD list_changes.
 * todo: file paths handled wrong and not returned
 
@@ -231,7 +232,7 @@ CLASS ZCL_AGS_SERVICE_REST IMPLEMENTATION.
         blob_sha1 ASCENDING.
     ENDIF.
 
-    LOOP AT lt_new INTO ls_new.
+    LOOP AT lt_new INTO ls_new WHERE chmod <> zcl_ags_obj_tree=>c_chmod-dir.
       lv_index = sy-tabix.
 * remove unchanged
       READ TABLE lt_old TRANSPORTING NO FIELDS
@@ -265,13 +266,14 @@ CLASS ZCL_AGS_SERVICE_REST IMPLEMENTATION.
     ENDLOOP.
 
 * find deleted
-    LOOP AT lt_old INTO ls_old.
+    LOOP AT lt_old INTO ls_old WHERE chmod <> zcl_ags_obj_tree=>c_chmod-dir.
       APPEND INITIAL LINE TO rt_files ASSIGNING <ls_file>.
       <ls_file>-filename = ls_old-filename.
       <ls_file>-old_blob = ls_old-blob_sha1.
     ENDLOOP.
 
   ENDMETHOD.
+
 
   METHOD list_commits.
 
