@@ -63,7 +63,7 @@ CLASS ZCL_AGS_SERVICE_GIT IMPLEMENTATION.
   METHOD branch_list.
 
     DEFINE _capability.
-      append &1 to lt_capabilities ##no_text.
+      APPEND &1 TO lt_capabilities ##no_text.
     END-OF-DEFINITION.
 
     DATA: lv_reply        TYPE string,
@@ -107,7 +107,7 @@ CLASS ZCL_AGS_SERVICE_GIT IMPLEMENTATION.
     APPEND lv_tmp TO lt_reply ##no_text.
 
     lv_content = |{ lv_head } HEAD{ get_null( ) }{ lv_reply }|.
-    lv_length = lcl_length=>encode( strlen( lv_content ) + 5 ).
+    lv_length = zcl_ags_length=>encode( strlen( lv_content ) + 5 ).
     lv_utf = to_lower( zcl_ags_util=>xstring_to_string_utf8( lv_length ) ).
 
     lv_tmp = '0000' && lv_utf && lv_content.
@@ -119,7 +119,7 @@ CLASS ZCL_AGS_SERVICE_GIT IMPLEMENTATION.
         && ' refs/heads/'
         && <lo_branch>->get_data( )-name ##no_text.
 
-      lv_length = lcl_length=>encode( strlen( lv_content ) + 5 ).
+      lv_length = zcl_ags_length=>encode( strlen( lv_content ) + 5 ).
       lv_utf = to_lower( zcl_ags_util=>xstring_to_string_utf8( lv_length ) ).
 
       lv_tmp = lv_utf && lv_content.
@@ -157,7 +157,7 @@ CLASS ZCL_AGS_SERVICE_GIT IMPLEMENTATION.
 
     lv_first = iv_data(4).
     lv_utf = zcl_ags_util=>xstring_to_string_utf8( lv_first ).
-    rs_push-length = lcl_length=>decode( lv_utf ).
+    rs_push-length = zcl_ags_length=>decode( lv_utf ).
 
     lv_first = iv_data(rs_push-length).
     lv_data = zcl_ags_util=>xstring_to_string_utf8( lv_first ).
@@ -241,14 +241,13 @@ CLASS ZCL_AGS_SERVICE_GIT IMPLEMENTATION.
 
   METHOD pack.
 
-    CONSTANTS: lc_band1  TYPE x VALUE '01',
-               lc_length TYPE i VALUE 8196.
+    CONSTANTS: lc_length TYPE i VALUE 8196.
 
-    DATA: lv_response TYPE xstring,
+    DATA: lo_response TYPE REF TO zcl_ags_xstream,
           lo_commit   TYPE REF TO zcl_ags_obj_commit,
-          lv_encoded  TYPE zags_hex4,
           lt_objects  TYPE zcl_ags_pack=>ty_objects_tt,
           lv_pack     TYPE xstring,
+          lv_tmp      TYPE xstring,
           lv_repo     TYPE zags_repos-repo,
           ls_request  TYPE ty_request,
           lv_branch   LIKE LINE OF ls_request-want,
@@ -257,9 +256,8 @@ CLASS ZCL_AGS_SERVICE_GIT IMPLEMENTATION.
 
     ls_request = decode_request( mi_server->request->get_cdata( ) ).
 
-    lv_pack = zcl_ags_util=>string_to_xstring_utf8( |NAK\n| ).
-    lv_encoded = lcl_length=>encode( xstrlen( lv_pack ) + 4 ).
-    CONCATENATE lv_encoded lv_pack INTO lv_response IN BYTE MODE.
+    CREATE OBJECT lo_response.
+    lo_response->append_length( zcl_ags_util=>string_to_xstring_utf8( |NAK\n| ) ).
 
     lv_repo = zcl_ags_repo=>get_instance( repo_name( ) )->get_data( )-repo.
 
@@ -270,7 +268,7 @@ CLASS ZCL_AGS_SERVICE_GIT IMPLEMENTATION.
           iv_sha1 = lv_branch.
 
       APPEND LINES OF zcl_ags_pack=>explode(
-        iv_repo = lv_repo
+        iv_repo   = lv_repo
         ii_object = lo_commit
         iv_deepen = ls_request-deepen ) TO lt_objects.
     ENDLOOP.
@@ -288,19 +286,15 @@ CLASS ZCL_AGS_SERVICE_GIT IMPLEMENTATION.
         lv_length = xstrlen( lv_pack ).
       ENDIF.
 
-* make sure to include the length encoding itself and band identifier in the length
-      lv_encoded = lcl_length=>encode( lv_length + 5 ).
-
-      CONCATENATE lv_response lv_encoded lc_band1 lv_pack(lv_length)
-        INTO lv_response IN BYTE MODE.
+      lv_tmp = lv_pack(lv_length).
+      lo_response->append_band01( lv_tmp ).
 
       lv_pack = lv_pack+lv_length.
     ENDWHILE.
 
-    lv_pack = zcl_ags_util=>string_to_xstring_utf8( '0000' ).
-    CONCATENATE lv_response lv_pack INTO lv_response IN BYTE MODE.
+    lo_response->append( zcl_ags_util=>string_to_xstring_utf8( '0000' ) ).
 
-    mi_server->response->set_data( lv_response ).
+    mi_server->response->set_data( lo_response->get( ) ).
 
     mi_server->response->set_header_field(
       name  = if_http_header_fields=>content_type

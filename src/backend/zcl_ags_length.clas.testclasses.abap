@@ -27,7 +27,7 @@ CLASS ltcl_length IMPLEMENTATION.
     DATA: lv_encoded TYPE zags_hex4.
 
 
-    lv_encoded = lcl_length=>encode( 100 ).
+    lv_encoded = zcl_ags_length=>encode( 100 ).
 
     cl_abap_unit_assert=>assert_equals(
       act = lv_encoded
@@ -40,7 +40,7 @@ CLASS ltcl_length IMPLEMENTATION.
     DATA: lv_length TYPE i.
 
 
-    lv_length = lcl_length=>decode( '0091' ).
+    lv_length = zcl_ags_length=>decode( '0091' ).
 
     cl_abap_unit_assert=>assert_equals(
       act = lv_length
