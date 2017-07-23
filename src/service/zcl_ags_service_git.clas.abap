@@ -6,53 +6,71 @@ CLASS zcl_ags_service_git DEFINITION
 
     INTERFACES zif_ags_service.
   PROTECTED SECTION.
-  PRIVATE SECTION.
+PRIVATE SECTION.
 
-    TYPES:
-      BEGIN OF ty_push,
-        old    TYPE zags_sha1,
-        new    TYPE zags_sha1,
-        name   TYPE zags_branch_name,
-        length TYPE i,
-      END OF ty_push .
-    TYPES:
-      BEGIN OF ty_request,
-        want         TYPE STANDARD TABLE OF zags_sha1 WITH DEFAULT KEY,
-        have         TYPE STANDARD TABLE OF zags_sha1 WITH DEFAULT KEY,
-        capabilities TYPE STANDARD TABLE OF string WITH DEFAULT KEY,
-        deepen       TYPE i,
-      END OF ty_request .
+  TYPES:
+    BEGIN OF ty_push,
+      old    TYPE zags_sha1,
+      new    TYPE zags_sha1,
+      name   TYPE zags_branch_name,
+      length TYPE i,
+    END OF ty_push .
+  TYPES:
+    BEGIN OF ty_request,
+      want         TYPE STANDARD TABLE OF zags_sha1 WITH DEFAULT KEY,
+      have         TYPE STANDARD TABLE OF zags_sha1 WITH DEFAULT KEY,
+      capabilities TYPE STANDARD TABLE OF string WITH DEFAULT KEY,
+      deepen       TYPE i,
+    END OF ty_request .
+  TYPES:
+    ty_ack_mode TYPE c LENGTH 1 .
 
-    DATA mi_server TYPE REF TO if_http_server .
+  CONSTANTS:
+    BEGIN OF c_ack_mode,
+      normal        TYPE ty_ack_mode VALUE '1',
+      detailed      TYPE ty_ack_mode VALUE '2',
+      not_specified TYPE ty_ack_mode VALUE '3',
+    END OF c_ack_mode .
+  DATA mi_server TYPE REF TO if_http_server .
 
-    METHODS branch_list
-      RAISING
-        zcx_ags_error .
-    METHODS decode_push
-      IMPORTING
-        !iv_data       TYPE xstring
-      RETURNING
-        VALUE(rs_push) TYPE ty_push
-      RAISING
-        zcx_ags_error .
-    METHODS decode_request
-      IMPORTING
-        !iv_string        TYPE string
-      RETURNING
-        VALUE(rs_request) TYPE ty_request .
-    METHODS get_null
-      RETURNING
-        VALUE(rv_char) TYPE char1 .
-    METHODS pack
-      RAISING
-        zcx_ags_error .
-    METHODS repo_name
-      RETURNING
-        VALUE(rv_name) TYPE zags_repos-name .
-    METHODS unpack
-      RAISING
-        zcx_ags_error .
-    METHODS unpack_ok .
+  METHODS find_ack_mode
+    IMPORTING
+      !is_request    TYPE ty_request
+    RETURNING
+      VALUE(rv_mode) TYPE ty_ack_mode .
+  METHODS send_ack
+    IMPORTING
+      !io_response TYPE REF TO zcl_ags_xstream
+      !iv_repo     TYPE zags_repos-repo
+      !is_request  TYPE ty_request .
+  METHODS branch_list
+    RAISING
+      zcx_ags_error .
+  METHODS decode_push
+    IMPORTING
+      !iv_data       TYPE xstring
+    RETURNING
+      VALUE(rs_push) TYPE ty_push
+    RAISING
+      zcx_ags_error .
+  METHODS decode_request
+    IMPORTING
+      !iv_string        TYPE string
+    RETURNING
+      VALUE(rs_request) TYPE ty_request .
+  METHODS get_null
+    RETURNING
+      VALUE(rv_char) TYPE char1 .
+  METHODS pack
+    RAISING
+      zcx_ags_error .
+  METHODS repo_name
+    RETURNING
+      VALUE(rv_name) TYPE zags_repos-name .
+  METHODS unpack
+    RAISING
+      zcx_ags_error .
+  METHODS unpack_ok .
 ENDCLASS.
 
 
@@ -224,6 +242,28 @@ CLASS ZCL_AGS_SERVICE_GIT IMPLEMENTATION.
   ENDMETHOD.
 
 
+  METHOD find_ack_mode.
+
+    READ TABLE is_request-capabilities WITH KEY table_line = 'multi_ack'
+      TRANSPORTING NO FIELDS.
+    IF sy-subrc = 0.
+      rv_mode = c_ack_mode-normal.
+    ENDIF.
+
+    READ TABLE is_request-capabilities WITH KEY table_line = 'multi_ack_detailed'
+      TRANSPORTING NO FIELDS.
+    IF sy-subrc = 0.
+      ASSERT rv_mode IS INITIAL.
+      rv_mode = c_ack_mode-detailed.
+    ENDIF.
+
+    IF rv_mode IS INITIAL.
+      rv_mode = c_ack_mode-not_specified.
+    ENDIF.
+
+  ENDMETHOD.
+
+
   METHOD get_null.
 
     DATA: lv_x(4) TYPE x VALUE '00000000',
@@ -256,10 +296,13 @@ CLASS ZCL_AGS_SERVICE_GIT IMPLEMENTATION.
 
     ls_request = decode_request( mi_server->request->get_cdata( ) ).
 
-    CREATE OBJECT lo_response.
-    lo_response->append_length( zcl_ags_util=>string_to_xstring_utf8( |NAK\n| ) ).
-
     lv_repo = zcl_ags_repo=>get_instance( repo_name( ) )->get_data( )-repo.
+
+    CREATE OBJECT lo_response.
+
+    send_ack( io_response = lo_response
+              iv_repo     = lv_repo
+              is_request  = ls_request ).
 
     LOOP AT ls_request-want INTO lv_branch.
       CREATE OBJECT lo_commit
@@ -311,6 +354,48 @@ CLASS ZCL_AGS_SERVICE_GIT IMPLEMENTATION.
     FIND REGEX 'sap/zabapgitserver/git/(.*)\.git*'
       IN lv_path
       SUBMATCHES rv_name ##no_text.
+
+  ENDMETHOD.
+
+
+  METHOD send_ack.
+* see https://github.com/git/git/blob/master/Documentation/technical/pack-protocol.txt#L298
+
+    DATA: lv_ack_mode TYPE ty_ack_mode,
+          lv_sha1     TYPE zags_sha1,
+          lo_server   TYPE REF TO cl_http_server.
+
+
+    lv_ack_mode = find_ack_mode( is_request ).
+
+    CASE lv_ack_mode.
+      WHEN c_ack_mode-normal.
+        io_response->append_length( zcl_ags_util=>string_to_xstring_utf8( |NAK\n| ) ).
+      WHEN c_ack_mode-detailed.
+        LOOP AT is_request-have INTO lv_sha1.
+* todo
+          io_response->append_length( zcl_ags_util=>string_to_xstring_utf8( |ACK { lv_sha1 } common\n| ) ).
+        ENDLOOP.
+        io_response->append_length( zcl_ags_util=>string_to_xstring_utf8( |NAK\n| ) ).
+
+        mi_server->response->set_data( io_response->get( ) ).
+
+        lo_server ?= mi_server.
+        lo_server->send_response( ).
+
+        DATA(lv_subrc) = lo_server->receive_request( ).
+        DATA(lv_data) = mi_server->request->get_cdata( ).
+* todo
+
+        io_response->clear( ).
+        io_response->append_length( zcl_ags_util=>string_to_xstring_utf8( |ACK { is_request-want[ 1 ] }\n| ) ).
+
+      WHEN c_ack_mode-not_specified.
+* todo, not implemented
+        ASSERT 0 = 1.
+      WHEN OTHERS.
+        ASSERT 0 = 1.
+    ENDCASE.
 
   ENDMETHOD.
 
