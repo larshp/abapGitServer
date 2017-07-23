@@ -1,29 +1,29 @@
-class ZCL_AGS_XSTREAM definition
-  public
-  create public .
+CLASS zcl_ags_xstream DEFINITION
+  PUBLIC
+  CREATE PUBLIC .
 
-public section.
+  PUBLIC SECTION.
 
-  methods APPEND
-    importing
-      !IV_VALUE type XSEQUENCE .
-  methods APPEND_BAND01
-    importing
-      !IV_VALUE type XSEQUENCE .
-  methods APPEND_BAND02
-    importing
-      !IV_VALUE type XSEQUENCE .
-  methods APPEND_LENGTH
-    importing
-      !IV_VALUE type XSEQUENCE .
-  methods CLEAR .
-  methods GET
-    returning
-      value(RV_XSTR) type XSTRING .
-protected section.
-private section.
+    METHODS append
+      IMPORTING
+        !iv_value TYPE xsequence .
+    METHODS append_band01
+      IMPORTING
+        !iv_value TYPE xsequence .
+    METHODS append_band02
+      IMPORTING
+        !iv_value TYPE xsequence .
+    METHODS append_length
+      IMPORTING
+        !iv_value TYPE xsequence .
+    METHODS clear .
+    METHODS get
+      RETURNING
+        VALUE(rv_xstr) TYPE xstring .
+  PROTECTED SECTION.
+  PRIVATE SECTION.
 
-  data MV_XSTR type XSTRING .
+    DATA mv_xstr TYPE xstring .
 ENDCLASS.
 
 
