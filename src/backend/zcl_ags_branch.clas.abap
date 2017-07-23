@@ -108,7 +108,7 @@ CLASS ZCL_AGS_BRANCH IMPLEMENTATION.
 
 * todo, add object validations?
     zcl_ags_pack=>save(
-      iv_repo = ms_data-repo
+      iv_repo    = ms_data-repo
       it_objects = it_objects ).
 
     update_sha1( iv_new ).

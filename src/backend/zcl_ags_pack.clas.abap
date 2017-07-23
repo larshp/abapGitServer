@@ -101,9 +101,6 @@ CLASS ZCL_AGS_PACK IMPLEMENTATION.
 
     DEFINE _visit_blob.
       APPEND &1 TO lt_blobs_sha1.
-*      CREATE OBJECT lo_blob EXPORTING iv_repo = iv_repo iv_sha1 = &1.
-*      APPEND INITIAL LINE TO lt_visit ASSIGNING <ls_new>.
-*      <ls_new>-object = lo_blob.
     END-OF-DEFINITION.
 
     DATA: lo_tree       TYPE REF TO zcl_ags_obj_tree,
