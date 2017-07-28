@@ -17,13 +17,35 @@ CLASS zcl_ags_service_git DEFINITION
       END OF ty_push .
     TYPES:
       BEGIN OF ty_request,
-        want   TYPE STANDARD TABLE OF zags_sha1 WITH DEFAULT KEY,
-        deepen TYPE i,
+        want         TYPE STANDARD TABLE OF zags_sha1 WITH DEFAULT KEY,
+        have         TYPE STANDARD TABLE OF zags_sha1 WITH DEFAULT KEY,
+        capabilities TYPE STANDARD TABLE OF string WITH DEFAULT KEY,
+        deepen       TYPE i,
       END OF ty_request .
+    TYPES:
+      ty_ack_mode TYPE c LENGTH 1 .
 
+    CONSTANTS:
+      BEGIN OF c_ack_mode,
+        normal        TYPE ty_ack_mode VALUE '1',
+        detailed      TYPE ty_ack_mode VALUE '2',
+        not_specified TYPE ty_ack_mode VALUE '3',
+      END OF c_ack_mode .
     DATA mi_server TYPE REF TO if_http_server .
 
+    METHODS find_ack_mode
+      IMPORTING
+        !is_request    TYPE ty_request
+      RETURNING
+        VALUE(rv_mode) TYPE ty_ack_mode .
+    METHODS negotiate_packfile
+      IMPORTING
+        !io_response TYPE REF TO zcl_ags_xstream
+        !iv_repo     TYPE zags_repos-repo
+        !is_request  TYPE ty_request .
     METHODS branch_list
+      IMPORTING
+        !iv_service TYPE string
       RAISING
         zcx_ags_error .
     METHODS decode_push
@@ -61,7 +83,7 @@ CLASS ZCL_AGS_SERVICE_GIT IMPLEMENTATION.
   METHOD branch_list.
 
     DEFINE _capability.
-      append &1 to lt_capabilities ##no_text.
+      APPEND &1 TO lt_capabilities ##no_text.
     END-OF-DEFINITION.
 
     DATA: lv_reply        TYPE string,
@@ -80,11 +102,14 @@ CLASS ZCL_AGS_SERVICE_GIT IMPLEMENTATION.
     FIELD-SYMBOLS: <lo_branch> LIKE LINE OF lt_branches.
 
 
+    ASSERT NOT iv_service IS INITIAL.
+
     _capability 'multi_ack'.
-    _capability 'thin-pack'.
+*    _capability 'thin-pack'.
+    _capability 'no-thin'.
     _capability 'side-band'.
     _capability 'side-band-64k'.
-    _capability 'ofs-delta'.
+*    _capability 'ofs-delta'.
     _capability 'shallow'.
     _capability 'no-progress'.
     _capability 'include-tag'.
@@ -101,11 +126,14 @@ CLASS ZCL_AGS_SERVICE_GIT IMPLEMENTATION.
         iv_name = lv_name.
     lv_head = lo_repo->get_branch( lo_repo->get_data( )-head )->get_data( )-sha1.
 
-    lv_tmp = '001e# service=git-upload-pack' ##NO_TEXT.
-    APPEND lv_tmp TO lt_reply ##no_text.
+    lv_content = |# service={ iv_service }| ##NO_TEXT.
+    lv_length = zcl_ags_length=>encode( strlen( lv_content ) + 5 ).
+    lv_utf = to_lower( zcl_ags_util=>xstring_to_string_utf8( lv_length ) ).
+    lv_tmp = lv_utf && lv_content.
+    APPEND lv_tmp TO lt_reply.
 
     lv_content = |{ lv_head } HEAD{ get_null( ) }{ lv_reply }|.
-    lv_length = lcl_length=>encode( strlen( lv_content ) + 5 ).
+    lv_length = zcl_ags_length=>encode( strlen( lv_content ) + 5 ).
     lv_utf = to_lower( zcl_ags_util=>xstring_to_string_utf8( lv_length ) ).
 
     lv_tmp = '0000' && lv_utf && lv_content.
@@ -114,10 +142,11 @@ CLASS ZCL_AGS_SERVICE_GIT IMPLEMENTATION.
     lt_branches = lo_repo->list_branches( ).
     LOOP AT lt_branches ASSIGNING <lo_branch>.
       lv_content = <lo_branch>->get_data( )-sha1
-        && ' refs/heads/'
+        && | |
+        && 'refs/heads/'
         && <lo_branch>->get_data( )-name ##no_text.
 
-      lv_length = lcl_length=>encode( strlen( lv_content ) + 5 ).
+      lv_length = zcl_ags_length=>encode( strlen( lv_content ) + 5 ).
       lv_utf = to_lower( zcl_ags_util=>xstring_to_string_utf8( lv_length ) ).
 
       lv_tmp = lv_utf && lv_content.
@@ -136,7 +165,7 @@ CLASS ZCL_AGS_SERVICE_GIT IMPLEMENTATION.
       name  = 'Cache-Control'
       value = 'no-cache' ) ##no_text.
     mi_server->response->set_content_type(
-      'application/x-git-upload-pack-advertisement' ) ##no_text.
+      |application/x-{ iv_service }-advertisement| ) ##no_text.
 
 * must be sent as raw, using data will change the content-type of the response
     lv_raw = zcl_ags_util=>string_to_xstring_utf8( lv_reply ).
@@ -155,7 +184,7 @@ CLASS ZCL_AGS_SERVICE_GIT IMPLEMENTATION.
 
     lv_first = iv_data(4).
     lv_utf = zcl_ags_util=>xstring_to_string_utf8( lv_first ).
-    rs_push-length = lcl_length=>decode( lv_utf ).
+    rs_push-length = zcl_ags_length=>decode( lv_utf ).
 
     lv_first = iv_data(rs_push-length).
     lv_data = zcl_ags_util=>xstring_to_string_utf8( lv_first ).
@@ -174,11 +203,13 @@ CLASS ZCL_AGS_SERVICE_GIT IMPLEMENTATION.
 
 
   METHOD decode_request.
+* todo: add unit tests
 
-    DATA: lv_line    TYPE string,
-          lv_command TYPE string,
-          lv_rest    TYPE string,
-          lt_lines   TYPE TABLE OF string.
+    DATA: lv_line         TYPE string,
+          lv_command      TYPE string,
+          lv_rest         TYPE string,
+          lv_capabilities TYPE string,
+          lt_lines        TYPE TABLE OF string.
 
 
     SPLIT iv_string AT cl_abap_char_utilities=>newline INTO TABLE lt_lines.
@@ -186,17 +217,27 @@ CLASS ZCL_AGS_SERVICE_GIT IMPLEMENTATION.
     LOOP AT lt_lines INTO lv_line.
 
       SPLIT lv_line AT space INTO lv_command lv_rest.
-      IF lv_command(4) = '0000'.
-        RETURN.
-      ENDIF.
 
-      lv_command = lv_command+4.
+      IF lv_command(4) = '0000'.
+        lv_command = lv_command+4.
+      ENDIF.
+      IF strlen( lv_command ) >= 4.
+        lv_command = lv_command+4.
+      ENDIF.
 
       CASE lv_command.
         WHEN 'want'.
+          IF lines( rs_request-want ) = 0.
+            SPLIT lv_rest AT space INTO lv_rest lv_capabilities.
+            SPLIT lv_capabilities AT space INTO TABLE rs_request-capabilities.
+          ENDIF.
           APPEND lv_rest TO rs_request-want.
+        WHEN 'have'.
+          APPEND lv_rest TO rs_request-have.
         WHEN 'deepen'.
           rs_request-deepen = lv_rest.
+        WHEN '' OR 'done'.
+          RETURN.
         WHEN OTHERS.
 * todo, unknown command
           ASSERT 0 = 1.
@@ -206,6 +247,28 @@ CLASS ZCL_AGS_SERVICE_GIT IMPLEMENTATION.
 
     SORT rs_request-want ASCENDING.
     DELETE ADJACENT DUPLICATES FROM rs_request-want.
+
+  ENDMETHOD.
+
+
+  METHOD find_ack_mode.
+
+    READ TABLE is_request-capabilities WITH KEY table_line = 'multi_ack'
+      TRANSPORTING NO FIELDS.
+    IF sy-subrc = 0.
+      rv_mode = c_ack_mode-normal.
+    ENDIF.
+
+    READ TABLE is_request-capabilities WITH KEY table_line = 'multi_ack_detailed'
+      TRANSPORTING NO FIELDS.
+    IF sy-subrc = 0.
+      ASSERT rv_mode IS INITIAL.
+      rv_mode = c_ack_mode-detailed.
+    ENDIF.
+
+    IF rv_mode IS INITIAL.
+      rv_mode = c_ack_mode-not_specified.
+    ENDIF.
 
   ENDMETHOD.
 
@@ -225,16 +288,63 @@ CLASS ZCL_AGS_SERVICE_GIT IMPLEMENTATION.
   ENDMETHOD.
 
 
+  METHOD negotiate_packfile.
+* see https://github.com/git/git/blob/master/Documentation/technical/pack-protocol.txt#L298
+
+    DATA: lv_ack_mode TYPE ty_ack_mode,
+          lv_sha1     TYPE zags_sha1,
+          lo_server   TYPE REF TO cl_http_server.
+
+
+    lv_ack_mode = find_ack_mode( is_request ).
+
+    IF lv_ack_mode = c_ack_mode-detailed AND lines( is_request-have ) = 0.
+      lv_ack_mode = c_ack_mode-normal.
+    ENDIF.
+
+    CASE lv_ack_mode.
+      WHEN c_ack_mode-normal.
+        io_response->append_length( zcl_ags_util=>string_to_xstring_utf8( |NAK\n| ) ).
+      WHEN c_ack_mode-detailed.
+
+        LOOP AT is_request-have INTO lv_sha1.
+* todo, "common" or "ready"?
+          io_response->append_length( zcl_ags_util=>string_to_xstring_utf8( |ACK { lv_sha1 } common\n| ) ).
+        ENDLOOP.
+
+        io_response->append_length( zcl_ags_util=>string_to_xstring_utf8( |NAK\n| ) ).
+
+        mi_server->response->set_data( io_response->get( ) ).
+
+        lo_server ?= mi_server.
+        lo_server->send_response( ).
+
+        DATA(lv_subrc) = lo_server->receive_request( ).
+        DATA(lv_data) = mi_server->request->get_cdata( ).
+* todo, this works, but everything is sent, just like a clone operation
+
+        io_response->clear( ).
+        io_response->append_length( zcl_ags_util=>string_to_xstring_utf8( |ACK { is_request-want[ 1 ] }\n| ) ).
+
+      WHEN c_ack_mode-not_specified.
+* todo, not implemented
+        ASSERT 0 = 1.
+      WHEN OTHERS.
+        ASSERT 0 = 1.
+    ENDCASE.
+
+  ENDMETHOD.
+
+
   METHOD pack.
 
-    CONSTANTS: lc_band1  TYPE x VALUE '01',
-               lc_length TYPE i VALUE 8196.
+    CONSTANTS: lc_length TYPE i VALUE 8196.
 
-    DATA: lv_response TYPE xstring,
+    DATA: lo_response TYPE REF TO zcl_ags_xstream,
           lo_commit   TYPE REF TO zcl_ags_obj_commit,
-          lv_encoded  TYPE zags_hex4,
           lt_objects  TYPE zcl_ags_pack=>ty_objects_tt,
           lv_pack     TYPE xstring,
+          lv_tmp      TYPE xstring,
           lv_repo     TYPE zags_repos-repo,
           ls_request  TYPE ty_request,
           lv_branch   LIKE LINE OF ls_request-want,
@@ -243,11 +353,13 @@ CLASS ZCL_AGS_SERVICE_GIT IMPLEMENTATION.
 
     ls_request = decode_request( mi_server->request->get_cdata( ) ).
 
-    lv_pack = zcl_ags_util=>string_to_xstring_utf8( |NAK\n| ).
-    lv_encoded = lcl_length=>encode( xstrlen( lv_pack ) + 4 ).
-    CONCATENATE lv_encoded lv_pack INTO lv_response IN BYTE MODE.
-
     lv_repo = zcl_ags_repo=>get_instance( repo_name( ) )->get_data( )-repo.
+
+    CREATE OBJECT lo_response.
+
+    negotiate_packfile( io_response = lo_response
+                        iv_repo     = lv_repo
+                        is_request  = ls_request ).
 
     LOOP AT ls_request-want INTO lv_branch.
       CREATE OBJECT lo_commit
@@ -256,7 +368,7 @@ CLASS ZCL_AGS_SERVICE_GIT IMPLEMENTATION.
           iv_sha1 = lv_branch.
 
       APPEND LINES OF zcl_ags_pack=>explode(
-        iv_repo = lv_repo
+        iv_repo   = lv_repo
         ii_object = lo_commit
         iv_deepen = ls_request-deepen ) TO lt_objects.
     ENDLOOP.
@@ -274,19 +386,15 @@ CLASS ZCL_AGS_SERVICE_GIT IMPLEMENTATION.
         lv_length = xstrlen( lv_pack ).
       ENDIF.
 
-* make sure to include the length encoding itself and band identifier in the length
-      lv_encoded = lcl_length=>encode( lv_length + 5 ).
-
-      CONCATENATE lv_response lv_encoded lc_band1 lv_pack(lv_length)
-        INTO lv_response IN BYTE MODE.
+      lv_tmp = lv_pack(lv_length).
+      lo_response->append_band01( lv_tmp ).
 
       lv_pack = lv_pack+lv_length.
     ENDWHILE.
 
-    lv_pack = zcl_ags_util=>string_to_xstring_utf8( '0000' ).
-    CONCATENATE lv_response lv_pack INTO lv_response IN BYTE MODE.
+    lo_response->append( zcl_ags_util=>string_to_xstring_utf8( '0000' ) ).
 
-    mi_server->response->set_data( lv_response ).
+    mi_server->response->set_data( lo_response->get( ) ).
 
     mi_server->response->set_header_field(
       name  = if_http_header_fields=>content_type
@@ -363,8 +471,9 @@ CLASS ZCL_AGS_SERVICE_GIT IMPLEMENTATION.
 
   METHOD zif_ags_service~run.
 
-    DATA: lv_path  TYPE string,
-          lv_xdata TYPE string.
+    DATA: lv_path   TYPE string,
+          lo_server TYPE REF TO cl_http_server,
+          lv_xdata  TYPE string.
 
 
     mi_server = ii_server.
@@ -373,7 +482,7 @@ CLASS ZCL_AGS_SERVICE_GIT IMPLEMENTATION.
     lv_xdata = mi_server->request->get_data( ).
 
     IF lv_xdata IS INITIAL.
-      branch_list( ).
+      branch_list( mi_server->request->get_form_field( 'service' ) ).
     ELSEIF lv_path CP '*git-upload-pack*'.
       pack( ).
     ELSEIF lv_path CP '*git-receive-pack*'.
