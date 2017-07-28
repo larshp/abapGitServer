@@ -297,6 +297,10 @@ CLASS ZCL_AGS_SERVICE_GIT IMPLEMENTATION.
 
     lv_ack_mode = find_ack_mode( is_request ).
 
+    IF lv_ack_mode = c_ack_mode-detailed AND lines( is_request-have ) = 0.
+      lv_ack_mode = c_ack_mode-normal.
+    ENDIF.
+
     CASE lv_ack_mode.
       WHEN c_ack_mode-normal.
         io_response->append_length( zcl_ags_util=>string_to_xstring_utf8( |NAK\n| ) ).
