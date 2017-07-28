@@ -105,10 +105,11 @@ CLASS ZCL_AGS_SERVICE_GIT IMPLEMENTATION.
     ASSERT NOT iv_service IS INITIAL.
 
     _capability 'multi_ack'.
-    _capability 'thin-pack'.
+*    _capability 'thin-pack'.
+    _capability 'no-thin'.
     _capability 'side-band'.
     _capability 'side-band-64k'.
-    _capability 'ofs-delta'.
+*    _capability 'ofs-delta'.
     _capability 'shallow'.
     _capability 'no-progress'.
     _capability 'include-tag'.
