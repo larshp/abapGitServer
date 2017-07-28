@@ -471,9 +471,8 @@ CLASS ZCL_AGS_SERVICE_GIT IMPLEMENTATION.
 
   METHOD zif_ags_service~run.
 
-    DATA: lv_path   TYPE string,
-          lo_server TYPE REF TO cl_http_server,
-          lv_xdata  TYPE string.
+    DATA: lv_path  TYPE string,
+          lv_xdata TYPE string.
 
 
     mi_server = ii_server.

@@ -21,10 +21,10 @@ FORM run RAISING zcx_ags_error.
       ASSERT 0 = 1.
   ENDCASE.
 
-  WRITE: / 'Done'.
+  WRITE: / 'Done'(001).
 ENDFORM.
 
-FORM read_commit.
+FORM read_commit RAISING zcx_ags_error.
 
   DATA: lo_rest TYPE REF TO zcl_ags_service_rest.
 

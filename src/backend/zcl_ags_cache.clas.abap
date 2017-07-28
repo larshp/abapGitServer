@@ -196,7 +196,7 @@ CLASS ZCL_AGS_CACHE IMPLEMENTATION.
                    <ls_output>  LIKE LINE OF lt_files,
                    <ls_prev>    LIKE LINE OF lt_prev.
 
-* todo, handle multiple 2 parent(merge commits)
+* todo, handle multiple parents(merge commits)
     lv_parent = zcl_ags_obj_commit=>get_instance(
       iv_repo = mv_repo
       iv_sha1 = iv_commit )->get( )-parent.
@@ -208,7 +208,6 @@ CLASS ZCL_AGS_CACHE IMPLEMENTATION.
     lt_current = lo_cache->list_files_simple( ).
     LOOP AT lt_current ASSIGNING <ls_current>.
       CLEAR ls_file.
-*      APPEND INITIAL LINE TO lt_files ASSIGNING <ls_output>.
       MOVE-CORRESPONDING <ls_current> TO ls_file.
       IF lv_parent IS INITIAL.
         ls_file-last_commit_sha1 = iv_commit.

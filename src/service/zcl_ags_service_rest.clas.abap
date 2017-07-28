@@ -229,7 +229,7 @@ CLASS ZCL_AGS_SERVICE_REST IMPLEMENTATION.
       lt_old = lo_cache->list_files_simple( ).
       SORT lt_old BY
         filename ASCENDING
-        path ascending
+        path ASCENDING
         blob_sha1 ASCENDING.
     ENDIF.
 

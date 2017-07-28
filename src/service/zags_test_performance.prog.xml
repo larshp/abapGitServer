@@ -13,6 +13,12 @@
    </PROGDIR>
    <TPOOL>
     <item>
+     <ID>I</ID>
+     <KEY>001</KEY>
+     <ENTRY>Done</ENTRY>
+     <LENGTH>14</LENGTH>
+    </item>
+    <item>
      <ID>R</ID>
      <ENTRY>abapGitServer - Test performance</ENTRY>
      <LENGTH>32</LENGTH>
@@ -26,9 +32,9 @@
     </item>
     <item>
      <ID>S</ID>
-     <KEY>P_FOO</KEY>
-     <ENTRY>todo</ENTRY>
-     <LENGTH>12</LENGTH>
+     <KEY>P_COMMIT</KEY>
+     <ENTRY>Commit</ENTRY>
+     <LENGTH>14</LENGTH>
     </item>
     <item>
      <ID>S</ID>
@@ -42,6 +48,13 @@
      <KEY>P_PACK</KEY>
      <ENTRY>Pack</ENTRY>
      <LENGTH>12</LENGTH>
+    </item>
+    <item>
+     <ID>S</ID>
+     <KEY>P_SHA1</KEY>
+     <ENTRY>.</ENTRY>
+     <LENGTH>12</LENGTH>
+     <SPLIT>D</SPLIT>
     </item>
    </TPOOL>
   </asx:values>
