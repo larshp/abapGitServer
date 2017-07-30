@@ -292,7 +292,7 @@ CLASS ZCL_AGS_SERVICE_GIT IMPLEMENTATION.
 * see https://github.com/git/git/blob/master/Documentation/technical/pack-protocol.txt#L298
 
     DATA: lv_ack_mode TYPE ty_ack_mode,
-          lv_sha1     TYPE zags_sha1,
+          lv_sha1     LIKE LINE OF is_request-have,
           lo_server   TYPE REF TO cl_http_server.
 
 
