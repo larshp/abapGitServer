@@ -457,14 +457,23 @@ CLASS ZCL_AGS_SERVICE_GIT IMPLEMENTATION.
 
     unpack_ok( ).
 
+    mi_server->response->set_header_field(
+      name  = if_http_header_fields=>content_type
+      value = 'application/x-git-receive-pack-result' ) ##NO_TEXT.
+
   ENDMETHOD.
 
 
   METHOD unpack_ok.
 
+    DATA: lv_result TYPE string.
+
 * todo, this is all wrong(but will work in most cases):
-    mi_server->response->set_cdata(
-      '000eunpack ok#0019ok refs/heads/master#00000000' ) ##NO_TEXT.
+    lv_result = '000eunpack ok#0019ok refs/heads/master#00000000'.
+
+* method set_data has to be used, or SAP will modify the "Content-Type" header
+    mi_server->response->set_data( zcl_ags_util=>string_to_xstring_utf8( lv_result ) ).
+
 
   ENDMETHOD.
 
