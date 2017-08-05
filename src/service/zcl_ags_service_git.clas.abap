@@ -113,6 +113,7 @@ CLASS ZCL_AGS_SERVICE_GIT IMPLEMENTATION.
     _capability 'shallow'.
     _capability 'no-progress'.
     _capability 'include-tag'.
+    _capability 'report-status'.
     _capability 'multi_ack_detailed'.
     _capability 'no-done'.
     _capability 'symref=HEAD:refs/heads/master'.
@@ -466,14 +467,18 @@ CLASS ZCL_AGS_SERVICE_GIT IMPLEMENTATION.
 
   METHOD unpack_ok.
 
-    DATA: lv_result TYPE string.
+    DATA: lo_response TYPE REF TO zcl_ags_xstream.
 
-* todo, this is all wrong(but will work in most cases):
-    lv_result = '000eunpack ok#0019ok refs/heads/master#00000000'.
+    CREATE OBJECT lo_response.
+
+* send report-status when capability is enabled,
+    lo_response->append_band01( zcl_ags_util=>string_to_xstring_utf8( |000eunpack ok\n| ) ).
+    lo_response->append_band01( zcl_ags_util=>string_to_xstring_utf8( |0019ok refs/heads/master\n| ) ).
+    lo_response->append_band01( zcl_ags_util=>string_to_xstring_utf8( '0000' ) ).
+    lo_response->append( zcl_ags_util=>string_to_xstring_utf8( '0000' ) ).
 
 * method set_data has to be used, or SAP will modify the "Content-Type" header
-    mi_server->response->set_data( zcl_ags_util=>string_to_xstring_utf8( lv_result ) ).
-
+    mi_server->response->set_data( lo_response->get( ) ).
 
   ENDMETHOD.
 

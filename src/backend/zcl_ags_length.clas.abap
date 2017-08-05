@@ -30,7 +30,7 @@ CLASS ZCL_AGS_LENGTH IMPLEMENTATION.
 * todo, extend implementation
     ASSERT iv_data(2) = '00'.
 
-    lv_x = iv_data+2.
+    lv_x = to_upper( iv_data+2 ).
 
     rv_length = lv_x.
 
@@ -46,7 +46,7 @@ CLASS ZCL_AGS_LENGTH IMPLEMENTATION.
 
     lv_x       = iv_length.
     lv_char    = lv_x.
-    lv_xstring = zcl_ags_util=>string_to_xstring_utf8( lv_char ).
+    lv_xstring = zcl_ags_util=>string_to_xstring_utf8( to_lower( lv_char ) ).
     rv_hex     = lv_xstring.
 
   ENDMETHOD.                    "encode

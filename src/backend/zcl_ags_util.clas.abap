@@ -150,6 +150,7 @@ CLASS ZCL_AGS_UTIL IMPLEMENTATION.
     TRY.
         lo_obj = cl_abap_conv_in_ce=>create(
             input    = iv_data
+*            ignore_cerr = abap_true
             encoding = 'UTF-8' ).
         lv_len = xstrlen( iv_data ).
 
