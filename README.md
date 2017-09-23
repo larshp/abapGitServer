@@ -30,5 +30,21 @@ see https://github.com/larshp/ABAP-Swagger
 
 Works with 'git pull' from command line, so all objects can be exported to a different git server if needed, [guide](https://help.github.com/articles/importing-a-git-repository-using-the-command-line/)
 
+### External libraries
+
+Library   | Version | License
+:------------ | :------------ | :------------ 
+[spinkit](https://github.com/tobiasahlin/SpinKit) | 1.2.5 | MIT
+[react](https://github.com/facebook/react) | 15.2.1 | Facebook BSD + Patents
+[babel-standalone](https://github.com/babel/babel-standalone) | 6.23.1 | MIT
+[babel-polyfill](https://github.com/babel/babel/tree/master/packages/babel-polyfill) | 6.23.0 | MIT
+[react-router](https://github.com/ReactTraining/react-router) | 2.5.2 | MIT
+[history](https://github.com/ReactTraining/history) | 2.1.2 | MIT
+[prism](https://github.com/PrismJS/prism) | 1.6.0 | MIT
+[octicons](https://github.com/primer/octicons/) | 3.5.0 | MIT
+[jsdiff](https://github.com/kpdecker/jsdiff) | 2.2.3 | BSD-3-Clause
+[jquery](https://github.com/jquery/jquery) | 2.2.3 | MIT
+[diff2html](https://github.com/rtfpessoa/diff2html) | 2.3.0 | MIT
+
 ### Screenshots
 [See wiki](https://github.com/larshp/abapGitServer/wiki/Screenshots)
