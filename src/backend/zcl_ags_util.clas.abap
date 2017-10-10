@@ -45,13 +45,7 @@ CLASS ZCL_AGS_UTIL IMPLEMENTATION.
 
   METHOD get_time.
 
-    DATA: lv_time TYPE c LENGTH 16.
-
-    CALL METHOD ('\PROGRAM=ZABAPGIT\CLASS=LCL_TIME')=>get
-      RECEIVING
-        rv_time = lv_time.
-
-    rv_time = lv_time.
+    rv_time = zcl_abapgit_time=>get( ).
 
   ENDMETHOD.
 
