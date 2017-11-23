@@ -5,9 +5,17 @@
 # abapGitServer
 Git server implemented in ABAP
 
-Install via [abapGit](http://www.abapgit.org)
+## Install 
 
-Start web frontend via transaction ZABAPGITSERVER(or via SICF service ZABAPGITSERVER)
+via [abapGit](http://www.abapgit.org)
+
+## Setup 
+
+by activating the ServiceName ZABAPGITSERVER in transaction SICF
+
+## Start 
+
+to use it via the web frontend by running transaction ZABAPGITSERVER (or right click on the SICF service ZABAPGITSERVER and choose Test Service)
 
 ### News
 2017-03-12: Key field REPO added in database table ZAGS_OBJECTS, use conversion program ZAGS_MIGRATION_01 to convert old repositories.
