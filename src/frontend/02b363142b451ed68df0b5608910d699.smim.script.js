@@ -335,8 +335,8 @@ class Edit extends React.Component {
     
   edit() {
     return (<div>
-      <table>
       <form>
+      <table>
       <tr>
       <td>Description:</td>
       <td>
@@ -348,8 +348,8 @@ class Edit extends React.Component {
       <input type="submit" value="Edit" onClick={this.click.bind(this)}/>
       </td>
       </tr>
-      </form>
       </table>
+      </form>
       </div>);
   }    
     
@@ -406,8 +406,7 @@ class Create extends React.Component {
     } else if (this.state.running) {
       return (<div>running</div>);
     } else {    
-      return (<table border="1">
-      <form>
+      return (<form><table border="1">
       <tr>
       <td>Name: </td>
       <td>
@@ -425,8 +424,7 @@ class Create extends React.Component {
       <input type="submit" value="Create" onClick={this.click.bind(this)}/>
       </td>
       </tr>
-      </form>
-      </table>);
+      </table></form>);
     }      
   }
   
