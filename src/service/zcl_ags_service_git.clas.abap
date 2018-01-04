@@ -293,11 +293,15 @@ CLASS ZCL_AGS_SERVICE_GIT IMPLEMENTATION.
 * see https://github.com/git/git/blob/master/Documentation/technical/pack-protocol.txt#L298
 
     DATA: lv_ack_mode TYPE ty_ack_mode,
+          lv_no_done  TYPE abap_bool,
           lv_sha1     LIKE LINE OF is_request-have,
           lo_server   TYPE REF TO cl_http_server.
 
 
     lv_ack_mode = find_ack_mode( is_request ).
+
+    READ TABLE is_request-capabilities WITH KEY table_line = 'no-done' TRANSPORTING NO FIELDS.
+    lv_no_done = boolc( sy-subrc = 0 ).
 
     IF lv_ack_mode = c_ack_mode-detailed AND lines( is_request-have ) = 0.
       lv_ack_mode = c_ack_mode-normal.
@@ -308,23 +312,26 @@ CLASS ZCL_AGS_SERVICE_GIT IMPLEMENTATION.
         io_response->append_length( zcl_ags_util=>string_to_xstring_utf8( |NAK\n| ) ).
       WHEN c_ack_mode-detailed.
 
-        LOOP AT is_request-have INTO lv_sha1.
+        IF lv_no_done = abap_false.
+          LOOP AT is_request-have INTO lv_sha1.
 * todo, "common" or "ready"?
-          io_response->append_length( zcl_ags_util=>string_to_xstring_utf8( |ACK { lv_sha1 } common\n| ) ).
-        ENDLOOP.
+            io_response->append_length( zcl_ags_util=>string_to_xstring_utf8( |ACK { lv_sha1 } common\n| ) ).
+          ENDLOOP.
 
-        io_response->append_length( zcl_ags_util=>string_to_xstring_utf8( |NAK\n| ) ).
+          io_response->append_length( zcl_ags_util=>string_to_xstring_utf8( |NAK\n| ) ).
 
-        mi_server->response->set_data( io_response->get( ) ).
+          mi_server->response->set_data( io_response->get( ) ).
 
-        lo_server ?= mi_server.
-        lo_server->send_response( ).
+          lo_server ?= mi_server.
+          lo_server->send_response( ).
 
-        DATA(lv_subrc) = lo_server->receive_request( ).
-        DATA(lv_data) = mi_server->request->get_cdata( ).
+          DATA(lv_subrc) = lo_server->receive_request( ).
+          DATA(lv_data) = mi_server->request->get_cdata( ).
 * todo, this works, but everything is sent, just like a clone operation
 
-        io_response->clear( ).
+          io_response->clear( ).
+        ENDIF.
+
         io_response->append_length( zcl_ags_util=>string_to_xstring_utf8( |ACK { is_request-want[ 1 ] }\n| ) ).
 
       WHEN c_ack_mode-not_specified.
