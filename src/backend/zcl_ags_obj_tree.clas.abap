@@ -140,11 +140,7 @@ CLASS ZCL_AGS_OBJ_TREE IMPLEMENTATION.
 
   METHOD zif_ags_object~deserialize.
 
-    CALL METHOD ('\PROGRAM=ZABAPGIT\CLASS=LCL_GIT_PACK')=>decode_tree
-      EXPORTING
-        iv_data  = iv_data
-      RECEIVING
-        rt_nodes = mt_data.
+    mt_data = zcl_abapgit_git_pack=>decode_tree( iv_data ).
 
   ENDMETHOD.
 
@@ -167,11 +163,7 @@ CLASS ZCL_AGS_OBJ_TREE IMPLEMENTATION.
 
   METHOD zif_ags_object~serialize.
 
-    CALL METHOD ('\PROGRAM=ZABAPGIT\CLASS=LCL_GIT_PACK')=>encode_tree
-      EXPORTING
-        it_nodes = mt_data
-      RECEIVING
-        rv_data  = rv_data.
+    rv_data = zcl_abapgit_git_pack=>encode_tree( mt_data ).
 
   ENDMETHOD.
 

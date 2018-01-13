@@ -262,11 +262,7 @@ CLASS ZCL_AGS_OBJ_COMMIT IMPLEMENTATION.
 
   METHOD zif_ags_object~deserialize.
 
-    CALL METHOD ('\PROGRAM=ZABAPGIT\CLASS=LCL_GIT_PACK')=>decode_commit
-      EXPORTING
-        iv_data   = iv_data
-      RECEIVING
-        rs_commit = ms_data.
+    ms_data = zcl_abapgit_git_pack=>decode_commit( iv_data ).
 
   ENDMETHOD.
 
@@ -293,11 +289,7 @@ CLASS ZCL_AGS_OBJ_COMMIT IMPLEMENTATION.
     ASSERT NOT ms_data-author IS INITIAL.
     ASSERT NOT ms_data-committer IS INITIAL.
 
-    CALL METHOD ('\PROGRAM=ZABAPGIT\CLASS=LCL_GIT_PACK')=>encode_commit
-      EXPORTING
-        is_commit = ms_data
-      RECEIVING
-        rv_data   = rv_data.
+    rv_data = zcl_abapgit_git_pack=>encode_commit( ms_data ).
 
   ENDMETHOD.
 
