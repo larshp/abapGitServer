@@ -59,22 +59,14 @@ CLASS ZCL_AGS_PACK IMPLEMENTATION.
 
   METHOD decode.
 
-    CALL METHOD ('\PROGRAM=ZABAPGIT\CLASS=LCL_GIT_PACK')=>decode
-      EXPORTING
-        iv_data    = iv_data
-      RECEIVING
-        rt_objects = rt_objects.
+    rt_objects = zcl_abapgit_git_pack=>decode( iv_data ).
 
   ENDMETHOD.
 
 
   METHOD encode.
 
-    CALL METHOD ('\PROGRAM=ZABAPGIT\CLASS=LCL_GIT_PACK')=>encode
-      EXPORTING
-        it_objects = it_objects
-      RECEIVING
-        rv_data    = rv_data.
+    rv_data = zcl_abapgit_git_pack=>encode( it_objects ).
 
   ENDMETHOD.
 
