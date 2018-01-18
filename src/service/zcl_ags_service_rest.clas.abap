@@ -488,7 +488,7 @@ CLASS ZCL_AGS_SERVICE_REST IMPLEMENTATION.
 
     APPEND INITIAL LINE TO rt_meta ASSIGNING <ls_meta>.
     <ls_meta>-summary   = 'List files'(004).
-    <ls_meta>-url-regex = '/tree/([\w-]+)/(\w*)/(.*)$'.
+    <ls_meta>-url-regex = '/tree/([\w-]+)/([\w-]+)/(.*)$'.
     APPEND 'IV_REPO' TO <ls_meta>-url-group_names.
     APPEND 'IV_BRANCH' TO <ls_meta>-url-group_names.
     APPEND 'IV_PATH' TO <ls_meta>-url-group_names.
@@ -497,7 +497,7 @@ CLASS ZCL_AGS_SERVICE_REST IMPLEMENTATION.
 
     APPEND INITIAL LINE TO rt_meta ASSIGNING <ls_meta>.
     <ls_meta>-summary   = 'Read blob'(005).
-    <ls_meta>-url-regex = '/blob/([\w-]+)/(\w+)/(.*)$'.
+    <ls_meta>-url-regex = '/blob/([\w-]+)/([\w-]+)/(.*)$'.
     APPEND 'IV_REPO' TO <ls_meta>-url-group_names.
     APPEND 'IV_BRANCH' TO <ls_meta>-url-group_names.
     APPEND 'IV_FILENAME' TO <ls_meta>-url-group_names.
@@ -506,7 +506,7 @@ CLASS ZCL_AGS_SERVICE_REST IMPLEMENTATION.
 
     APPEND INITIAL LINE TO rt_meta ASSIGNING <ls_meta>.
     <ls_meta>-summary   = 'Read history'(013).
-    <ls_meta>-url-regex = '/history/([\w-]+)/(\w+)/(.*)$'.
+    <ls_meta>-url-regex = '/history/([\w-]+)/([\w-]+)/(.*)$'.
     APPEND 'IV_REPO' TO <ls_meta>-url-group_names.
     APPEND 'IV_BRANCH' TO <ls_meta>-url-group_names.
     APPEND 'IV_FILENAME' TO <ls_meta>-url-group_names.
@@ -531,7 +531,7 @@ CLASS ZCL_AGS_SERVICE_REST IMPLEMENTATION.
 
     APPEND INITIAL LINE TO rt_meta ASSIGNING <ls_meta>.
     <ls_meta>-summary   = 'List commits'(007).
-    <ls_meta>-url-regex = '/commits/([\w-]+)/(\w+)$'.
+    <ls_meta>-url-regex = '/commits/([\w-]+)/([\w-]+)$'.
     APPEND 'IV_REPO' TO <ls_meta>-url-group_names.
     APPEND 'IV_BRANCH' TO <ls_meta>-url-group_names.
     <ls_meta>-method    = zcl_swag=>c_method-get.
