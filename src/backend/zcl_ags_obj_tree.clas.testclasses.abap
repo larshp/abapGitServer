@@ -21,9 +21,7 @@ CLASS ltcl_test IMPLEMENTATION.
           lv_xstr TYPE xstring.
 
 
-    CREATE OBJECT lo_old
-      EXPORTING
-        iv_repo = 'test'.
+    lo_old = zcl_ags_obj_tree=>new( 'test' ).
     lo_old->add_file(
       iv_chmod = zcl_ags_obj_tree=>c_chmod-file
       iv_name  = 'foobar.txt'
@@ -31,9 +29,7 @@ CLASS ltcl_test IMPLEMENTATION.
 
     lv_xstr = lo_old->zif_ags_object~serialize( ).
 
-    CREATE OBJECT lo_new
-      EXPORTING
-        iv_repo = 'test'.
+    lo_new = zcl_ags_obj_tree=>new( 'test' ).
     lo_new->zif_ags_object~deserialize( lv_xstr ).
 
     cl_abap_unit_assert=>assert_equals(

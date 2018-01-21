@@ -1,21 +1,23 @@
 CLASS zcl_ags_obj_commit DEFINITION
   PUBLIC
-  CREATE PUBLIC .
+  CREATE PRIVATE .
 
   PUBLIC SECTION.
 
     INTERFACES zif_ags_object .
 
-    ALIASES c_newline
-      FOR zif_ags_object~c_newline .
     ALIASES deserialize
       FOR zif_ags_object~deserialize .
+    ALIASES get_adler32
+      FOR zif_ags_object~get_adler32 .
+    ALIASES get_sha1
+      FOR zif_ags_object~get_sha1 .
+    ALIASES get_type
+      FOR zif_ags_object~get_type .
     ALIASES save
       FOR zif_ags_object~save .
     ALIASES serialize
       FOR zif_ags_object~serialize .
-    ALIASES sha1
-      FOR zif_ags_object~sha1 .
 
     TYPES:
       BEGIN OF ty_userfield,
@@ -48,7 +50,7 @@ CLASS zcl_ags_obj_commit DEFINITION
     TYPES:
       ty_commits_tt TYPE STANDARD TABLE OF ty_commit WITH DEFAULT KEY .
 
-    CLASS-METHODS get_instance
+    CLASS-METHODS load
       IMPORTING
         !iv_repo         TYPE zags_objects-repo
         !iv_sha1         TYPE zags_objects-sha1
@@ -56,10 +58,11 @@ CLASS zcl_ags_obj_commit DEFINITION
         VALUE(ro_commit) TYPE REF TO zcl_ags_obj_commit
       RAISING
         zcx_ags_error .
-    METHODS constructor
+    CLASS-METHODS new
       IMPORTING
-        !iv_repo TYPE zags_objects-repo
-        !iv_sha1 TYPE zags_objects-sha1 OPTIONAL
+        !iv_repo         TYPE zags_objects-repo
+      RETURNING
+        VALUE(ro_commit) TYPE REF TO zcl_ags_obj_commit
       RAISING
         zcx_ags_error .
     METHODS get
@@ -99,6 +102,7 @@ CLASS zcl_ags_obj_commit DEFINITION
     DATA mv_new TYPE abap_bool .
     DATA mv_sha1 TYPE zags_sha1 .
     DATA mv_repo TYPE zags_objects-repo .
+    DATA mv_adler32 TYPE zags_adler32 .
 
     METHODS parse_userfield
       IMPORTING
@@ -114,35 +118,9 @@ ENDCLASS.
 CLASS ZCL_AGS_OBJ_COMMIT IMPLEMENTATION.
 
 
-  METHOD constructor.
-
-    ASSERT NOT iv_repo IS INITIAL.
-
-    IF iv_sha1 IS INITIAL.
-      mv_new = abap_true.
-      mv_repo = iv_repo.
-    ELSE.
-      mv_new = abap_false.
-      mv_sha1 = iv_sha1.
-      deserialize( zcl_ags_db=>get_objects( )->single( iv_repo = iv_repo iv_sha1 = iv_sha1 )-data_raw ).
-    ENDIF.
-
-  ENDMETHOD.
-
-
   METHOD get.
 
     rs_data = ms_data.
-
-  ENDMETHOD.
-
-
-  METHOD get_instance.
-
-    CREATE OBJECT ro_commit
-      EXPORTING
-        iv_repo = iv_repo
-        iv_sha1 = iv_sha1.
 
   ENDMETHOD.
 
@@ -156,13 +134,7 @@ CLASS ZCL_AGS_OBJ_COMMIT IMPLEMENTATION.
 
     ls_data = get( ).
 
-    IF mv_sha1 IS INITIAL.
-      ASSERT mv_new = abap_true.
-      rs_data-sha1    = sha1( ).
-    ELSE.
-      rs_data-sha1    = mv_sha1.
-    ENDIF.
-
+    rs_data-sha1      = get_sha1( ).
     rs_data-tree      = ls_data-tree.
     rs_data-parent    = ls_data-parent.
     rs_data-parent2   = ls_data-parent2.
@@ -178,6 +150,36 @@ CLASS ZCL_AGS_OBJ_COMMIT IMPLEMENTATION.
     CONCATENATE LINES OF lt_body
       INTO rs_data-body
       SEPARATED BY cl_abap_char_utilities=>newline.
+
+  ENDMETHOD.
+
+
+  METHOD load.
+
+    DATA: ls_data TYPE zags_objects.
+
+    CREATE OBJECT ro_commit.
+    ro_commit->mv_new = abap_false.
+    ro_commit->mv_sha1 = iv_sha1.
+
+    ls_data = zcl_ags_db=>get_objects( )->single(
+      iv_repo = iv_repo
+      iv_sha1 = iv_sha1 ).
+
+    ro_commit->deserialize(
+      iv_data    = ls_data-data_raw
+      iv_adler32 = ls_data-adler32 ).
+
+  ENDMETHOD.
+
+
+  METHOD new.
+
+    ASSERT NOT iv_repo IS INITIAL.
+
+    CREATE OBJECT ro_commit.
+    ro_commit->mv_new = abap_true.
+    ro_commit->mv_repo = iv_repo.
 
   ENDMETHOD.
 
@@ -263,7 +265,39 @@ CLASS ZCL_AGS_OBJ_COMMIT IMPLEMENTATION.
   METHOD zif_ags_object~deserialize.
 
     ms_data = zcl_abapgit_git_pack=>decode_commit( iv_data ).
+    mv_adler32 = iv_adler32.
 
+  ENDMETHOD.
+
+
+  METHOD zif_ags_object~get_adler32.
+
+    IF mv_adler32 IS INITIAL.
+      rv_adler32 = zcl_abapgit_hash=>adler32( serialize( ) ).
+    ELSE.
+      ASSERT NOT mv_adler32 IS INITIAL.
+      rv_adler32 = mv_adler32.
+    ENDIF.
+
+  ENDMETHOD.
+
+
+  METHOD zif_ags_object~get_sha1.
+
+    IF mv_new = abap_true.
+      rv_sha1 = zcl_ags_util=>sha1(
+        iv_type = zif_ags_constants=>c_type-commit
+        iv_data = serialize( ) ).
+    ELSE.
+      ASSERT NOT mv_sha1 IS INITIAL.
+      rv_sha1 = mv_sha1.
+    ENDIF.
+
+  ENDMETHOD.
+
+
+  METHOD zif_ags_object~get_type.
+    rv_type = zif_ags_constants=>c_type-commit.
   ENDMETHOD.
 
 
@@ -271,12 +305,14 @@ CLASS ZCL_AGS_OBJ_COMMIT IMPLEMENTATION.
 
     DATA: ls_object TYPE zags_objects.
 
+
     ASSERT mv_new = abap_true.
 
     ls_object-repo = mv_repo.
-    ls_object-sha1 = sha1( ).
-    ls_object-type = zif_ags_constants=>c_type-commit.
+    ls_object-sha1 = get_sha1( ).
+    ls_object-type = get_type( ).
     ls_object-data_raw = serialize( ).
+    ls_object-adler32 = get_adler32( ).
 
     zcl_ags_db=>get_objects( )->modify( ls_object ).
 
@@ -291,19 +327,5 @@ CLASS ZCL_AGS_OBJ_COMMIT IMPLEMENTATION.
 
     rv_data = zcl_abapgit_git_pack=>encode_commit( ms_data ).
 
-  ENDMETHOD.
-
-
-  METHOD zif_ags_object~sha1.
-
-    rv_sha1 = zcl_ags_util=>sha1(
-        iv_type = zif_ags_constants=>c_type-commit
-        iv_data = serialize( ) ) ##NO_TEXT.
-
-  ENDMETHOD.
-
-
-  METHOD zif_ags_object~type.
-    rv_type = zif_ags_constants=>c_type-commit.
   ENDMETHOD.
 ENDCLASS.

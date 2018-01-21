@@ -350,7 +350,7 @@ CLASS ZCL_AGS_SERVICE_GIT IMPLEMENTATION.
 
     DATA: lo_response TYPE REF TO zcl_ags_xstream,
           lo_commit   TYPE REF TO zcl_ags_obj_commit,
-          lt_objects  TYPE zcl_ags_pack=>ty_objects_tt,
+          lt_objects  TYPE zif_abapgit_definitions=>ty_objects_tt,
           lv_pack     TYPE xstring,
           lv_tmp      TYPE xstring,
           lv_repo     TYPE zags_repos-repo,
@@ -370,10 +370,9 @@ CLASS ZCL_AGS_SERVICE_GIT IMPLEMENTATION.
                         is_request  = ls_request ).
 
     LOOP AT ls_request-want INTO lv_branch.
-      CREATE OBJECT lo_commit
-        EXPORTING
+      lo_commit = zcl_ags_obj_commit=>load(
           iv_repo = lv_repo
-          iv_sha1 = lv_branch.
+          iv_sha1 = lv_branch ).
 
       APPEND LINES OF zcl_ags_pack=>explode(
         iv_repo   = lv_repo
@@ -428,7 +427,7 @@ CLASS ZCL_AGS_SERVICE_GIT IMPLEMENTATION.
     CONSTANTS: lc_utf_0000 TYPE x LENGTH 4 VALUE '30303030'.
 
     DATA: lv_xstring TYPE xstring,
-          lt_objects TYPE zcl_ags_pack=>ty_objects_tt,
+          lt_objects TYPE zif_abapgit_definitions=>ty_objects_tt,
           lo_repo    TYPE REF TO zcl_ags_repo,
           lo_branch  TYPE REF TO zcl_ags_branch,
           ls_push    TYPE ty_push.

@@ -1,21 +1,23 @@
 CLASS zcl_ags_obj_blob DEFINITION
   PUBLIC
-  CREATE PUBLIC .
+  CREATE PRIVATE .
 
   PUBLIC SECTION.
 
     INTERFACES zif_ags_object .
 
-    ALIASES c_newline
-      FOR zif_ags_object~c_newline .
     ALIASES deserialize
       FOR zif_ags_object~deserialize .
+    ALIASES get_adler32
+      FOR zif_ags_object~get_adler32 .
+    ALIASES get_sha1
+      FOR zif_ags_object~get_sha1 .
+    ALIASES get_type
+      FOR zif_ags_object~get_type .
     ALIASES save
       FOR zif_ags_object~save .
     ALIASES serialize
       FOR zif_ags_object~serialize .
-    ALIASES sha1
-      FOR zif_ags_object~sha1 .
 
     TYPES:
       ty_list TYPE STANDARD TABLE OF REF TO zcl_ags_obj_blob WITH DEFAULT KEY .
@@ -26,13 +28,12 @@ CLASS zcl_ags_obj_blob DEFINITION
     METHODS set_data
       IMPORTING
         !iv_data TYPE xstring .
-    METHODS constructor
+    CLASS-METHODS new
       IMPORTING
-        !iv_repo TYPE zags_objects-repo
-        !iv_sha1 TYPE zags_objects-sha1 OPTIONAL
-      RAISING
-        zcx_ags_error .
-    CLASS-METHODS get_instance
+        !iv_repo       TYPE zags_objects-repo
+      RETURNING
+        VALUE(ro_blob) TYPE REF TO zcl_ags_obj_blob .
+    CLASS-METHODS load
       IMPORTING
         !iv_repo       TYPE zags_objects-repo
         !iv_sha1       TYPE zags_objects-sha1
@@ -40,7 +41,7 @@ CLASS zcl_ags_obj_blob DEFINITION
         VALUE(ro_blob) TYPE REF TO zcl_ags_obj_blob
       RAISING
         zcx_ags_error .
-    CLASS-METHODS constructor_mass
+    CLASS-METHODS load_mass
       IMPORTING
         !iv_repo       TYPE zags_objects-repo
         !it_sha1       TYPE zags_sha1_tt
@@ -54,6 +55,8 @@ CLASS zcl_ags_obj_blob DEFINITION
     DATA mv_data TYPE xstring .
     DATA mv_new TYPE abap_bool .
     DATA mv_repo TYPE zags_objects-repo .
+    DATA mv_sha1 TYPE zags_sha1 .
+    DATA mv_adler32 TYPE zags_adler32 .
 ENDCLASS.
 
 
@@ -61,22 +64,33 @@ ENDCLASS.
 CLASS ZCL_AGS_OBJ_BLOB IMPLEMENTATION.
 
 
-  METHOD constructor.
+  METHOD get_data.
 
-    ASSERT NOT iv_repo IS INITIAL.
-
-    IF iv_sha1 IS INITIAL.
-      mv_new = abap_true.
-      mv_repo = iv_repo.
-    ELSE.
-      mv_new = abap_false.
-      deserialize( zcl_ags_db=>get_objects( )->single( iv_repo = iv_repo iv_sha1 = iv_sha1 )-data_raw ).
-    ENDIF.
+    rv_data = mv_data.
 
   ENDMETHOD.
 
 
-  METHOD constructor_mass.
+  METHOD load.
+
+    DATA: ls_data TYPE zags_objects.
+
+    CREATE OBJECT ro_blob.
+    ro_blob->mv_new = abap_false.
+    ro_blob->mv_sha1 = iv_sha1.
+
+    ls_data = zcl_ags_db=>get_objects( )->single(
+      iv_repo = iv_repo
+      iv_sha1 = iv_sha1 ).
+
+    ro_blob->deserialize(
+      iv_data    = ls_data-data_raw
+      iv_adler32 = ls_data-adler32 ).
+
+  ENDMETHOD.
+
+
+  METHOD load_mass.
 
     DATA: lt_objects TYPE zags_objects_tt,
           lo_blob    TYPE REF TO zcl_ags_obj_blob.
@@ -97,12 +111,12 @@ CLASS ZCL_AGS_OBJ_BLOB IMPLEMENTATION.
     LOOP AT lt_objects ASSIGNING <ls_object>.
       ASSERT <ls_object>-type = zif_ags_constants=>c_type-blob.
 
-      CREATE OBJECT lo_blob
-        EXPORTING
-          iv_repo = iv_repo.
-* fix internal object state
+      lo_blob = zcl_ags_obj_blob=>new( iv_repo ).
       lo_blob->mv_new = abap_false.
-      lo_blob->deserialize( <ls_object>-data_raw ).
+      lo_blob->mv_sha1 = <ls_object>-sha1.
+      lo_blob->deserialize(
+        iv_data    = <ls_object>-data_raw
+        iv_adler32 = <ls_object>-adler32 ).
       APPEND lo_blob TO rt_list.
 
     ENDLOOP.
@@ -110,24 +124,20 @@ CLASS ZCL_AGS_OBJ_BLOB IMPLEMENTATION.
   ENDMETHOD.
 
 
-  METHOD get_data.
+  METHOD new.
 
-    rv_data = mv_data.
+    ASSERT NOT iv_repo IS INITIAL.
 
-  ENDMETHOD.
-
-
-  METHOD get_instance.
-
-    CREATE OBJECT ro_blob
-      EXPORTING
-        iv_repo = iv_repo
-        iv_sha1 = iv_sha1.
+    CREATE OBJECT ro_blob.
+    ro_blob->mv_new = abap_true.
+    ro_blob->mv_repo = iv_repo.
 
   ENDMETHOD.
 
 
   METHOD set_data.
+
+    ASSERT mv_new = abap_true.
 
     mv_data = iv_data.
 
@@ -137,7 +147,39 @@ CLASS ZCL_AGS_OBJ_BLOB IMPLEMENTATION.
   METHOD zif_ags_object~deserialize.
 
     mv_data = iv_data.
+    mv_adler32 = iv_adler32.
 
+  ENDMETHOD.
+
+
+  METHOD zif_ags_object~get_adler32.
+
+    IF mv_adler32 IS INITIAL.
+      rv_adler32 = zcl_abapgit_hash=>adler32( serialize( ) ).
+    ELSE.
+      ASSERT NOT mv_adler32 IS INITIAL.
+      rv_adler32 = mv_adler32.
+    ENDIF.
+
+  ENDMETHOD.
+
+
+  METHOD zif_ags_object~get_sha1.
+
+    IF mv_new = abap_true.
+      rv_sha1 = zcl_ags_util=>sha1(
+        iv_type = zif_ags_constants=>c_type-blob
+        iv_data = serialize( ) ).
+    ELSE.
+      ASSERT NOT mv_sha1 IS INITIAL.
+      rv_sha1 = mv_sha1.
+    ENDIF.
+
+  ENDMETHOD.
+
+
+  METHOD zif_ags_object~get_type.
+    rv_type = zif_ags_constants=>c_type-blob.
   ENDMETHOD.
 
 
@@ -149,9 +191,10 @@ CLASS ZCL_AGS_OBJ_BLOB IMPLEMENTATION.
     ASSERT mv_new = abap_true.
 
     ls_object-repo = mv_repo.
-    ls_object-sha1 = sha1( ).
-    ls_object-type = zif_ags_constants=>c_type-blob.
+    ls_object-sha1 = get_sha1( ).
+    ls_object-type = get_type( ).
     ls_object-data_raw = serialize( ).
+    ls_object-adler32 = get_adler32( ).
 
     zcl_ags_db=>get_objects( )->modify( ls_object ).
 
@@ -162,19 +205,5 @@ CLASS ZCL_AGS_OBJ_BLOB IMPLEMENTATION.
 
     rv_data = mv_data.
 
-  ENDMETHOD.
-
-
-  METHOD zif_ags_object~sha1.
-
-    rv_sha1 = zcl_ags_util=>sha1(
-        iv_type = zif_ags_constants=>c_type-blob
-        iv_data = serialize( ) ) ##NO_TEXT.
-
-  ENDMETHOD.
-
-
-  METHOD zif_ags_object~type.
-    rv_type = zif_ags_constants=>c_type-blob.
   ENDMETHOD.
 ENDCLASS.

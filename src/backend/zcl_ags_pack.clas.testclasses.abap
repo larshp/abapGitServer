@@ -28,13 +28,11 @@ CLASS ltcl_encode IMPLEMENTATION.
 
     DATA: lo_blob    TYPE REF TO zcl_ags_obj_blob,
           lv_raw     TYPE xstring,
-          lt_objects TYPE zcl_ags_pack=>ty_objects_tt,
-          lt_result  TYPE zcl_ags_pack=>ty_objects_tt.
+          lt_objects TYPE zif_abapgit_definitions=>ty_objects_tt,
+          lt_result  TYPE zif_abapgit_definitions=>ty_objects_tt.
 
 
-    CREATE OBJECT lo_blob
-      EXPORTING
-        iv_repo = 'test'.
+    lo_blob = zcl_ags_obj_blob=>new( 'test' ).
     lo_blob->set_data( lc_data ).
 
     lt_objects = zcl_ags_pack=>explode( iv_repo = 'test' ii_object = lo_blob ).
@@ -77,14 +75,11 @@ CLASS ltcl_explode IMPLEMENTATION.
 
   METHOD simple.
 
-    DATA: lt_result TYPE zcl_ags_pack=>ty_objects_tt,
+    DATA: lt_result TYPE zif_abapgit_definitions=>ty_objects_tt,
           lo_blob   TYPE REF TO zcl_ags_obj_blob.
 
 
-    CREATE OBJECT lo_blob
-      EXPORTING
-        iv_repo = 'test'.
-
+    lo_blob = zcl_ags_obj_blob=>new( 'test' ).
     lt_result = zcl_ags_pack=>explode( iv_repo = 'test' ii_object = lo_blob ).
 
     cl_abap_unit_assert=>assert_equals(
@@ -124,16 +119,15 @@ CLASS ltcl_explode_repo IMPLEMENTATION.
 
     mv_repo = lo_repo->get_data( )-repo.
 
-    CREATE OBJECT mo_commit
-      EXPORTING
+    mo_commit = zcl_ags_obj_commit=>load(
         iv_repo = mv_repo
-        iv_sha1 = lo_repo->get_default_branch( )->get_data( )-sha1.
+        iv_sha1 = lo_repo->get_default_branch( )->get_data( )-sha1 ).
 
   ENDMETHOD.
 
   METHOD test.
 
-    DATA: lt_result TYPE zcl_ags_pack=>ty_objects_tt.
+    DATA: lt_result TYPE zif_abapgit_definitions=>ty_objects_tt.
 
     lt_result = zcl_ags_pack=>explode(
       iv_repo   = mv_repo

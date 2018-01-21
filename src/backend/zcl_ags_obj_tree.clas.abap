@@ -1,22 +1,23 @@
 CLASS zcl_ags_obj_tree DEFINITION
   PUBLIC
-  FINAL
-  CREATE PUBLIC .
+  CREATE PRIVATE .
 
   PUBLIC SECTION.
 
     INTERFACES zif_ags_object .
 
-    ALIASES c_newline
-      FOR zif_ags_object~c_newline .
     ALIASES deserialize
       FOR zif_ags_object~deserialize .
+    ALIASES get_adler32
+      FOR zif_ags_object~get_adler32 .
+    ALIASES get_sha1
+      FOR zif_ags_object~get_sha1 .
+    ALIASES get_type
+      FOR zif_ags_object~get_type .
     ALIASES save
       FOR zif_ags_object~save .
     ALIASES serialize
       FOR zif_ags_object~serialize .
-    ALIASES sha1
-      FOR zif_ags_object~sha1 .
 
     TYPES:
       BEGIN OF ty_tree,
@@ -34,7 +35,7 @@ CLASS zcl_ags_obj_tree DEFINITION
         dir        TYPE zags_chmod VALUE '40000',
       END OF c_chmod .
 
-    CLASS-METHODS get_instance
+    CLASS-METHODS load
       IMPORTING
         !iv_repo       TYPE zags_objects-repo
         !iv_sha1       TYPE zags_objects-sha1
@@ -47,10 +48,11 @@ CLASS zcl_ags_obj_tree DEFINITION
         !iv_chmod TYPE zags_chmod
         !iv_name  TYPE ty_tree-name
         !iv_sha1  TYPE ty_tree-sha1 .
-    METHODS constructor
+    CLASS-METHODS new
       IMPORTING
-        !iv_repo TYPE zags_objects-repo
-        !iv_sha1 TYPE zags_objects-sha1 OPTIONAL
+        !iv_repo       TYPE zags_objects-repo
+      RETURNING
+        VALUE(ro_tree) TYPE REF TO zcl_ags_obj_tree
       RAISING
         zcx_ags_error .
     METHODS get_files
@@ -65,6 +67,8 @@ CLASS zcl_ags_obj_tree DEFINITION
     DATA mt_data TYPE ty_tree_tt .
     DATA mv_new TYPE abap_bool .
     DATA mv_repo TYPE zags_objects-repo .
+    DATA mv_sha1 TYPE zags_sha1 .
+    DATA mv_adler32 TYPE zags_adler32 .
 ENDCLASS.
 
 
@@ -94,23 +98,6 @@ CLASS ZCL_AGS_OBJ_TREE IMPLEMENTATION.
   ENDMETHOD.
 
 
-  METHOD constructor.
-
-    ASSERT NOT iv_repo IS INITIAL.
-
-    IF iv_sha1 IS INITIAL.
-      mv_new = abap_true.
-      mv_repo = iv_repo.
-    ELSE.
-      mv_new = abap_false.
-      deserialize( zcl_ags_db=>get_objects( )->single(
-        iv_repo = iv_repo
-        iv_sha1 = iv_sha1 )-data_raw ).
-    ENDIF.
-
-  ENDMETHOD.
-
-
   METHOD get_files.
 
     rt_files = mt_data.
@@ -118,12 +105,32 @@ CLASS ZCL_AGS_OBJ_TREE IMPLEMENTATION.
   ENDMETHOD.
 
 
-  METHOD get_instance.
+  METHOD load.
 
-    CREATE OBJECT ro_tree
-      EXPORTING
-        iv_repo = iv_repo
-        iv_sha1 = iv_sha1.
+    DATA: ls_data TYPE zags_objects.
+
+    CREATE OBJECT ro_tree.
+    ro_tree->mv_new = abap_false.
+    ro_tree->mv_sha1 = iv_sha1.
+
+    ls_data = zcl_ags_db=>get_objects( )->single(
+      iv_repo = iv_repo
+      iv_sha1 = iv_sha1 ).
+
+    ro_tree->deserialize(
+      iv_data    = ls_data-data_raw
+      iv_adler32 = ls_data-adler32 ).
+
+  ENDMETHOD.
+
+
+  METHOD new.
+
+    ASSERT NOT iv_repo IS INITIAL.
+
+    CREATE OBJECT ro_tree.
+    ro_tree->mv_new = abap_true.
+    ro_tree->mv_repo = iv_repo.
 
   ENDMETHOD.
 
@@ -131,7 +138,7 @@ CLASS ZCL_AGS_OBJ_TREE IMPLEMENTATION.
   METHOD set_files.
 
     ASSERT mv_new = abap_true.
-    ASSERT lines( mt_data ) = 0.
+    ASSERT lines( mt_data ) = 0. " do not overwrite existing data
 
     mt_data = it_files.
 
@@ -141,7 +148,39 @@ CLASS ZCL_AGS_OBJ_TREE IMPLEMENTATION.
   METHOD zif_ags_object~deserialize.
 
     mt_data = zcl_abapgit_git_pack=>decode_tree( iv_data ).
+    mv_adler32 = iv_adler32.
 
+  ENDMETHOD.
+
+
+  METHOD zif_ags_object~get_adler32.
+
+    IF mv_adler32 IS INITIAL.
+      rv_adler32 = zcl_abapgit_hash=>adler32( serialize( ) ).
+    ELSE.
+      ASSERT NOT mv_adler32 IS INITIAL.
+      rv_adler32 = mv_adler32.
+    ENDIF.
+
+  ENDMETHOD.
+
+
+  METHOD zif_ags_object~get_sha1.
+
+    IF mv_new = abap_true.
+      rv_sha1 = zcl_ags_util=>sha1(
+        iv_type = zif_ags_constants=>c_type-tree
+        iv_data = serialize( ) ).
+    ELSE.
+      ASSERT NOT mv_sha1 IS INITIAL.
+      rv_sha1 = mv_sha1.
+    ENDIF.
+
+  ENDMETHOD.
+
+
+  METHOD zif_ags_object~get_type.
+    rv_type = zif_ags_constants=>c_type-tree.
   ENDMETHOD.
 
 
@@ -149,12 +188,14 @@ CLASS ZCL_AGS_OBJ_TREE IMPLEMENTATION.
 
     DATA: ls_object TYPE zags_objects.
 
+
     ASSERT mv_new = abap_true.
 
     ls_object-repo = mv_repo.
-    ls_object-sha1 = sha1( ).
-    ls_object-type = zif_ags_constants=>c_type-tree.
+    ls_object-sha1 = get_sha1( ).
+    ls_object-type = get_type( ).
     ls_object-data_raw = serialize( ).
+    ls_object-adler32 = get_adler32( ).
 
     zcl_ags_db=>get_objects( )->modify( ls_object ).
 
@@ -165,19 +206,5 @@ CLASS ZCL_AGS_OBJ_TREE IMPLEMENTATION.
 
     rv_data = zcl_abapgit_git_pack=>encode_tree( mt_data ).
 
-  ENDMETHOD.
-
-
-  METHOD zif_ags_object~sha1.
-
-    rv_sha1 = zcl_ags_util=>sha1(
-      iv_type = zif_ags_constants=>c_type-tree
-      iv_data = serialize( ) ).
-
-  ENDMETHOD.
-
-
-  METHOD zif_ags_object~type.
-    rv_type = zif_ags_constants=>c_type-tree.
   ENDMETHOD.
 ENDCLASS.

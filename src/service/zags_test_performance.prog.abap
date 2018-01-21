@@ -42,7 +42,7 @@ FORM pack RAISING zcx_ags_error.
 
   DATA: lo_commit  TYPE REF TO zcl_ags_obj_commit,
         lo_repo    TYPE REF TO zcl_ags_repo,
-        lt_objects TYPE zcl_ags_pack=>ty_objects_tt,
+        lt_objects TYPE zif_abapgit_definitions=>ty_objects_tt,
         lv_branch  TYPE zags_sha1,
         lv_repo    TYPE zags_repos-repo.
 
@@ -50,10 +50,9 @@ FORM pack RAISING zcx_ags_error.
   lv_repo = lo_repo->get_data( )-repo.
   lv_branch = lo_repo->get_branch( p_branch )->get_data( )-sha1.
 
-  CREATE OBJECT lo_commit
-    EXPORTING
-      iv_repo = lv_repo
-      iv_sha1 = lv_branch.
+  lo_commit = zcl_ags_obj_commit=>load(
+    iv_repo = lv_repo
+    iv_sha1 = lv_branch ).
 
   APPEND LINES OF zcl_ags_pack=>explode(
     iv_repo = lv_repo

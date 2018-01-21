@@ -4,39 +4,27 @@ CLASS zcl_ags_pack DEFINITION
   CREATE PUBLIC .
 
   PUBLIC SECTION.
-
-    TYPES:
-      BEGIN OF ty_object,
-        sha1 TYPE zags_sha1,
-        type TYPE zags_type,
-        data TYPE xstring,
-      END OF ty_object .
-    TYPES:
-      ty_objects_tt TYPE STANDARD TABLE OF ty_object WITH DEFAULT KEY .
-    TYPES:
-      ty_adler32 TYPE x LENGTH 4 .
-
     CLASS-METHODS to_object
       IMPORTING
         !ii_object       TYPE REF TO zif_ags_object
       RETURNING
-        VALUE(rs_object) TYPE ty_object
+        VALUE(rs_object) TYPE zif_abapgit_definitions=>ty_object
       RAISING
         zcx_ags_error .
     CLASS-METHODS encode
       IMPORTING
-        !it_objects    TYPE ty_objects_tt
+        !it_objects    TYPE zif_abapgit_definitions=>ty_objects_tt
       RETURNING
         VALUE(rv_data) TYPE xstring .
     CLASS-METHODS decode
       IMPORTING
         !iv_data          TYPE xstring
       RETURNING
-        VALUE(rt_objects) TYPE ty_objects_tt .
+        VALUE(rt_objects) TYPE zif_abapgit_definitions=>ty_objects_tt .
     CLASS-METHODS save
       IMPORTING
         !iv_repo    TYPE zags_repos-repo
-        !it_objects TYPE ty_objects_tt
+        !it_objects TYPE zif_abapgit_definitions=>ty_objects_tt
       RAISING
         zcx_ags_error .
     CLASS-METHODS explode
@@ -45,7 +33,7 @@ CLASS zcl_ags_pack DEFINITION
         !ii_object        TYPE REF TO zif_ags_object
         !iv_deepen        TYPE i DEFAULT 0
       RETURNING
-        VALUE(rt_objects) TYPE ty_objects_tt
+        VALUE(rt_objects) TYPE zif_abapgit_definitions=>ty_objects_tt
       RAISING
         zcx_ags_error .
   PROTECTED SECTION.
@@ -79,14 +67,14 @@ CLASS ZCL_AGS_PACK IMPLEMENTATION.
            END OF ty_visit.
 
     DEFINE _visit_commit.
-      CREATE OBJECT lo_parent EXPORTING iv_repo = iv_repo iv_sha1 = &1.
+      lo_parent = zcl_ags_obj_commit=>load( iv_repo = iv_repo iv_sha1 = &1 ).
       APPEND INITIAL LINE TO lt_visit ASSIGNING <ls_new>.
       <ls_new>-object = lo_parent.
       <ls_new>-deepen = <ls_visit>-deepen - 1.
     END-OF-DEFINITION.
 
     DEFINE _visit_tree.
-      CREATE OBJECT lo_sub EXPORTING iv_repo = iv_repo iv_sha1 = &1.
+      lo_sub = zcl_ags_obj_tree=>load( iv_repo = iv_repo iv_sha1 = &1 ).
       APPEND INITIAL LINE TO lt_visit ASSIGNING <ls_new>.
       <ls_new>-object = lo_sub.
     END-OF-DEFINITION.
@@ -120,7 +108,7 @@ CLASS ZCL_AGS_PACK IMPLEMENTATION.
     LOOP AT lt_visit ASSIGNING <ls_visit>.
       APPEND to_object( <ls_visit>-object ) TO rt_objects.
 
-      IF <ls_visit>-object->type( ) = zif_ags_constants=>c_type-commit.
+      IF <ls_visit>-object->get_type( ) = zif_ags_constants=>c_type-commit.
         lo_commit ?= <ls_visit>-object.
         ls_commit = lo_commit->get( ).
 
@@ -133,7 +121,7 @@ CLASS ZCL_AGS_PACK IMPLEMENTATION.
             _visit_commit ls_commit-parent2.
           ENDIF.
         ENDIF.
-      ELSEIF <ls_visit>-object->type( ) = zif_ags_constants=>c_type-tree.
+      ELSEIF <ls_visit>-object->get_type( ) = zif_ags_constants=>c_type-tree.
         lo_tree ?= <ls_visit>-object.
         lt_files = lo_tree->get_files( ).
         LOOP AT lt_files ASSIGNING <ls_file>.
@@ -146,7 +134,7 @@ CLASS ZCL_AGS_PACK IMPLEMENTATION.
       ENDIF.
     ENDLOOP.
 
-    lt_blobs = zcl_ags_obj_blob=>constructor_mass(
+    lt_blobs = zcl_ags_obj_blob=>load_mass(
       iv_repo = iv_repo
       it_sha1 = lt_blobs_sha1 ).
     LOOP AT lt_blobs INTO li_object.
@@ -158,10 +146,7 @@ CLASS ZCL_AGS_PACK IMPLEMENTATION.
 
   METHOD save.
 
-    DATA: li_object TYPE REF TO zif_ags_object,
-          lo_blob   TYPE REF TO zcl_ags_obj_blob,
-          lo_tree   TYPE REF TO zcl_ags_obj_tree,
-          lo_commit TYPE REF TO zcl_ags_obj_commit.
+    DATA: li_object TYPE REF TO zif_ags_object.
 
     FIELD-SYMBOLS: <ls_object> LIKE LINE OF it_objects.
 
@@ -171,29 +156,21 @@ CLASS ZCL_AGS_PACK IMPLEMENTATION.
     LOOP AT it_objects ASSIGNING <ls_object>.
       CASE <ls_object>-type.
         WHEN zif_ags_constants=>c_type-blob.
-          CREATE OBJECT lo_blob
-            EXPORTING
-              iv_repo = iv_repo.
-          li_object = lo_blob.
+          li_object = zcl_ags_obj_blob=>new( iv_repo ).
         WHEN zif_ags_constants=>c_type-tree.
-          CREATE OBJECT lo_tree
-            EXPORTING
-              iv_repo = iv_repo.
-          li_object = lo_tree.
+          li_object = zcl_ags_obj_tree=>new( iv_repo ).
         WHEN zif_ags_constants=>c_type-commit.
-          CREATE OBJECT lo_commit
-            EXPORTING
-              iv_repo = iv_repo.
-          li_object = lo_commit.
+          li_object = zcl_ags_obj_commit=>new( iv_repo ).
         WHEN OTHERS.
           RAISE EXCEPTION TYPE zcx_ags_error
             EXPORTING
               textid = zcx_ags_error=>m009.
       ENDCASE.
 
-      li_object->deserialize( <ls_object>-data ).
+      li_object->deserialize( iv_data    = <ls_object>-data
+                              iv_adler32 = <ls_object>-adler32 ).
 
-      ASSERT li_object->sha1( ) = <ls_object>-sha1.
+      ASSERT li_object->get_sha1( ) = <ls_object>-sha1.
 
       li_object->save( ).
 
@@ -204,9 +181,10 @@ CLASS ZCL_AGS_PACK IMPLEMENTATION.
 
   METHOD to_object.
 
-    rs_object-sha1 = ii_object->sha1( ).
-    rs_object-type = ii_object->type( ).
+    rs_object-sha1 = ii_object->get_sha1( ).
+    rs_object-type = ii_object->get_type( ).
     rs_object-data = ii_object->serialize( ).
+    rs_object-adler32 = ii_object->get_adler32( ).
 
   ENDMETHOD.
 ENDCLASS.
