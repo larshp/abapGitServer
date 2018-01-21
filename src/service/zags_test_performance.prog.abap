@@ -50,10 +50,9 @@ FORM pack RAISING zcx_ags_error.
   lv_repo = lo_repo->get_data( )-repo.
   lv_branch = lo_repo->get_branch( p_branch )->get_data( )-sha1.
 
-  CREATE OBJECT lo_commit
-    EXPORTING
-      iv_repo = lv_repo
-      iv_sha1 = lv_branch.
+  lo_commit = zcl_ags_obj_commit=>load(
+    iv_repo = lv_repo
+    iv_sha1 = lv_branch ).
 
   APPEND LINES OF zcl_ags_pack=>explode(
     iv_repo = lv_repo

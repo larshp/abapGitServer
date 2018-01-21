@@ -190,7 +190,7 @@ CLASS ZCL_AGS_SERVICE_REST IMPLEMENTATION.
       <ls_output>-name = <lo_branch>->get_data( )-name.
 
 * add information about last commit
-      lo_commit = zcl_ags_obj_commit=>get_instance(
+      lo_commit = zcl_ags_obj_commit=>load(
         iv_repo = lo_repo->get_data( )-repo
         iv_sha1 = <lo_branch>->get_data( )-sha1 ).
       <ls_output>-time = lo_commit->get_pretty( )-committer-time.
@@ -328,7 +328,7 @@ CLASS ZCL_AGS_SERVICE_REST IMPLEMENTATION.
         APPEND INITIAL LINE TO <ls_out_repo>-branches ASSIGNING <ls_out_branch>.
         <ls_out_branch>-branch = <lo_branch>->get_data( ).
 
-        lo_commit = zcl_ags_obj_commit=>get_instance(
+        lo_commit = zcl_ags_obj_commit=>load(
           iv_repo = <ls_repo>-repo
           iv_sha1 = <ls_out_branch>-branch-sha1 ).
 
@@ -364,7 +364,7 @@ CLASS ZCL_AGS_SERVICE_REST IMPLEMENTATION.
           textid = zcx_ags_error=>m011.
     ENDIF.
 
-    rv_contents = zcl_ags_obj_blob=>get_instance(
+    rv_contents = zcl_ags_obj_blob=>load(
       iv_repo = lo_repo->get_data( )-repo
       iv_sha1 = <ls_file>-blob_sha1 )->get_data( ).
 
@@ -378,7 +378,7 @@ CLASS ZCL_AGS_SERVICE_REST IMPLEMENTATION.
 
     lo_repo = zcl_ags_repo=>get_instance( iv_repo ).
 
-    rv_contents = zcl_ags_obj_blob=>get_instance(
+    rv_contents = zcl_ags_obj_blob=>load(
       iv_repo = lo_repo->get_data( )-repo
       iv_sha1 = iv_sha1 )->get_data( ).
 
@@ -395,7 +395,7 @@ CLASS ZCL_AGS_SERVICE_REST IMPLEMENTATION.
 
     lo_repo = zcl_ags_repo=>get_instance( iv_repo ).
 
-    MOVE-CORRESPONDING zcl_ags_obj_commit=>get_instance(
+    MOVE-CORRESPONDING zcl_ags_obj_commit=>load(
         iv_repo = lo_repo->get_data( )-repo
         iv_sha1 = iv_commit )->get_pretty( )
       TO rs_data.

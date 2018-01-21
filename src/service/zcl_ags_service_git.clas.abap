@@ -370,10 +370,9 @@ CLASS ZCL_AGS_SERVICE_GIT IMPLEMENTATION.
                         is_request  = ls_request ).
 
     LOOP AT ls_request-want INTO lv_branch.
-      CREATE OBJECT lo_commit
-        EXPORTING
+      lo_commit = zcl_ags_obj_commit=>load(
           iv_repo = lv_repo
-          iv_sha1 = lv_branch.
+          iv_sha1 = lv_branch ).
 
       APPEND LINES OF zcl_ags_pack=>explode(
         iv_repo   = lv_repo

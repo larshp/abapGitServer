@@ -133,7 +133,7 @@ CLASS ZCL_AGS_REPO IMPLEMENTATION.
     DATA: ls_branch TYPE zags_branches.
 
 * validate that iv_commit exists?
-    zcl_ags_obj_commit=>get_instance(
+    zcl_ags_obj_commit=>load(
       iv_repo = ms_data-repo
       iv_sha1 = iv_commit ).
 
@@ -215,16 +215,12 @@ CLASS ZCL_AGS_REPO IMPLEMENTATION.
           lv_user   TYPE string.
 
 
-    CREATE OBJECT lo_blob
-      EXPORTING
-        iv_repo = iv_repo.
+    lo_blob = zcl_ags_obj_blob=>new( iv_repo ).
     lv_str = iv_name.
     lo_blob->set_data( zcl_ags_util=>string_to_xstring_utf8( lv_str ) ).
     lo_blob->save( ).
 
-    CREATE OBJECT lo_tree
-      EXPORTING
-        iv_repo = iv_repo.
+    lo_tree = zcl_ags_obj_tree=>new( iv_repo ).
     lo_tree->add_file( iv_chmod = zcl_ags_obj_tree=>c_chmod-file
                        iv_name  = 'README.md'
                        iv_sha1  = lo_blob->sha1( ) ) ##no_text.
@@ -232,9 +228,7 @@ CLASS ZCL_AGS_REPO IMPLEMENTATION.
 
     lv_user = |initial <foo@bar.com> { zcl_ags_util=>get_time( ) }|.
 
-    CREATE OBJECT lo_commit
-      EXPORTING
-        iv_repo = iv_repo.
+    lo_commit = zcl_ags_obj_commit=>new( iv_repo ).
     lo_commit->set_tree( lo_tree->sha1( ) ).
     lo_commit->set_author( lv_user ).
     lo_commit->set_committer( lv_user ).
