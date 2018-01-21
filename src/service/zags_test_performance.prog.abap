@@ -57,7 +57,7 @@ FORM pack RAISING zcx_ags_error.
   APPEND LINES OF zcl_ags_pack=>explode(
     iv_repo = lv_repo
     ii_object = lo_commit
-    iv_deepen = 0 ) TO lt_objects.
+    iv_deepen = 1 ) TO lt_objects.
 
   zcl_ags_pack=>encode( lt_objects ).
 
