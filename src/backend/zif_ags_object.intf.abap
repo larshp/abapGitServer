@@ -1,28 +1,31 @@
-interface ZIF_AGS_OBJECT
-  public .
+INTERFACE zif_ags_object PUBLIC.
 
+  METHODS deserialize
+    IMPORTING
+      !iv_data    TYPE xstring
+      !iv_adler32 TYPE zags_adler32 OPTIONAL
+    RAISING
+      zcx_ags_error .
+  METHODS get_adler32
+    RETURNING
+      VALUE(rv_adler32) TYPE zags_adler32
+    RAISING
+      zcx_ags_error .
+  METHODS get_sha1
+    RETURNING
+      VALUE(rv_sha1) TYPE zags_sha1
+    RAISING
+      zcx_ags_error .
+  METHODS get_type
+    RETURNING
+      VALUE(rv_type) TYPE zags_type .
+  METHODS save
+    RAISING
+      zcx_ags_error .
+  METHODS serialize
+    RETURNING
+      VALUE(rv_data) TYPE xstring
+    RAISING
+      zcx_ags_error .
 
-  constants C_NEWLINE type ABAP_CHAR1 value CL_ABAP_CHAR_UTILITIES=>NEWLINE ##NO_TEXT.
-
-  methods GET_TYPE
-    returning
-      value(RV_TYPE) type ZAGS_TYPE .
-  methods SERIALIZE
-    returning
-      value(RV_DATA) type XSTRING
-    raising
-      ZCX_AGS_ERROR .
-  methods DESERIALIZE
-    importing
-      !IV_DATA type XSTRING
-    raising
-      ZCX_AGS_ERROR .
-  methods GET_SHA1
-    returning
-      value(RV_SHA1) type ZAGS_SHA1
-    raising
-      ZCX_AGS_ERROR .
-  methods SAVE
-    raising
-      ZCX_AGS_ERROR .
-endinterface.
+ENDINTERFACE.

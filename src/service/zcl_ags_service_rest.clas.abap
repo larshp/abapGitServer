@@ -194,7 +194,7 @@ CLASS ZCL_AGS_SERVICE_REST IMPLEMENTATION.
         iv_repo = lo_repo->get_data( )-repo
         iv_sha1 = <lo_branch>->get_data( )-sha1 ).
       <ls_output>-time = lo_commit->get_pretty( )-committer-time.
-      <ls_output>-commit = lo_commit->sha1( ).
+      <ls_output>-commit = lo_commit->get_sha1( ).
       IF <ls_output>-name = lv_head.
         <ls_output>-head = abap_true.
       ENDIF.

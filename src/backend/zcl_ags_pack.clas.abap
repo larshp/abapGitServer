@@ -146,10 +146,7 @@ CLASS ZCL_AGS_PACK IMPLEMENTATION.
 
   METHOD save.
 
-    DATA: li_object TYPE REF TO zif_ags_object,
-          lo_blob   TYPE REF TO zcl_ags_obj_blob,
-          lo_tree   TYPE REF TO zcl_ags_obj_tree,
-          lo_commit TYPE REF TO zcl_ags_obj_commit.
+    DATA: li_object TYPE REF TO zif_ags_object.
 
     FIELD-SYMBOLS: <ls_object> LIKE LINE OF it_objects.
 
@@ -159,21 +156,19 @@ CLASS ZCL_AGS_PACK IMPLEMENTATION.
     LOOP AT it_objects ASSIGNING <ls_object>.
       CASE <ls_object>-type.
         WHEN zif_ags_constants=>c_type-blob.
-          lo_blob = zcl_ags_obj_blob=>new( iv_repo ).
-          li_object = lo_blob.
+          li_object = zcl_ags_obj_blob=>new( iv_repo ).
         WHEN zif_ags_constants=>c_type-tree.
-          lo_tree = zcl_ags_obj_tree=>new( iv_repo ).
-          li_object = lo_tree.
+          li_object = zcl_ags_obj_tree=>new( iv_repo ).
         WHEN zif_ags_constants=>c_type-commit.
-          lo_commit = zcl_ags_obj_commit=>new( iv_repo ).
-          li_object = lo_commit.
+          li_object = zcl_ags_obj_commit=>new( iv_repo ).
         WHEN OTHERS.
           RAISE EXCEPTION TYPE zcx_ags_error
             EXPORTING
               textid = zcx_ags_error=>m009.
       ENDCASE.
 
-      li_object->deserialize( <ls_object>-data ).
+      li_object->deserialize( iv_data    = <ls_object>-data
+                              iv_adler32 = <ls_object>-adler32 ).
 
       ASSERT li_object->get_sha1( ) = <ls_object>-sha1.
 
@@ -189,6 +184,7 @@ CLASS ZCL_AGS_PACK IMPLEMENTATION.
     rs_object-sha1 = ii_object->get_sha1( ).
     rs_object-type = ii_object->get_type( ).
     rs_object-data = ii_object->serialize( ).
+    rs_object-adler32 = ii_object->get_adler32( ).
 
   ENDMETHOD.
 ENDCLASS.

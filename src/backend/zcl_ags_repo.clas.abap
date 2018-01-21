@@ -223,19 +223,19 @@ CLASS ZCL_AGS_REPO IMPLEMENTATION.
     lo_tree = zcl_ags_obj_tree=>new( iv_repo ).
     lo_tree->add_file( iv_chmod = zcl_ags_obj_tree=>c_chmod-file
                        iv_name  = 'README.md'
-                       iv_sha1  = lo_blob->sha1( ) ) ##no_text.
+                       iv_sha1  = lo_blob->get_sha1( ) ) ##no_text.
     lo_tree->save( ).
 
     lv_user = |initial <foo@bar.com> { zcl_ags_util=>get_time( ) }|.
 
     lo_commit = zcl_ags_obj_commit=>new( iv_repo ).
-    lo_commit->set_tree( lo_tree->sha1( ) ).
+    lo_commit->set_tree( lo_tree->get_sha1( ) ).
     lo_commit->set_author( lv_user ).
     lo_commit->set_committer( lv_user ).
     lo_commit->set_body( 'initial' ) ##no_text.
     lo_commit->save( ).
 
-    rv_commit = lo_commit->sha1( ).
+    rv_commit = lo_commit->get_sha1( ).
 
   ENDMETHOD.
 

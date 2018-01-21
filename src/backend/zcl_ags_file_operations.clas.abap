@@ -100,7 +100,7 @@ CLASS ZCL_AGS_FILE_OPERATIONS IMPLEMENTATION.
     APPEND INITIAL LINE TO lt_files ASSIGNING <ls_file>.
     <ls_file>-filename  = iv_filename.
     <ls_file>-path      = iv_path.
-    <ls_file>-blob_sha1 = lo_blob->sha1( ).
+    <ls_file>-blob_sha1 = lo_blob->get_sha1( ).
     <ls_file>-chmod     = zcl_ags_obj_tree=>c_chmod-file.
 
     lt_trees = build_trees( lt_files ).
@@ -108,7 +108,7 @@ CLASS ZCL_AGS_FILE_OPERATIONS IMPLEMENTATION.
     ASSERT sy-subrc = 0.
 
     lo_commit = zcl_ags_obj_commit=>new( mo_branch->get_data( )-repo ).
-    lo_commit->set_tree( <ls_tree>-tree->sha1( ) ).
+    lo_commit->set_tree( <ls_tree>-tree->get_sha1( ) ).
     set_author_and_committer( lo_commit ).
     lo_commit->set_body( iv_commit_message ).
     lo_commit->set_parent( mo_branch->get_data( )-sha1 ).
@@ -120,7 +120,7 @@ CLASS ZCL_AGS_FILE_OPERATIONS IMPLEMENTATION.
     ENDLOOP.
 
     mo_branch->push(
-      iv_new     = lo_commit->sha1( )
+      iv_new     = lo_commit->get_sha1( )
       iv_old     = mo_branch->get_data( )-sha1
       it_objects = lt_objects ).
 
@@ -176,7 +176,7 @@ CLASS ZCL_AGS_FILE_OPERATIONS IMPLEMENTATION.
       <ls_tree>-tree = lo_tree.
       <ls_tree>-path = <ls_folder>-path.
 
-      <ls_folder>-sha1 = lo_tree->sha1( ).
+      <ls_folder>-sha1 = lo_tree->get_sha1( ).
     ENDLOOP.
 
   ENDMETHOD.
@@ -219,7 +219,7 @@ CLASS ZCL_AGS_FILE_OPERATIONS IMPLEMENTATION.
     lo_tree->set_files( lt_old ).
 
     lo_commit = zcl_ags_obj_commit=>new( mo_branch->get_data( )-repo ).
-    lo_commit->set_tree( lo_tree->sha1( ) ).
+    lo_commit->set_tree( lo_tree->get_sha1( ) ).
     set_author_and_committer( lo_commit ).
     lo_commit->set_body( iv_commit_message ).
     lo_commit->set_parent( mo_branch->get_data( )-sha1 ).
@@ -228,7 +228,7 @@ CLASS ZCL_AGS_FILE_OPERATIONS IMPLEMENTATION.
     APPEND zcl_ags_pack=>to_object( lo_commit ) TO lt_objects.
 
     mo_branch->push(
-      iv_new     = lo_commit->sha1( )
+      iv_new     = lo_commit->get_sha1( )
       iv_old     = mo_branch->get_data( )-sha1
       it_objects = lt_objects ).
 
@@ -317,13 +317,13 @@ CLASS ZCL_AGS_FILE_OPERATIONS IMPLEMENTATION.
       chmod = zcl_ags_obj_tree=>c_chmod-file
       name  = iv_filename.
     ASSERT sy-subrc = 0.
-    <ls_old>-sha1 = lo_blob->sha1( ).
+    <ls_old>-sha1 = lo_blob->get_sha1( ).
 
     lo_tree = zcl_ags_obj_tree=>new( mo_branch->get_data( )-repo ).
     lo_tree->set_files( lt_old ).
 
     lo_commit = zcl_ags_obj_commit=>new( mo_branch->get_data( )-repo ).
-    lo_commit->set_tree( lo_tree->sha1( ) ).
+    lo_commit->set_tree( lo_tree->get_sha1( ) ).
     set_author_and_committer( lo_commit ).
     lo_commit->set_body( iv_commit_message ).
     lo_commit->set_parent( mo_branch->get_data( )-sha1 ).
@@ -333,7 +333,7 @@ CLASS ZCL_AGS_FILE_OPERATIONS IMPLEMENTATION.
     APPEND zcl_ags_pack=>to_object( lo_commit ) TO lt_objects.
 
     mo_branch->push(
-      iv_new     = lo_commit->sha1( )
+      iv_new     = lo_commit->get_sha1( )
       iv_old     = mo_branch->get_data( )-sha1
       it_objects = lt_objects ).
 
