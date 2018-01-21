@@ -18,9 +18,11 @@ by activating the ServiceName ZABAPGITSERVER in transaction SICF
 to use it via the web frontend by running transaction ZABAPGITSERVER (or right click on the SICF service ZABAPGITSERVER and choose Test Service)
 
 ### News
+2018-01-21: Field ADLER32 added in database table ZAGS_OBJECTS, use conversion program ZAGS_MIGRATION_02 to convert old repositories
+
 2018-01-13: Make sure you have the latest development version of abapGit installed
 
-2017-03-12: Key field REPO added in database table ZAGS_OBJECTS, use conversion program ZAGS_MIGRATION_01 to convert old repositories.
+2017-03-12: Key field REPO added in database table ZAGS_OBJECTS, use conversion program ZAGS_MIGRATION_01 to convert old repositories
 
 ### Requirements
 - https://github.com/larshp/ABAP-Swagger
