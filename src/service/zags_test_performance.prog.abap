@@ -42,7 +42,7 @@ FORM pack RAISING zcx_ags_error.
 
   DATA: lo_commit  TYPE REF TO zcl_ags_obj_commit,
         lo_repo    TYPE REF TO zcl_ags_repo,
-        lt_objects TYPE zcl_ags_pack=>ty_objects_tt,
+        lt_objects TYPE zif_abapgit_definitions=>ty_objects_tt,
         lv_branch  TYPE zags_sha1,
         lv_repo    TYPE zags_repos-repo.
 

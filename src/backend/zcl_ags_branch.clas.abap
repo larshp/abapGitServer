@@ -21,7 +21,7 @@ CLASS zcl_ags_branch DEFINITION
       IMPORTING
         !iv_new     TYPE zags_sha1
         !iv_old     TYPE zags_sha1
-        !it_objects TYPE zcl_ags_pack=>ty_objects_tt
+        !it_objects TYPE zif_abapgit_definitions=>ty_objects_tt
       RAISING
         zcx_ags_error .
     METHODS get_files

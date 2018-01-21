@@ -86,7 +86,7 @@ CLASS ZCL_AGS_FILE_OPERATIONS IMPLEMENTATION.
           lt_files   TYPE zcl_ags_cache=>ty_files_simple_tt,
           lo_commit  TYPE REF TO zcl_ags_obj_commit,
           lt_trees   TYPE ty_trees_tt,
-          lt_objects TYPE zcl_ags_pack=>ty_objects_tt.
+          lt_objects TYPE zif_abapgit_definitions=>ty_objects_tt.
 
     FIELD-SYMBOLS: <ls_file> LIKE LINE OF lt_files,
                    <ls_tree> LIKE LINE OF lt_trees.
@@ -197,7 +197,7 @@ CLASS ZCL_AGS_FILE_OPERATIONS IMPLEMENTATION.
     DATA: lo_tree    TYPE REF TO zcl_ags_obj_tree,
           lt_old     TYPE zcl_ags_obj_tree=>ty_tree_tt,
           lo_commit  TYPE REF TO zcl_ags_obj_commit,
-          lt_objects TYPE zcl_ags_pack=>ty_objects_tt.
+          lt_objects TYPE zif_abapgit_definitions=>ty_objects_tt.
 
     FIELD-SYMBOLS: <ls_old> LIKE LINE OF lt_old.
 
@@ -303,7 +303,7 @@ CLASS ZCL_AGS_FILE_OPERATIONS IMPLEMENTATION.
           lo_tree    TYPE REF TO zcl_ags_obj_tree,
           lt_old     TYPE zcl_ags_obj_tree=>ty_tree_tt,
           lo_commit  TYPE REF TO zcl_ags_obj_commit,
-          lt_objects TYPE zcl_ags_pack=>ty_objects_tt.
+          lt_objects TYPE zif_abapgit_definitions=>ty_objects_tt.
 
     FIELD-SYMBOLS: <ls_old> LIKE LINE OF lt_old.
 

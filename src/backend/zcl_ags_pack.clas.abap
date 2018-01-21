@@ -4,39 +4,27 @@ CLASS zcl_ags_pack DEFINITION
   CREATE PUBLIC .
 
   PUBLIC SECTION.
-
-    TYPES:
-      BEGIN OF ty_object,
-        sha1 TYPE zags_sha1,
-        type TYPE zags_type,
-        data TYPE xstring,
-      END OF ty_object .
-    TYPES:
-      ty_objects_tt TYPE STANDARD TABLE OF ty_object WITH DEFAULT KEY .
-    TYPES:
-      ty_adler32 TYPE x LENGTH 4 .
-
     CLASS-METHODS to_object
       IMPORTING
         !ii_object       TYPE REF TO zif_ags_object
       RETURNING
-        VALUE(rs_object) TYPE ty_object
+        VALUE(rs_object) TYPE zif_abapgit_definitions=>ty_object
       RAISING
         zcx_ags_error .
     CLASS-METHODS encode
       IMPORTING
-        !it_objects    TYPE ty_objects_tt
+        !it_objects    TYPE zif_abapgit_definitions=>ty_objects_tt
       RETURNING
         VALUE(rv_data) TYPE xstring .
     CLASS-METHODS decode
       IMPORTING
         !iv_data          TYPE xstring
       RETURNING
-        VALUE(rt_objects) TYPE ty_objects_tt .
+        VALUE(rt_objects) TYPE zif_abapgit_definitions=>ty_objects_tt .
     CLASS-METHODS save
       IMPORTING
         !iv_repo    TYPE zags_repos-repo
-        !it_objects TYPE ty_objects_tt
+        !it_objects TYPE zif_abapgit_definitions=>ty_objects_tt
       RAISING
         zcx_ags_error .
     CLASS-METHODS explode
@@ -45,7 +33,7 @@ CLASS zcl_ags_pack DEFINITION
         !ii_object        TYPE REF TO zif_ags_object
         !iv_deepen        TYPE i DEFAULT 0
       RETURNING
-        VALUE(rt_objects) TYPE ty_objects_tt
+        VALUE(rt_objects) TYPE zif_abapgit_definitions=>ty_objects_tt
       RAISING
         zcx_ags_error .
   PROTECTED SECTION.

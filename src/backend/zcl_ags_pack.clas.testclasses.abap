@@ -28,8 +28,8 @@ CLASS ltcl_encode IMPLEMENTATION.
 
     DATA: lo_blob    TYPE REF TO zcl_ags_obj_blob,
           lv_raw     TYPE xstring,
-          lt_objects TYPE zcl_ags_pack=>ty_objects_tt,
-          lt_result  TYPE zcl_ags_pack=>ty_objects_tt.
+          lt_objects TYPE zif_abapgit_definitions=>ty_objects_tt,
+          lt_result  TYPE zif_abapgit_definitions=>ty_objects_tt.
 
 
     CREATE OBJECT lo_blob
@@ -77,7 +77,7 @@ CLASS ltcl_explode IMPLEMENTATION.
 
   METHOD simple.
 
-    DATA: lt_result TYPE zcl_ags_pack=>ty_objects_tt,
+    DATA: lt_result TYPE zif_abapgit_definitions=>ty_objects_tt,
           lo_blob   TYPE REF TO zcl_ags_obj_blob.
 
 
@@ -133,7 +133,7 @@ CLASS ltcl_explode_repo IMPLEMENTATION.
 
   METHOD test.
 
-    DATA: lt_result TYPE zcl_ags_pack=>ty_objects_tt.
+    DATA: lt_result TYPE zif_abapgit_definitions=>ty_objects_tt.
 
     lt_result = zcl_ags_pack=>explode(
       iv_repo   = mv_repo
