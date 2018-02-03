@@ -12,7 +12,8 @@ CLASS lcl_visitor DEFINITION FINAL.
   PUBLIC SECTION.
     CLASS-METHODS: visit
       IMPORTING it_sha1        TYPE zags_sha1_tt
-      RETURNING VALUE(rt_sha1) TYPE zags_sha1_tt.
+      RETURNING VALUE(rt_sha1) TYPE zags_sha1_tt
+      RAISING   zcx_abapgit_exception.
 
 ENDCLASS.
 
@@ -34,24 +35,18 @@ CLASS lcl_visitor IMPLEMENTATION.
       READ TABLE gt_objects WITH KEY
         repo = '' sha1 = <lv_sha1>
         ASSIGNING <ls_object>.
-      ASSERT sy-subrc = 0.
+      IF sy-subrc <> 0.
+        CONTINUE.
+      ENDIF.
 
       CASE <ls_object>-type.
         WHEN zif_ags_constants=>c_type-tree.
-          CALL METHOD ('\PROGRAM=ZABAPGIT\CLASS=LCL_GIT_PACK')=>decode_tree
-            EXPORTING
-              iv_data  = <ls_object>-data_raw
-            RECEIVING
-              rt_nodes = lt_tree.
+          lt_tree = zcl_abapgit_git_pack=>decode_tree( <ls_object>-data_raw ).
           LOOP AT lt_tree ASSIGNING <ls_tree>.
             APPEND <ls_tree>-sha1 TO rt_sha1.
           ENDLOOP.
         WHEN zif_ags_constants=>c_type-commit.
-          CALL METHOD ('\PROGRAM=ZABAPGIT\CLASS=LCL_GIT_PACK')=>decode_commit
-            EXPORTING
-              iv_data   = <ls_object>-data_raw
-            RECEIVING
-              rs_commit = ls_commit.
+          ls_commit = zcl_abapgit_git_pack=>decode_commit( <ls_object>-data_raw ).
           IF NOT ls_commit-parent IS INITIAL.
             APPEND ls_commit-parent TO rt_sha1.
           ENDIF.
@@ -71,7 +66,7 @@ CLASS lcl_visitor IMPLEMENTATION.
 
 ENDCLASS.
 
-FORM run RAISING zcx_ags_error.
+FORM run RAISING zcx_ags_error zcx_abapgit_exception.
 
   DATA: lt_repos    TYPE zags_repos_tt,
         lt_sha1     TYPE zags_sha1_tt,
@@ -120,7 +115,9 @@ FORM save USING pv_repo TYPE zags_repos-repo
   LOOP AT pt_sha1 ASSIGNING <lv_sha1>.
     READ TABLE gt_objects ASSIGNING <ls_object>
       WITH KEY repo = '' sha1 = <lv_sha1>.
-    ASSERT sy-subrc = 0.
+    IF sy-subrc <> 0.
+      CONTINUE.
+    ENDIF.
 
 * note that in the old setup an object could be shared between repos
     CLEAR ls_object.
