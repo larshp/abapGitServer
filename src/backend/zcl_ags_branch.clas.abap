@@ -27,6 +27,9 @@ CLASS zcl_ags_branch DEFINITION
     METHODS get_files
       RETURNING
         VALUE(ro_files) TYPE REF TO zcl_ags_file_operations .
+    METHODS is_tag
+      RETURNING
+        VALUE(rv_bool) TYPE abap_bool .
   PROTECTED SECTION.
   PRIVATE SECTION.
 
@@ -90,6 +93,13 @@ CLASS ZCL_AGS_BRANCH IMPLEMENTATION.
     CREATE OBJECT ro_files
       EXPORTING
         io_branch = me.
+
+  ENDMETHOD.
+
+
+  METHOD is_tag.
+
+    rv_bool = boolc( ms_data-name CP 'refs/tags/*' ).
 
   ENDMETHOD.
 

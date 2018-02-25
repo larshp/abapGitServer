@@ -186,8 +186,12 @@ CLASS ZCL_AGS_SERVICE_REST IMPLEMENTATION.
     lt_branches = lo_repo->list_branches( ).
 
     LOOP AT lt_branches ASSIGNING <lo_branch>.
+      IF <lo_branch>->is_tag( ) = abap_true.
+        CONTINUE.
+      ENDIF.
+
       APPEND INITIAL LINE TO rt_branches ASSIGNING <ls_output>.
-      <ls_output>-name = <lo_branch>->get_data( )-name.
+      <ls_output>-name = <lo_branch>->get_data( )-name+11.
 
 * add information about last commit
       lo_commit = zcl_ags_obj_commit=>load(
@@ -325,8 +329,13 @@ CLASS ZCL_AGS_SERVICE_REST IMPLEMENTATION.
 
       lt_branches = zcl_ags_repo=>get_instance( <ls_repo>-name )->list_branches( ).
       LOOP AT lt_branches ASSIGNING <lo_branch>.
+        IF <lo_branch>->is_tag( ) = abap_true.
+          CONTINUE.
+        ENDIF.
+
         APPEND INITIAL LINE TO <ls_out_repo>-branches ASSIGNING <ls_out_branch>.
         <ls_out_branch>-branch = <lo_branch>->get_data( ).
+        <ls_out_branch>-branch-name = <ls_out_branch>-branch-name+11.
 
         lo_commit = zcl_ags_obj_commit=>load(
           iv_repo = <ls_repo>-repo

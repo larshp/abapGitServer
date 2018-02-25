@@ -173,7 +173,8 @@ CLASS ZCL_AGS_REPO IMPLEMENTATION.
 
     lt_branches = list_branches( ).
     LOOP AT lt_branches INTO ro_branch.
-      IF ro_branch->get_data( )-name = iv_branch_name.
+      IF ro_branch->get_data( )-name = iv_branch_name
+          OR ro_branch->get_data( )-name = 'refs/heads/' && iv_branch_name.
         RETURN.
       ENDIF.
     ENDLOOP.

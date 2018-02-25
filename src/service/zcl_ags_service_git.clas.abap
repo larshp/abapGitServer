@@ -144,7 +144,6 @@ CLASS ZCL_AGS_SERVICE_GIT IMPLEMENTATION.
     LOOP AT lt_branches ASSIGNING <lo_branch>.
       lv_content = <lo_branch>->get_data( )-sha1
         && | |
-        && 'refs/heads/'
         && <lo_branch>->get_data( )-name ##no_text.
 
       lv_length = zcl_ags_length=>encode( strlen( lv_content ) + 5 ).
@@ -198,7 +197,7 @@ CLASS ZCL_AGS_SERVICE_GIT IMPLEMENTATION.
 
     rs_push-old  = lv_data.
     rs_push-new  = lv_data+41.
-    rs_push-name = lv_data+93. " also skip 'refs/heads/'
+    rs_push-name = lv_data+82.
 
   ENDMETHOD.
 
