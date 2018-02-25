@@ -264,7 +264,12 @@ CLASS ZCL_AGS_OBJ_COMMIT IMPLEMENTATION.
 
   METHOD zif_ags_object~deserialize.
 
-    ms_data = zcl_abapgit_git_pack=>decode_commit( iv_data ).
+    TRY.
+        ms_data = zcl_abapgit_git_pack=>decode_commit( iv_data ).
+      CATCH zcx_abapgit_exception.
+        ASSERT 0 = 1.
+    ENDTRY.
+
     mv_adler32 = iv_adler32.
 
   ENDMETHOD.

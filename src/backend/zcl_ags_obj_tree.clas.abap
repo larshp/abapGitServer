@@ -147,7 +147,12 @@ CLASS ZCL_AGS_OBJ_TREE IMPLEMENTATION.
 
   METHOD zif_ags_object~deserialize.
 
-    mt_data = zcl_abapgit_git_pack=>decode_tree( iv_data ).
+    TRY.
+        mt_data = zcl_abapgit_git_pack=>decode_tree( iv_data ).
+      CATCH zcx_abapgit_exception.
+        ASSERT 0 = 1.
+    ENDTRY.
+
     mv_adler32 = iv_adler32.
 
   ENDMETHOD.

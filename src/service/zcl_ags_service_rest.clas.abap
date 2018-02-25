@@ -461,7 +461,11 @@ CLASS ZCL_AGS_SERVICE_REST IMPLEMENTATION.
         iv_title  = 'abapGitServer'.
     lo_swag->register( me ).
 
-    lo_swag->run( ).
+    TRY.
+        lo_swag->run( ).
+      CATCH cx_static_check.
+        ASSERT 0 = 1.
+    ENDTRY.
 
   ENDMETHOD.
 

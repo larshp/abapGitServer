@@ -47,14 +47,22 @@ CLASS ZCL_AGS_PACK IMPLEMENTATION.
 
   METHOD decode.
 
-    rt_objects = zcl_abapgit_git_pack=>decode( iv_data ).
+    TRY.
+        rt_objects = zcl_abapgit_git_pack=>decode( iv_data ).
+      CATCH zcx_abapgit_exception.
+        ASSERT 0 = 1.
+    ENDTRY.
 
   ENDMETHOD.
 
 
   METHOD encode.
 
-    rv_data = zcl_abapgit_git_pack=>encode( it_objects ).
+    TRY.
+        rv_data = zcl_abapgit_git_pack=>encode( it_objects ).
+      CATCH zcx_abapgit_exception.
+        ASSERT 0 = 1.
+    ENDTRY.
 
   ENDMETHOD.
 

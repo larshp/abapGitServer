@@ -45,7 +45,11 @@ CLASS ZCL_AGS_UTIL IMPLEMENTATION.
 
   METHOD get_time.
 
-    rv_time = zcl_abapgit_time=>get( ).
+    TRY.
+        rv_time = zcl_abapgit_time=>get( ).
+      CATCH zcx_abapgit_exception.
+        ASSERT 0 = 1.
+    ENDTRY.
 
   ENDMETHOD.
 

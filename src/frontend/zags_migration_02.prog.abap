@@ -4,7 +4,7 @@ REPORT zags_migration_02.
 START-OF-SELECTION.
   PERFORM run.
 
-FORM run.
+FORM run RAISING zcx_ags_error.
 
   TYPES: BEGIN OF ty_object,
            repo TYPE zags_objects-repo,
