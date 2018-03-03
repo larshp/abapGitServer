@@ -5,7 +5,11 @@ START-OF-SELECTION.
 
 FORM run.
 
-  DATA: lv_url TYPE string.
+  DATA: lv_url    TYPE string,
+        lv_urlc   TYPE c LENGTH 2048,
+        lo_viewer TYPE REF TO cl_gui_html_viewer,
+        lo_empty  TYPE REF TO cl_gui_container.
+
 
 * misuse the BSP runtime to construct SICF url
   cl_bsp_runtime=>construct_bsp_url(
@@ -18,22 +22,12 @@ FORM run.
     IN lv_url
     WITH 'sap/zabapgitserver'.
 
-  cl_gui_frontend_services=>execute(
+  CREATE OBJECT lo_viewer
     EXPORTING
-      document               = lv_url
-    EXCEPTIONS
-      cntl_error             = 1
-      error_no_gui           = 2
-      bad_parameter          = 3
-      file_not_found         = 4
-      path_not_found         = 5
-      file_extension_unknown = 6
-      error_execute_failed   = 7
-      synchronous_failed     = 8
-      not_supported_by_gui   = 9
-      OTHERS                 = 10 ).
-  IF sy-subrc <> 0.
-    WRITE: / 'Error when calling frontend services:', sy-subrc.
-  ENDIF.
+      parent = lo_empty.
+
+  lv_urlc = lv_url.
+  lo_viewer->detach_url_in_browser( lv_urlc ).
+  cl_gui_cfw=>flush( ).
 
 ENDFORM.
