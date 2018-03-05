@@ -27,6 +27,7 @@ FORM run.
       parent = lo_empty.
 
   lv_urlc = lv_url.
+  lo_viewer->enable_sapsso( abap_true ).
   lo_viewer->detach_url_in_browser( lv_urlc ).
   cl_gui_cfw=>flush( ).
 
