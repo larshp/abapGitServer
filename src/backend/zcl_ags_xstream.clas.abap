@@ -15,11 +15,16 @@ CLASS zcl_ags_xstream DEFINITION
         !iv_value TYPE xsequence .
     METHODS append_length
       IMPORTING
-        !iv_value TYPE xsequence .
+        !iv_value        TYPE xsequence
+      RETURNING
+        VALUE(ro_stream) TYPE REF TO zcl_ags_xstream .
     METHODS clear .
     METHODS get
       RETURNING
         VALUE(rv_xstr) TYPE xstring .
+    CLASS-METHODS create
+      RETURNING
+        VALUE(ro_stream) TYPE REF TO zcl_ags_xstream .
   PROTECTED SECTION.
   PRIVATE SECTION.
 
@@ -76,12 +81,21 @@ CLASS ZCL_AGS_XSTREAM IMPLEMENTATION.
     append( lv_length ).
     append( iv_value ).
 
+    ro_stream = me.
+
   ENDMETHOD.
 
 
   METHOD clear.
 
     CLEAR mv_xstr.
+
+  ENDMETHOD.
+
+
+  METHOD create.
+
+    CREATE OBJECT ro_stream.
 
   ENDMETHOD.
 
