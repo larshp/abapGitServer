@@ -72,7 +72,9 @@ CLASS zcl_ags_service_git DEFINITION
     METHODS unpack
       RAISING
         zcx_ags_error .
-    METHODS unpack_ok .
+    METHODS unpack_ok
+      IMPORTING
+        !iv_branch_name TYPE zags_branch_name .
 ENDCLASS.
 
 
@@ -461,7 +463,7 @@ CLASS ZCL_AGS_SERVICE_GIT IMPLEMENTATION.
         it_objects = lt_objects ).
     ENDIF.
 
-    unpack_ok( ).
+    unpack_ok( ls_push-name ).
 
     mi_server->response->set_header_field(
       name  = if_http_header_fields=>content_type
