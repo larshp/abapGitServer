@@ -106,7 +106,11 @@ CLASS ZCL_AGS_SERVICE_GIT IMPLEMENTATION.
     FIELD-SYMBOLS: <lo_branch> LIKE LINE OF lt_branches.
 
 
-    ASSERT NOT iv_service IS INITIAL.
+    IF iv_service IS INITIAL.
+      RAISE EXCEPTION TYPE zcx_ags_error
+        EXPORTING
+          textid = zcx_ags_error=>m003.
+    ENDIF.
 
     _capability 'multi_ack'.
 *    _capability 'thin-pack'.

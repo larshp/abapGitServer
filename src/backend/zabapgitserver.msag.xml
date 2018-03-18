@@ -29,6 +29,12 @@
     <T100>
      <SPRSL>E</SPRSL>
      <ARBGB>ZABAPGITSERVER</ARBGB>
+     <MSGNR>003</MSGNR>
+     <TEXT>Service not supplied</TEXT>
+    </T100>
+    <T100>
+     <SPRSL>E</SPRSL>
+     <ARBGB>ZABAPGITSERVER</ARBGB>
      <MSGNR>004</MSGNR>
      <TEXT>Error while calculating SHA1</TEXT>
     </T100>
