@@ -1,10 +1,10 @@
 CLASS zcl_ags_service_git DEFINITION
   PUBLIC
-  CREATE PUBLIC.
+  CREATE PUBLIC .
 
   PUBLIC SECTION.
 
-    INTERFACES zif_ags_service.
+    INTERFACES zif_ags_service .
   PROTECTED SECTION.
   PRIVATE SECTION.
 
@@ -72,7 +72,11 @@ CLASS zcl_ags_service_git DEFINITION
     METHODS unpack
       RAISING
         zcx_ags_error .
-    METHODS unpack_ok .
+    METHODS unpack_ok
+      IMPORTING
+        !iv_branch_name   TYPE zags_branch_name
+      RETURNING
+        VALUE(rv_xstring) TYPE xstring .
 ENDCLASS.
 
 
@@ -461,7 +465,8 @@ CLASS ZCL_AGS_SERVICE_GIT IMPLEMENTATION.
         it_objects = lt_objects ).
     ENDIF.
 
-    unpack_ok( ).
+* method set_data has to be used, or SAP will modify the "Content-Type" header
+    mi_server->response->set_data( unpack_ok( ls_push-name ) ).
 
     mi_server->response->set_header_field(
       name  = if_http_header_fields=>content_type
@@ -477,13 +482,17 @@ CLASS ZCL_AGS_SERVICE_GIT IMPLEMENTATION.
     CREATE OBJECT lo_response.
 
 * send report-status when capability is enabled,
-    lo_response->append_band01( zcl_ags_util=>string_to_xstring_utf8( |000eunpack ok\n| ) ).
-    lo_response->append_band01( zcl_ags_util=>string_to_xstring_utf8( |0019ok refs/heads/master\n| ) ).
+    lo_response->append_band01( zcl_ags_xstream=>create(
+      )->append_length( zcl_ags_util=>string_to_xstring_utf8( |unpack ok\n| ) )->get( ) ).
+
+    lo_response->append_band01( zcl_ags_xstream=>create(
+      )->append_length( zcl_ags_util=>string_to_xstring_utf8( |ok { iv_branch_name }\n| ) )->get( ) ).
+
     lo_response->append_band01( zcl_ags_util=>string_to_xstring_utf8( '0000' ) ).
+
     lo_response->append( zcl_ags_util=>string_to_xstring_utf8( '0000' ) ).
 
-* method set_data has to be used, or SAP will modify the "Content-Type" header
-    mi_server->response->set_data( lo_response->get( ) ).
+    rv_xstring = lo_response->get( ).
 
   ENDMETHOD.
 
