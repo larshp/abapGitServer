@@ -70,8 +70,7 @@ CLASS ZCL_AGS_DB_REPOS IMPLEMENTATION.
       rt_list = mt_repos.
     ELSE.
       SELECT * FROM zags_repos
-        INTO TABLE rt_list
-        ORDER BY name ASCENDING.          "#EC CI_NOWHERE "#EC CI_SUBRC
+        INTO TABLE rt_list.               "#EC CI_NOWHERE "#EC CI_SUBRC
     ENDIF.
 
   ENDMETHOD.
