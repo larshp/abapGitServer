@@ -97,6 +97,8 @@ CLASS ltcl_userfield DEFINITION FOR TESTING
         RAISING zcx_ags_error,
       parse_userfield4 FOR TESTING
         RAISING zcx_ags_error,
+      parse_userfield5 FOR TESTING
+        RAISING zcx_ags_error,
       error FOR TESTING.
 
 ENDCLASS.       "ltcl_Userfield
@@ -190,6 +192,28 @@ CLASS ltcl_userfield IMPLEMENTATION.
     cl_abap_unit_assert=>assert_equals(
         act = ls_field-name
         exp = 'Foo Barsen (FOOB)' ).
+
+  ENDMETHOD.
+
+  METHOD parse_userfield5.
+
+    CONSTANTS: lc_field TYPE string
+      VALUE 'J.DOE-E <J.Doe-E@localhost> 1482397806 +0100' ##no_text.
+
+    DATA: ls_field TYPE zcl_ags_obj_commit=>ty_userfield.
+
+
+    ls_field = mo_commit->parse_userfield( lc_field ).
+
+    cl_abap_unit_assert=>assert_not_initial( ls_field ).
+
+    cl_abap_unit_assert=>assert_equals(
+        act = ls_field-email
+        exp = 'J.Doe-E@localhost' ).
+
+    cl_abap_unit_assert=>assert_equals(
+        act = ls_field-name
+        exp = 'J.DOE-E' ).
 
   ENDMETHOD.
 
