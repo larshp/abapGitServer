@@ -1,9 +1,5 @@
 
-*----------------------------------------------------------------------*
-*       CLASS ltcl_get_time DEFINITION
-*----------------------------------------------------------------------*
-*
-*----------------------------------------------------------------------*
+
 CLASS ltcl_get_time DEFINITION FOR TESTING
   DURATION SHORT
   RISK LEVEL HARMLESS
@@ -11,14 +7,8 @@ CLASS ltcl_get_time DEFINITION FOR TESTING
 
   PRIVATE SECTION.
     METHODS: test FOR TESTING.
-ENDCLASS.       "ltcl_Get_Time
+ENDCLASS.
 
-
-*----------------------------------------------------------------------*
-*       CLASS ltcl_get_time IMPLEMENTATION
-*----------------------------------------------------------------------*
-*
-*----------------------------------------------------------------------*
 CLASS ltcl_get_time IMPLEMENTATION.
 
   METHOD test.
@@ -30,6 +20,35 @@ CLASS ltcl_get_time IMPLEMENTATION.
 
     cl_abap_unit_assert=>assert_not_initial( lv_time ).
 
-  ENDMETHOD.                    "test
+  ENDMETHOD.
 
-ENDCLASS.                    "ltcl_get_time IMPLEMENTATION
+ENDCLASS.
+
+
+CLASS ltcl_sha1 DEFINITION FOR TESTING
+  DURATION SHORT
+  RISK LEVEL HARMLESS
+  FINAL.
+
+  PRIVATE SECTION.
+    METHODS:
+      test01 FOR TESTING.
+ENDCLASS.
+
+CLASS ltcl_sha1 IMPLEMENTATION.
+
+  METHOD test01.
+
+    DATA: lv_sha1 TYPE zags_sha1.
+
+    lv_sha1 = zcl_ags_util=>sha1(
+      iv_type = zif_ags_constants=>c_type-blob
+      iv_data = zcl_ags_util=>string_to_xstring_utf8( 'hello' ) ).
+
+    cl_abap_unit_assert=>assert_equals(
+      act = lv_sha1
+      exp = 'b6fc4c620b67d95f953a5c1c1230aaab5db5a1b0' ).
+
+  ENDMETHOD.
+
+ENDCLASS.
