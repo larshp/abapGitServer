@@ -1,19 +1,17 @@
-[![Build Status](https://travis-ci.org/larshp/abapGitServer.svg?branch=master)](https://travis-ci.org/larshp/abapGitServer)
-[![devDependency Status](https://david-dm.org/larshp/abapGitServer/dev-status.svg)](https://david-dm.org/larshp/abapGitServer?type=dev)
 [![abaplint](https://abaplint.org/badges/larshp/abapGitServer)](https://abaplint.org/project/larshp/abapGitServer)
 
 # abapGitServer
 Git server implemented in ABAP
 
-## Install 
+## Install
 
 via [abapGit](http://www.abapgit.org)
 
-## Setup 
+## Setup
 
 by activating the ServiceName ZABAPGITSERVER in transaction SICF
 
-## Start 
+## Start
 
 to use it via the web frontend by running transaction ZABAPGITSERVER (or right click on the SICF service ZABAPGITSERVER and choose Test Service)
 
@@ -47,7 +45,7 @@ Works with 'git pull' from command line, so all objects can be exported to a dif
 ### External libraries
 
 Library   | Version | License
-:------------ | :------------ | :------------ 
+:------------ | :------------ | :------------
 [spinkit](https://github.com/tobiasahlin/SpinKit) | 1.2.5 | MIT
 [react](https://github.com/facebook/react) | 15.2.1 | Facebook BSD + Patents
 [babel-standalone](https://github.com/babel/babel-standalone) | 6.23.1 | MIT
