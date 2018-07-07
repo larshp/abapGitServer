@@ -104,7 +104,7 @@ class REST {
   }
   
   static listFiles(repoName, branch, path, callback) {
-    this.get("tree/" + repoName + "/" + branch + path, callback);
+    this.get("tree/" + repoName + "/" + branch + path.replace(/#/g, "%23"), callback);
   }
 
   static listCommits(repoName, branch, callback) {
@@ -112,12 +112,12 @@ class REST {
   }
 
   static readBlob(repoName, branch, filename, callback) {
-    const url = "blob/" + repoName + "/" + branch + "/" + filename;
+    const url = "blob/" + repoName + "/" + branch + "/" + filename.replace(/#/g, "%23");
     this.get(url, callback, false);
   }
    
   static readHistory(repoName, branch, filename, callback) {
-    const url = "history/" + repoName + "/" + branch + "/" + filename;
+    const url = "history/" + repoName + "/" + branch + "/" + filename.replace(/#/g, "%23");
     this.get(url, callback, true);
   }
    
@@ -905,6 +905,7 @@ class FilesList extends React.Component {
     } else {
       url = this.props.params.repo + "/blob/" + this.props.params.branch + e.PATH + e.FILENAME;
     }
+    url = url.replace(/#/g, "%23");
     let commit = this.props.params.repo + "/commit/" + e.LAST_COMMIT_SHA1;
     let icon = e.CHMOD === "40000"?Octicons.directory():Octicons.file();
 
