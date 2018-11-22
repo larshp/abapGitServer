@@ -124,7 +124,7 @@ CLASS ZCL_AGS_CACHE IMPLEMENTATION.
       DELETE lt_split INDEX lv_index.
 
       lv_path = concat_lines_of( table = lt_split
-                                 sep   = '/').
+                                 sep   = '/' ).
       IF lv_path IS INITIAL.
         lv_path = '/'.
       ELSE.
