@@ -44,6 +44,7 @@ Works with 'git pull' from command line, so all objects can be exported to a dif
 
 ### Use with abapGit
 abapGit is your git client and the abapGitServer our server. We first have to setup the [ssl connection](https://docs.abapgit.org/guide-ssl-setup.html) with the root certificate of the sap system the abapGitServer is running on.
+After that the abapGitServer can be used like every other git server.
 
 ### External libraries
 
