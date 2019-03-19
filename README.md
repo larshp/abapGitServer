@@ -42,6 +42,9 @@ see https://github.com/larshp/ABAP-Swagger
 
 Works with 'git pull' from command line, so all objects can be exported to a different git server if needed, [guide](https://help.github.com/articles/importing-a-git-repository-using-the-command-line/)
 
+### Use with abapGit
+abapGit is your git client and the abapGitServer our server. We first have to setup the [ssl connection](https://docs.abapgit.org/guide-ssl-setup.html) with the root certificate of the sap system the abapGitServer is running on.
+
 ### External libraries
 
 Library   | Version | License
