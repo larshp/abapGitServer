@@ -26,7 +26,7 @@ to use it via the web frontend by running transaction ZABAPGITSERVER (or right c
 
 ### Requirements
 - https://github.com/larshp/ABAP-Swagger
-- https://github.com/larshp/abapGit
+- https://github.com/larshp/abapGit (the full repository is needed, not only the latest build on https://raw.githubusercontent.com/abapGit/build/master/zabapgit.abap)
 
 ### Version requirement
 see https://github.com/larshp/ABAP-Swagger
