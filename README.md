@@ -1,4 +1,4 @@
-[![abaplint](https://abaplint.org/badges/larshp/abapGitServer)](https://abaplint.org/project/larshp/abapGitServer)
+[![abaplint](https://app.abaplint.org/badges/larshp/abapGitServer)](https://app.abaplint.org/project/larshp/abapGitServer)
 
 # abapGitServer
 Git server implemented in ABAP
