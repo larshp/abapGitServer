@@ -37,7 +37,7 @@ CLASS zcl_ags_db_branches DEFINITION
     DATA mt_branches TYPE zags_branches_tt .
     DATA mv_fake TYPE abap_bool .
 
-    METHODS set_fake ##RELAX.
+    METHODS set_fake  ##RELAX.
 ENDCLASS.
 
 
