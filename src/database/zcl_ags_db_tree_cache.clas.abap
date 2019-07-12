@@ -1,7 +1,6 @@
 CLASS zcl_ags_db_tree_cache DEFINITION
   PUBLIC
   CREATE PRIVATE
-
   GLOBAL FRIENDS zcl_ags_db .
 
   PUBLIC SECTION.
