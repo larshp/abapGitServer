@@ -448,7 +448,7 @@ CLASS ltcl_bubble_dir IMPLEMENTATION.
 
     cl_abap_unit_assert=>assert_equals(
       act = lines( lt_files )
-      exp = 2  ).
+      exp = 2 ).
 
     LOOP AT lt_files ASSIGNING <ls_file>.
       cl_abap_unit_assert=>assert_equals(

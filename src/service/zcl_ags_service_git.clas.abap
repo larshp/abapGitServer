@@ -301,6 +301,8 @@ CLASS ZCL_AGS_SERVICE_GIT IMPLEMENTATION.
 
     DATA: lv_ack_mode TYPE ty_ack_mode,
           lv_no_done  TYPE abap_bool,
+          lv_subrc    LIKE sy-subrc,
+          lv_data     TYPE string,
           lv_sha1     LIKE LINE OF is_request-have,
           lo_server   TYPE REF TO cl_http_server.
 
@@ -332,8 +334,8 @@ CLASS ZCL_AGS_SERVICE_GIT IMPLEMENTATION.
           lo_server ?= mi_server.
           lo_server->send_response( ).
 
-          DATA(lv_subrc) = lo_server->receive_request( ).
-          DATA(lv_data) = mi_server->request->get_cdata( ).
+          lv_subrc = lo_server->receive_request( ).
+          lv_data = mi_server->request->get_cdata( ).
 * todo, this works, but everything is sent, just like a clone operation
 
           io_response->clear( ).
