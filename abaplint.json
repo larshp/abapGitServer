@@ -1,10 +1,23 @@
 {
   "global": {
-    "version": "v702",
+    "files": "/src/**/*.*",
     "skipGeneratedGatewayClasses": true,
     "skipGeneratedPersistentClasses": true,
     "skipGeneratedFunctionGroups": true,
-    "applyUnspecifiedRules": true
+    "applyUnspecifiedRules": false
+  },
+  "dependencies": [
+    {
+      "url": "https://github.com/abaplint/deps",
+      "folder": "/deps",
+      "files": "/src/**/*.*"
+    }
+  ],
+  "syntax": {
+    "version": "v702",
+    "errorNamespace": "^(Z|Y)",
+    "globalConstants": [],
+    "globalMacros": []
   },
   "rules": {
     "7bit_ascii": {
@@ -17,6 +30,8 @@
       "define": false,
       "endselect": true,
       "execSQL": true,
+      "statics": true,
+      "communication": true,
       "kernelCall": true
     },
     "breakpoint": {
@@ -175,6 +190,7 @@
     "method_length": {
       "enabled": true,
       "exclude": [],
+      "errorWhenEmpty": true,
       "statements": 100
     },
     "method_parameter_names": {
@@ -221,6 +237,7 @@
       "tran": "^Z",
       "enqu": "^EZ",
       "auth": "^Z",
+      "idoc": "^Z",
       "pinf": "^Z"
     },
     "obsolete_statement": {
