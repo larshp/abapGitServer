@@ -363,8 +363,7 @@ CLASS ZCL_AGS_SERVICE_REST IMPLEMENTATION.
 
     lo_repo = zcl_ags_repo=>get_instance( iv_repo ).
 
-    lt_files = lo_repo->get_branch(
-      iv_branch )->get_cache( )->list_files_simple( ).
+    lt_files = lo_repo->get_branch( iv_branch )->get_cache( )->list_files_simple( ).
 
     READ TABLE lt_files ASSIGNING <ls_file>
       WITH KEY filename = ls_fpath-filename

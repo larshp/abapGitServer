@@ -111,7 +111,7 @@ CLASS ZCL_AGS_OBJ_BLOB IMPLEMENTATION.
     LOOP AT lt_objects ASSIGNING <ls_object>.
       ASSERT <ls_object>-type = zif_ags_constants=>c_type-blob.
 
-      lo_blob = zcl_ags_obj_blob=>new( iv_repo ).
+      lo_blob = new( iv_repo ).
       lo_blob->mv_new = abap_false.
       lo_blob->mv_sha1 = <ls_object>-sha1.
       lo_blob->deserialize(

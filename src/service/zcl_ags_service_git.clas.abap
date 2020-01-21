@@ -172,8 +172,7 @@ CLASS ZCL_AGS_SERVICE_GIT IMPLEMENTATION.
     mi_server->response->set_header_field(
       name  = 'Cache-Control'
       value = 'no-cache' ) ##no_text.
-    mi_server->response->set_content_type(
-      |application/x-{ iv_service }-advertisement| ) ##no_text.
+    mi_server->response->set_content_type( |application/x-{ iv_service }-advertisement| ) ##no_text.
 
 * must be sent as raw, using data will change the content-type of the response
     lv_raw = zcl_ags_util=>string_to_xstring_utf8( lv_reply ).
