@@ -14,7 +14,7 @@
     }
   ],
   "syntax": {
-    "version": "v702",
+    "version": "v740sp08",
     "errorNamespace": "^(Z|Y)",
     "globalConstants": [],
     "globalMacros": []
@@ -311,10 +311,7 @@
       "enabled": true,
       "exclude": []
     },
-    "use_new": {
-      "enabled": true,
-      "exclude": []
-    },
+    "use_new": false,
     "when_others_last": {
       "enabled": true,
       "exclude": []

@@ -6,15 +6,14 @@ CLASS ltcl_get_time DEFINITION FOR TESTING
   FINAL.
 
   PRIVATE SECTION.
-    METHODS: test FOR TESTING.
+    METHODS: get_Time FOR TESTING.
 ENDCLASS.
 
 CLASS ltcl_get_time IMPLEMENTATION.
 
-  METHOD test.
+  METHOD get_Time.
 
     DATA: lv_time TYPE string.
-
 
     lv_time = zcl_ags_util=>get_time( ).
 
@@ -32,12 +31,12 @@ CLASS ltcl_sha1 DEFINITION FOR TESTING
 
   PRIVATE SECTION.
     METHODS:
-      test01 FOR TESTING.
+      get_sha1_for_hello FOR TESTING.
 ENDCLASS.
 
 CLASS ltcl_sha1 IMPLEMENTATION.
 
-  METHOD test01.
+  METHOD get_sha1_for_hello.
 
     DATA: lv_sha1 TYPE zags_sha1.
 
