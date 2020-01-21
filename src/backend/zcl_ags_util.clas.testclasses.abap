@@ -6,12 +6,12 @@ CLASS ltcl_get_time DEFINITION FOR TESTING
   FINAL.
 
   PRIVATE SECTION.
-    METHODS: get_Time FOR TESTING.
+    METHODS: get_time FOR TESTING.
 ENDCLASS.
 
 CLASS ltcl_get_time IMPLEMENTATION.
 
-  METHOD get_Time.
+  METHOD get_time.
 
     DATA: lv_time TYPE string.
 
