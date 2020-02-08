@@ -28,7 +28,7 @@
     "abapdoc": false,
     "allowed_object_naming": true,
     "allowed_object_types": false,
-    "ambiguous_statement": true,
+    "ambiguous_statement": false,
     "begin_end_names": true,
     "chain_mainly_declarations": true,
     "check_abstract": true,
@@ -189,7 +189,8 @@
       "move": true,
       "divide": true,
       "requested": true,
-      "occurs": true
+      "occurs": true,
+      "setExtended": true
     },
     "parser_error": true,
     "preferred_compare_operator": {
@@ -219,7 +220,7 @@
       "ignoreExceptions": true
     },
     "start_at_tab": true,
-    "superclass_final": false,
+    "superclass_final": true,
     "tabl_enhancement_category": true,
     "unreachable_code": true,
     "use_new": false,
