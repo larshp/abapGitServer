@@ -39,14 +39,7 @@ CLASS zcl_ags_obj_commit DEFINITION
     TYPES:
       ty_pretty_tt TYPE STANDARD TABLE OF ty_pretty WITH DEFAULT KEY .
     TYPES:
-      BEGIN OF ty_commit,
-        tree      TYPE zags_sha1,
-        parent    TYPE zags_sha1,
-        parent2   TYPE zags_sha1,
-        author    TYPE string,
-        committer TYPE string,
-        body      TYPE string,
-      END OF ty_commit .
+      ty_commit TYPE zcl_abapgit_git_pack=>ty_commit.
     TYPES:
       ty_commits_tt TYPE STANDARD TABLE OF ty_commit WITH DEFAULT KEY .
 
