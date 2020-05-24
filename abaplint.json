@@ -13,6 +13,11 @@
       "files": "/src/**/*.*"
     },
     {
+      "url": "https://github.com/larshp/abapGit",
+      "folder": "/abapGit",
+      "files": "/src/**/*.*"
+    },
+    {
       "url": "https://github.com/larshp/ABAP-Swagger",
       "folder": "/swag",
       "files": "/src/**/*.*"
@@ -25,6 +30,10 @@
     "globalMacros": []
   },
   "rules": {
+    "forbidden_identifier": false,
+    "forbidden_void_type": false,
+    "try_without_catch": true,
+    "unknown_types": false,
     "abapdoc": false,
     "allowed_object_naming": true,
     "allowed_object_types": false,
@@ -74,6 +83,8 @@
     },
     "class_attribute_names": {
       "ignoreExceptions": true,
+      "ignoreLocal": false,
+      "constants": "",
       "statics": "^G._.*$",
       "instance": "^M._.*$"
     },
@@ -178,6 +189,8 @@
       "auth": "^Z",
       "idoc": "^Z",
       "xslt": "^Z",
+      "ssfo": "^Z",
+      "ssst": "^Z",
       "pinf": "^Z"
     },
     "obsolete_statement": {
