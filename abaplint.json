@@ -30,6 +30,15 @@
     "globalMacros": []
   },
   "rules": {
+    "check_subrc": false,
+    "cyclomatic_complexity": true,
+    "forbidden_pseudo_and_pragma": false,
+    "identical_conditions": true,
+    "line_break_style": false,
+    "prefer_is_not": false,
+    "unused_types": true,
+    "use_bool_expression": true,
+    "use_line_exists": false,
     "unknown_types": true,
     "begin_single_include": true,
     "downport": false,
@@ -204,6 +213,7 @@
     "obsolete_statement": {
       "refresh": true,
       "compute": true,
+      "fieldSymbolStructure": true,
       "add": true,
       "subtract": true,
       "withHeaderLine": true,
@@ -227,7 +237,8 @@
       ]
     },
     "remove_descriptions": {
-      "ignoreExceptions": false
+      "ignoreExceptions": false,
+      "ignoreWorkflow": false
     },
     "sequential_blank": {
       "lines": 4
