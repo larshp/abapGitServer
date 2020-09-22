@@ -40,8 +40,6 @@ CLASS zcl_ags_obj_commit DEFINITION
       ty_pretty_tt TYPE STANDARD TABLE OF ty_pretty WITH DEFAULT KEY .
     TYPES:
       ty_commit TYPE zcl_abapgit_git_pack=>ty_commit.
-    TYPES:
-      ty_commits_tt TYPE STANDARD TABLE OF ty_commit WITH DEFAULT KEY .
 
     CLASS-METHODS load
       IMPORTING
