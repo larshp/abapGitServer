@@ -1,11 +1,9 @@
-[![abaplint](https://app.abaplint.org/badges/larshp/abapGitServer)](https://app.abaplint.org/project/larshp/abapGitServer)
-
 # abapGitServer
 Git server implemented in ABAP
 
 ## Install
 
-via [abapGit](http://www.abapgit.org)
+via [abapGit](https://www.abapgit.org)
 
 ## Setup
 
