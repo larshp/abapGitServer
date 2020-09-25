@@ -99,7 +99,7 @@ CLASS ZCL_AGS_BRANCH IMPLEMENTATION.
 
   METHOD is_tag.
 
-    rv_bool = boolc( ms_data-name CP 'refs/tags/*' ).
+    rv_bool = xsdbool( ms_data-name CP 'refs/tags/*' ).
 
   ENDMETHOD.
 

@@ -309,7 +309,7 @@ CLASS ZCL_AGS_SERVICE_GIT IMPLEMENTATION.
     lv_ack_mode = find_ack_mode( is_request ).
 
     READ TABLE is_request-capabilities WITH KEY table_line = 'no-done' TRANSPORTING NO FIELDS.
-    lv_no_done = boolc( sy-subrc = 0 ).
+    lv_no_done = xsdbool( sy-subrc = 0 ).
 
     IF lv_ack_mode = c_ack_mode-detailed AND lines( is_request-have ) = 0.
       lv_ack_mode = c_ack_mode-normal.
