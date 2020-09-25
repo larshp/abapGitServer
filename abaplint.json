@@ -30,6 +30,9 @@
     "globalMacros": []
   },
   "rules": {
+    "identical_contents": true,
+    "many_parenthesis": true,
+    "prefer_xsdbool": true,
     "check_subrc": false,
     "cyclomatic_complexity": true,
     "forbidden_pseudo_and_pragma": false,
@@ -89,6 +92,7 @@
       "endselect": true,
       "execSQL": true,
       "statics": true,
+      "describeLines": true,
       "communication": true,
       "kernelCall": true,
       "break": true,
@@ -215,6 +219,8 @@
       "compute": true,
       "fieldSymbolStructure": true,
       "add": true,
+      "typePools": true,
+      "load": true,
       "subtract": true,
       "withHeaderLine": true,
       "multiply": true,
