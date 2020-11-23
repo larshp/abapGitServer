@@ -98,7 +98,7 @@ CLASS ZCL_AGS_REPO IMPLEMENTATION.
     DATA: ls_repo TYPE zags_repos.
 
 
-    ASSERT NOT iv_name CA '/\'.
+    ASSERT NOT iv_name CA '/\ '.
     ASSERT NOT iv_name IS INITIAL.
 
 
