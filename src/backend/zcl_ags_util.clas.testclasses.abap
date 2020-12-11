@@ -31,7 +31,7 @@ CLASS ltcl_sha1 DEFINITION FOR TESTING
 
   PRIVATE SECTION.
     METHODS:
-      get_sha1_for_hello FOR TESTING.
+      get_sha1_for_hello FOR TESTING RAISING cx_static_check.
 ENDCLASS.
 
 CLASS ltcl_sha1 IMPLEMENTATION.

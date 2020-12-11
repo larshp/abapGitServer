@@ -30,6 +30,17 @@
     "globalMacros": []
   },
   "rules": {
+    "call_transaction_authority_check": true,
+    "function_module_recommendations": false,
+    "intf_referencing_clas": true,
+    "method_implemented_twice": true,
+    "method_overwrites_builtin": false,
+    "omit_parameter_name": true,
+    "omit_receiving": true,
+    "parser_702_chaining": true,
+    "sy_modification": true,
+    "uncaught_exception": true,
+    "unused_methods": false,
     "identical_contents": true,
     "many_parenthesis": true,
     "prefer_xsdbool": true,
