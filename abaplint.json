@@ -96,7 +96,7 @@
     "sql_escape_host_variables": false,
     "type_form_parameters": true,
     "types_naming": true,
-    "unused_variables": false,
+    "unused_variables": true,
     "xml_consistency": true,
     "7bit_ascii": true,
     "avoid_use": {
