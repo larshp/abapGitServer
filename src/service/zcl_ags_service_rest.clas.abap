@@ -421,14 +421,19 @@ CLASS ZCL_AGS_SERVICE_REST IMPLEMENTATION.
 
   METHOD read_history.
 
-    DATA: ls_fpath TYPE ty_filename_and_path.
+    DATA ls_fpath TYPE ty_filename_and_path.
+    DATA lo_branch TYPE REF TO zcl_ags_branch.
 
 
     ls_fpath = to_filename_and_path( iv_filename ).
 
-    rt_commits = zcl_ags_repo=>get_instance( iv_repo
-      )->get_default_branch(
-      )->get_cache(
+    IF iv_branch IS INITIAL.
+      lo_branch = zcl_ags_repo=>get_instance( iv_repo )->get_default_branch( ).
+    ELSE.
+      lo_branch = zcl_ags_repo=>get_instance( iv_repo )->get_branch( iv_branch ).
+    ENDIF.
+
+    rt_commits = lo_branch->get_cache(
       )->list_commits_by_file(
       iv_filename = ls_fpath-filename
       iv_path     = ls_fpath-path ).
