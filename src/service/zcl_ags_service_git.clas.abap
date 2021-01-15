@@ -41,7 +41,6 @@ CLASS zcl_ags_service_git DEFINITION
     METHODS negotiate_packfile
       IMPORTING
         !io_response TYPE REF TO zcl_ags_xstream
-        !iv_repo     TYPE zags_repos-repo
         !is_request  TYPE ty_request .
     METHODS branch_list
       IMPORTING
@@ -374,7 +373,6 @@ CLASS ZCL_AGS_SERVICE_GIT IMPLEMENTATION.
     CREATE OBJECT lo_response.
 
     negotiate_packfile( io_response = lo_response
-                        iv_repo     = lv_repo
                         is_request  = ls_request ).
 
     LOOP AT ls_request-want INTO lv_branch.
