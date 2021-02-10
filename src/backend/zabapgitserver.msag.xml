@@ -68,6 +68,12 @@
      <MSGNR>012</MSGNR>
      <TEXT>Commit, bad field format</TEXT>
     </T100>
+    <T100>
+     <SPRSL>E</SPRSL>
+     <ARBGB>ZABAPGITSERVER</ARBGB>
+     <MSGNR>013</MSGNR>
+     <TEXT>Merge request &amp;1 Repository &amp;2 not found</TEXT>
+    </T100>
    </T100>
   </asx:values>
  </asx:abap>

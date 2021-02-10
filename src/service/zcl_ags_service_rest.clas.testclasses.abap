@@ -14,7 +14,8 @@ CLASS ltcl_rest DEFINITION FOR TESTING DURATION SHORT RISK LEVEL HARMLESS FINAL.
     METHODS:
       setup RAISING zcx_ags_error,
       list_files FOR TESTING RAISING zcx_ags_error,
-      list_branches FOR TESTING RAISING zcx_ags_error.
+      list_branches FOR TESTING RAISING zcx_ags_error,
+      create_merge_request FOR TESTING RAISING zcx_ags_error.
 
 ENDCLASS.       "ltcl_List_Files
 
@@ -54,6 +55,12 @@ CLASS ltcl_rest IMPLEMENTATION.
     lt_branches = mo_rest->list_branches( c_name ).
 
     cl_abap_unit_assert=>assert_not_initial( lt_branches ).
+
+  ENDMETHOD.
+
+  METHOD create_merge_request.
+
+
 
   ENDMETHOD.
 

@@ -1,0 +1,580 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<abapGit version="v1.0.0" serializer="LCL_OBJECT_ECTD" serializer_version="v1.0.0">
+ <VERSIONS>
+  <VERSION>
+   <ECTD VERSION="1.5">
+    <ATTRIBUTES>
+     <ETOBJ_GNDT>
+      <VERSION>00000001</VERSION>
+      <TWB_TITLE>Snapshot for Repo with branch</TWB_TITLE>
+      <SOFTCOMP/>
+      <TWB_DEP_RF/>
+      <TWB_DEP_RT/>
+      <TWB_STATUS/>
+      <TWB_RELE/>
+      <FUSER></FUSER>
+      <FDATE></FDATE>
+      <LUSER></LUSER>
+      <LDATE></LDATE>
+      <LTIME></LTIME>
+      <REL_BAS_F/>
+      <REL_BAS_T/>
+      <SERVICE/>
+      <PVNR/>
+      <BACKUP/>
+     </ETOBJ_GNDT>
+     <ETOBJNOVER>
+      <NAME>ZAGS_REPO_SNAPSHOT</NAME>
+      <TYPE>ECTD</TYPE>
+      <TWB_RESP></TWB_RESP>
+      <TWB_DISTL>B</TWB_DISTL>
+      <TWB_EUBOBJ/>
+      <TWB_EUTYPE/>
+      <DEVCLASS></DEVCLASS>
+      <MASTERLANG>E</MASTERLANG>
+      <TADIR_RESP></TADIR_RESP>
+      <FRANGE>BC</FRANGE>
+      <BCSET_MODE/>
+      <API_MODE>X</API_MODE>
+      <COL_TSTOBJDATA/>
+      <NO_TRANSLATION/>
+     </ETOBJNOVER>
+     <ETOBJ_DOC>
+      <SEARCH_1/>
+      <SEARCH_2/>
+      <SEARCH_3/>
+      <SEARCH_4/>
+      <SEARCH_5/>
+      <SEARCH_6/>
+      <SEARCH_7/>
+      <SEARCH_8/>
+      <SEARCH_9/>
+      <SEARCH_10/>
+      <S_DOC_ID/>
+      <S_OBJ_ID/>
+      <S_DOC_TITL/>
+     </ETOBJ_DOC>
+     <ETOBJ_CNST>
+      <TWB_DEP_S/>
+      <TWB_DEPV_S/>
+      <TWB_DEP_L/>
+      <TWB_DEPV_L/>
+      <TWB_USE_A/>
+      <TWB_USE_P/>
+      <TWB_USE_H/>
+      <TWB_USE_E/>
+      <REUSE/>
+      <TWB_DEP_C/>
+      <TWB_DEP_VC/>
+      <TWB_DEP_F/>
+      <TWB_DEP_VF/>
+      <TWB_DEP_P/>
+      <TWB_DEP_VP/>
+      <TWB_DEP_DB/>
+      <TWB_DEPVDB/>
+      <TWB_WKREQ>0.0</TWB_WKREQ>
+      <TWB_WKUNIT>MIN</TWB_WKUNIT>
+      <TWB_PRIO>0</TWB_PRIO>
+     </ETOBJ_CNST>
+     <ETSC_TSYS>
+      <SYSTEMDATA/>
+      <TESTSYSTEM/>
+     </ETSC_TSYS>
+     <ETSYS_COMP_TABTYPE/>
+     <ETSYS_REL_TABTYPE/>
+     <ETBF_OBJ_TABTYPE/>
+     <ETBF_VER_TABTYPE/>
+    </ATTRIBUTES>
+    <PARAMETERS>
+     <ETPAR_GUIX>
+      <item>
+       <PNAME>ZAGS_REPOS</PNAME>
+       <PTYP>V</PTYP>
+       <PDESC>Repositories</PDESC>
+       <PINDEX>0004</PINDEX>
+       <XMLREF_TYP>D</XMLREF_TYP>
+       <PSTRUC_TYP>T</PSTRUC_TYP>
+       <PREF_NAME>ZAGS_REPOS[]</PREF_NAME>
+       <PDATLEN>0000</PDATLEN>
+       <PINTLEN>000000</PINTLEN>
+       <PDECIMALS>000000</PDECIMALS>
+       <SORT_LNR>0001</SORT_LNR>
+       <PREF_NAME2>ZAGS_REPOS[]</PREF_NAME2>
+       <VALUE>&lt;INITIAL&gt;</VALUE>
+       <VAL_TYPE>T</VAL_TYPE>
+       <TAB_INDEX>0</TAB_INDEX>
+       <DEEP_STRU>
+        <xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema" targetNamespace="http://xml.sap.com/2003/05/eCATT/ddic" version="1.0">
+         <xsd:complexType name="_ZAGS_REPOS">
+          <xsd:annotation>
+           <xsd:documentation>I=t=O==C=S=K==D=ZAGS_REPOS=A==L==doc=Table from Structure</xsd:documentation>
+          </xsd:annotation>
+          <xsd:sequence>
+           <xsd:element name="item" type="ZAGS_REPOS" minOccurs="0" maxOccurs="unbounded"/>
+          </xsd:sequence>
+         </xsd:complexType>
+         <xsd:complexType name="ZAGS_REPOS">
+          <annotation>
+           <documentation>I==O==C=S=K==D=ZAGS_REPOS=A=u=L=000000=doc=Repositories</documentation>
+          </annotation>
+          <sequence>
+           <element name="CLIENT" minOccurs="0">
+            <annotation>
+             <documentation>I==O==C==K=X=D=MANDT=A=C=L=000003=doc=Client</documentation>
+            </annotation>
+            <simpleType>
+             <restriction base="string">
+              <maxLength value="3"/>
+             </restriction>
+            </simpleType>
+           </element>
+           <element name="REPO" minOccurs="0">
+            <annotation>
+             <documentation>I==O==C==K=X=D=ZAGS_REPO=A=C=L=000022=doc=Repository</documentation>
+            </annotation>
+            <simpleType>
+             <restriction base="string">
+              <maxLength value="22"/>
+             </restriction>
+            </simpleType>
+           </element>
+           <element name="NAME" minOccurs="0">
+            <annotation>
+             <documentation>I==O==C==K==D=ZAGS_REPO_NAME=A=C=L=000020=doc=Repository nam</documentation>
+            </annotation>
+            <simpleType>
+             <restriction base="string">
+              <maxLength value="20"/>
+             </restriction>
+            </simpleType>
+           </element>
+           <element name="HEAD" minOccurs="0">
+            <annotation>
+             <documentation>I==O==C==K==D=ZAGS_BRANCH_NAME=A=C=L=000050=doc=Branch name</documentation>
+            </annotation>
+            <simpleType>
+             <restriction base="string">
+              <maxLength value="50"/>
+             </restriction>
+            </simpleType>
+           </element>
+           <element name="DESCRIPTION" minOccurs="0">
+            <annotation>
+             <documentation>I==O==C==K==D=TEXT50=A=C=L=000050=doc=Text Field</documentation>
+            </annotation>
+            <simpleType>
+             <restriction base="string">
+              <maxLength value="50"/>
+             </restriction>
+            </simpleType>
+           </element>
+          </sequence>
+         </xsd:complexType>
+        </xsd:schema>
+       </DEEP_STRU>
+       <DEEP_DATA>
+        <_ZAGS_REPOS/>
+       </DEEP_DATA>
+      </item>
+      <item>
+       <PNAME>ZAGS_OBJECTS</PNAME>
+       <PTYP>V</PTYP>
+       <PDESC>Objects</PDESC>
+       <PINDEX>0003</PINDEX>
+       <XMLREF_TYP>D</XMLREF_TYP>
+       <PSTRUC_TYP>T</PSTRUC_TYP>
+       <PREF_NAME>ZAGS_OBJECTS[]</PREF_NAME>
+       <PDATLEN>0000</PDATLEN>
+       <PINTLEN>000000</PINTLEN>
+       <PDECIMALS>000000</PDECIMALS>
+       <SORT_LNR>0002</SORT_LNR>
+       <PREF_NAME2>ZAGS_OBJECTS[]</PREF_NAME2>
+       <VALUE>&lt;INITIAL&gt;</VALUE>
+       <VAL_TYPE>T</VAL_TYPE>
+       <TAB_INDEX>0</TAB_INDEX>
+       <DEEP_STRU>
+        <xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema" targetNamespace="http://xml.sap.com/2003/05/eCATT/ddic" version="1.0">
+         <xsd:complexType name="_ZAGS_OBJECTS">
+          <xsd:annotation>
+           <xsd:documentation>I=t=O==C=S=K==D=ZAGS_OBJECTS=A==L==doc=Table from Structure</xsd:documentation>
+          </xsd:annotation>
+          <xsd:sequence>
+           <xsd:element name="item" type="ZAGS_OBJECTS" minOccurs="0" maxOccurs="unbounded"/>
+          </xsd:sequence>
+         </xsd:complexType>
+         <xsd:complexType name="ZAGS_OBJECTS">
+          <annotation>
+           <documentation>I==O==C=S=K==D=ZAGS_OBJECTS=A=v=L=000000=doc=Objects</documentation>
+          </annotation>
+          <sequence>
+           <element name="CLIENT" minOccurs="0">
+            <annotation>
+             <documentation>I==O==C==K=X=D=MANDT=A=C=L=000003=doc=Client</documentation>
+            </annotation>
+            <simpleType>
+             <restriction base="string">
+              <maxLength value="3"/>
+             </restriction>
+            </simpleType>
+           </element>
+           <element name="REPO" minOccurs="0">
+            <annotation>
+             <documentation>I==O==C==K=X=D=ZAGS_REPO=A=C=L=000022=doc=Repository</documentation>
+            </annotation>
+            <simpleType>
+             <restriction base="string">
+              <maxLength value="22"/>
+             </restriction>
+            </simpleType>
+           </element>
+           <element name="SHA1" minOccurs="0">
+            <annotation>
+             <documentation>I==O==C==K=X=D=ZAGS_SHA1=A=C=L=000040=doc=SHA1</documentation>
+            </annotation>
+            <simpleType>
+             <restriction base="string">
+              <maxLength value="40"/>
+             </restriction>
+            </simpleType>
+           </element>
+           <element name="TYPE" minOccurs="0">
+            <annotation>
+             <documentation>I==O==C==K==D=ZAGS_TYPE=A=C=L=000006=doc=Type</documentation>
+            </annotation>
+            <simpleType>
+             <restriction base="string">
+              <maxLength value="6"/>
+             </restriction>
+            </simpleType>
+           </element>
+           <element name="ADLER32" minOccurs="0">
+            <annotation>
+             <documentation>I==O==C==K==D=ZAGS_ADLER32=A=X=L=000004=doc=Adler32 checksum</documentation>
+            </annotation>
+            <simpleType>
+             <restriction base="base64Binary">
+              <length value="4"/>
+             </restriction>
+            </simpleType>
+           </element>
+           <element name="DATA_RAW" minOccurs="0" type="base64Binary">
+            <annotation>
+             <documentation>I==O==C==K==D==A=y=L=000000=doc=</documentation>
+            </annotation>
+           </element>
+          </sequence>
+         </xsd:complexType>
+        </xsd:schema>
+       </DEEP_STRU>
+       <DEEP_DATA>
+        <_ZAGS_OBJECTS/>
+       </DEEP_DATA>
+      </item>
+      <item>
+       <PNAME>ZAGS_BRANCHES</PNAME>
+       <PTYP>V</PTYP>
+       <PDESC>Branches</PDESC>
+       <PINDEX>0001</PINDEX>
+       <XMLREF_TYP>D</XMLREF_TYP>
+       <PSTRUC_TYP>T</PSTRUC_TYP>
+       <PREF_NAME>ZAGS_BRANCHES[]</PREF_NAME>
+       <PDATLEN>0000</PDATLEN>
+       <PINTLEN>000000</PINTLEN>
+       <PDECIMALS>000000</PDECIMALS>
+       <SORT_LNR>0003</SORT_LNR>
+       <PREF_NAME2>ZAGS_BRANCHES[]</PREF_NAME2>
+       <VALUE>&lt;INITIAL&gt;</VALUE>
+       <VAL_TYPE>T</VAL_TYPE>
+       <TAB_INDEX>0</TAB_INDEX>
+       <DEEP_STRU>
+        <xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema" targetNamespace="http://xml.sap.com/2003/05/eCATT/ddic" version="1.0">
+         <xsd:complexType name="_ZAGS_BRANCHES">
+          <xsd:annotation>
+           <xsd:documentation>I=t=O==C=S=K==D=ZAGS_BRANCHES=A==L==doc=Table from Structure</xsd:documentation>
+          </xsd:annotation>
+          <xsd:sequence>
+           <xsd:element name="item" type="ZAGS_BRANCHES" minOccurs="0" maxOccurs="unbounded"/>
+          </xsd:sequence>
+         </xsd:complexType>
+         <xsd:complexType name="ZAGS_BRANCHES">
+          <annotation>
+           <documentation>I==O==C=S=K==D=ZAGS_BRANCHES=A=u=L=000000=doc=Branches</documentation>
+          </annotation>
+          <sequence>
+           <element name="CLIENT" minOccurs="0">
+            <annotation>
+             <documentation>I==O==C==K=X=D=MANDT=A=C=L=000003=doc=Client</documentation>
+            </annotation>
+            <simpleType>
+             <restriction base="string">
+              <maxLength value="3"/>
+             </restriction>
+            </simpleType>
+           </element>
+           <element name="REPO" minOccurs="0">
+            <annotation>
+             <documentation>I==O==C==K=X=D=ZAGS_REPO=A=C=L=000022=doc=Repository</documentation>
+            </annotation>
+            <simpleType>
+             <restriction base="string">
+              <maxLength value="22"/>
+             </restriction>
+            </simpleType>
+           </element>
+           <element name="BRANCH" minOccurs="0">
+            <annotation>
+             <documentation>I==O==C==K=X=D=ZAGS_BRANCH=A=C=L=000022=doc=Branch</documentation>
+            </annotation>
+            <simpleType>
+             <restriction base="string">
+              <maxLength value="22"/>
+             </restriction>
+            </simpleType>
+           </element>
+           <element name="SHA1" minOccurs="0">
+            <annotation>
+             <documentation>I==O==C==K==D=ZAGS_SHA1=A=C=L=000040=doc=SHA1</documentation>
+            </annotation>
+            <simpleType>
+             <restriction base="string">
+              <maxLength value="40"/>
+             </restriction>
+            </simpleType>
+           </element>
+           <element name="NAME" minOccurs="0">
+            <annotation>
+             <documentation>I==O==C==K==D=ZAGS_BRANCH_NAME=A=C=L=000050=doc=Branch name</documentation>
+            </annotation>
+            <simpleType>
+             <restriction base="string">
+              <maxLength value="50"/>
+             </restriction>
+            </simpleType>
+           </element>
+          </sequence>
+         </xsd:complexType>
+        </xsd:schema>
+       </DEEP_STRU>
+       <DEEP_DATA>
+        <_ZAGS_BRANCHES/>
+       </DEEP_DATA>
+      </item>
+      <item>
+       <PNAME>ZAGS_MERGE_REQ</PNAME>
+       <PTYP>V</PTYP>
+       <PDESC>Merge requests</PDESC>
+       <PINDEX>0002</PINDEX>
+       <XMLREF_TYP>D</XMLREF_TYP>
+       <PSTRUC_TYP>T</PSTRUC_TYP>
+       <PREF_NAME>ZAGS_MERGE_REQ[]</PREF_NAME>
+       <PDATLEN>0000</PDATLEN>
+       <PINTLEN>000000</PINTLEN>
+       <PDECIMALS>000000</PDECIMALS>
+       <SORT_LNR>0004</SORT_LNR>
+       <PREF_NAME2>ZAGS_MERGE_REQ[]</PREF_NAME2>
+       <VALUE>&lt;INITIAL&gt;</VALUE>
+       <VAL_TYPE>T</VAL_TYPE>
+       <TAB_INDEX>0</TAB_INDEX>
+       <DEEP_STRU>
+        <xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema" targetNamespace="http://xml.sap.com/2003/05/eCATT/ddic" version="1.0">
+         <xsd:complexType name="_ZAGS_MERGE_REQ">
+          <xsd:annotation>
+           <xsd:documentation>I=t=O==C=S=K==D=ZAGS_MERGE_REQ=A==L==doc=Table from Structure</xsd:documentation>
+          </xsd:annotation>
+          <xsd:sequence>
+           <xsd:element name="item" type="ZAGS_MERGE_REQ" minOccurs="0" maxOccurs="unbounded"/>
+          </xsd:sequence>
+         </xsd:complexType>
+         <xsd:complexType name="ZAGS_MERGE_REQ">
+          <annotation>
+           <documentation>I==O==C=S=K==D=ZAGS_MERGE_REQ=A=u=L=000000=doc=Merge requests</documentation>
+          </annotation>
+          <sequence>
+           <element name="CLIENT" minOccurs="0">
+            <annotation>
+             <documentation>I==O==C==K=X=D=MANDT=A=C=L=000003=doc=Client</documentation>
+            </annotation>
+            <simpleType>
+             <restriction base="string">
+              <maxLength value="3"/>
+             </restriction>
+            </simpleType>
+           </element>
+           <element name="REPO" minOccurs="0">
+            <annotation>
+             <documentation>I==O==C==K=X=D=ZAGS_REPO=A=C=L=000022=doc=Repository</documentation>
+            </annotation>
+            <simpleType>
+             <restriction base="string">
+              <maxLength value="22"/>
+             </restriction>
+            </simpleType>
+           </element>
+           <element name="ID" minOccurs="0" type="int">
+            <annotation>
+             <documentation>I==O==C==K=X=D=ZAGS_MERGE_REQUEST_ID=A=I=L=000010=doc=Merge</documentation>
+            </annotation>
+           </element>
+           <element name="TARGET_BRANCH" minOccurs="0">
+            <annotation>
+             <documentation>I==O==C==K==D=ZAGS_BRANCH=A=C=L=000022=doc=Branch</documentation>
+            </annotation>
+            <simpleType>
+             <restriction base="string">
+              <maxLength value="22"/>
+             </restriction>
+            </simpleType>
+           </element>
+           <element name="SOURCE_BRANCH" minOccurs="0">
+            <annotation>
+             <documentation>I==O==C==K==D=ZAGS_BRANCH=A=C=L=000022=doc=Branch</documentation>
+            </annotation>
+            <simpleType>
+             <restriction base="string">
+              <maxLength value="22"/>
+             </restriction>
+            </simpleType>
+           </element>
+           <element name="MERGED" minOccurs="0">
+            <annotation>
+             <documentation>I==O==C==K==D=ZAGS_MERGE_REQUEST_MERGED=A=C=L=000001=doc=Mer</documentation>
+            </annotation>
+            <simpleType>
+             <restriction base="string">
+              <maxLength value="1"/>
+             </restriction>
+            </simpleType>
+           </element>
+          </sequence>
+         </xsd:complexType>
+        </xsd:schema>
+       </DEEP_STRU>
+       <DEEP_DATA>
+        <_ZAGS_MERGE_REQ/>
+       </DEEP_DATA>
+      </item>
+      <item>
+       <PNAME>ZEXPORT_TABLE_LIST</PNAME>
+       <PTYP>V</PTYP>
+       <PDESC>Export bundle table details</PDESC>
+       <PINDEX>0005</PINDEX>
+       <XMLREF_TYP>D</XMLREF_TYP>
+       <PSTRUC_TYP>T</PSTRUC_TYP>
+       <PREF_NAME>ZEXPORT_TABLE_LIST[]</PREF_NAME>
+       <PDATLEN>0000</PDATLEN>
+       <PINTLEN>000000</PINTLEN>
+       <PDECIMALS>000000</PDECIMALS>
+       <SORT_LNR>0005</SORT_LNR>
+       <PREF_NAME2>ZEXPORT_TABLE_LIST[]</PREF_NAME2>
+       <VALUE>&lt;VALUE&gt;</VALUE>
+       <VAL_TYPE>T</VAL_TYPE>
+       <TAB_INDEX>0</TAB_INDEX>
+       <DEEP_STRU>
+        <xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema" targetNamespace="http://xml.sap.com/2003/05/eCATT/ddic" version="1.0">
+         <xsd:complexType name="_ZEXPORT_TABLE_LIST">
+          <xsd:annotation>
+           <xsd:documentation>I=t=O==C=S=K==D=ZEXPORT_TABLE_LIST=A==L==doc=Table from Structure</xsd:documentation>
+          </xsd:annotation>
+          <xsd:sequence>
+           <xsd:element name="item" type="ZEXPORT_TABLE_LIST" minOccurs="0" maxOccurs="unbounded"/>
+          </xsd:sequence>
+         </xsd:complexType>
+         <xsd:complexType name="ZEXPORT_TABLE_LIST">
+          <annotation>
+           <documentation>I==O==C=S=K==D=ZEXPORT_TABLE_LIST=A=v=L=000000=doc=Export bundle table details</documentation>
+          </annotation>
+          <sequence>
+           <element name="SOURCE_TABLE" minOccurs="0">
+            <annotation>
+             <documentation>I==O==C==K==D=ZEXPORT_SOURCE_TABLE=A=C=L=000030=doc=Source t</documentation>
+            </annotation>
+            <simpleType>
+             <restriction base="string">
+              <maxLength value="30"/>
+             </restriction>
+            </simpleType>
+           </element>
+           <element name="FAKE_TABLE" minOccurs="0">
+            <annotation>
+             <documentation>I==O==C==K==D=ZEXPORT_FAKE_TABLE=A=C=L=000030=doc=Fake table</documentation>
+            </annotation>
+            <simpleType>
+             <restriction base="string">
+              <maxLength value="30"/>
+             </restriction>
+            </simpleType>
+           </element>
+           <element name="WHERE_RESTRICTION" minOccurs="0" type="string">
+            <annotation>
+             <documentation>I==O==C==K==D==A=g=L=000000=doc=SQL Where restriction</documentation>
+            </annotation>
+           </element>
+           <element name="TDC_PARAMETER_NAME" minOccurs="0">
+            <annotation>
+             <documentation>I==O==C==K==D=ETP_NAME=A=C=L=000030=doc=Name of a Parameter</documentation>
+            </annotation>
+            <simpleType>
+             <restriction base="string">
+              <maxLength value="30"/>
+             </restriction>
+            </simpleType>
+           </element>
+           <element name="IS_INITIAL" minOccurs="0">
+            <annotation>
+             <documentation>I==O==C==K==D=ZEXPORT_IS_INITIAL=A=C=L=000001=doc=Table cont</documentation>
+            </annotation>
+            <simpleType>
+             <restriction base="string">
+              <maxLength value="1"/>
+             </restriction>
+            </simpleType>
+           </element>
+          </sequence>
+         </xsd:complexType>
+        </xsd:schema>
+       </DEEP_STRU>
+       <DEEP_DATA>
+        <_ZEXPORT_TABLE_LIST>
+         <item>
+          <SOURCE_TABLE>ZAGS_REPOS</SOURCE_TABLE>
+          <FAKE_TABLE>ZAGS_REPOS</FAKE_TABLE>
+          <WHERE_RESTRICTION>REPO = &apos;051MCIMJ7JK0V6LYVLF0SW&apos;</WHERE_RESTRICTION>
+          <TDC_PARAMETER_NAME>ZAGS_REPOS</TDC_PARAMETER_NAME>
+          <IS_INITIAL>X</IS_INITIAL>
+         </item>
+         <item>
+          <SOURCE_TABLE>ZAGS_OBJECTS</SOURCE_TABLE>
+          <FAKE_TABLE>ZAGS_OBJECTS</FAKE_TABLE>
+          <WHERE_RESTRICTION>REPO = &apos;051MCIMJ7JK0V6LYVLF0SW&apos;</WHERE_RESTRICTION>
+          <TDC_PARAMETER_NAME>ZAGS_OBJECTS</TDC_PARAMETER_NAME>
+          <IS_INITIAL>X</IS_INITIAL>
+         </item>
+         <item>
+          <SOURCE_TABLE>ZAGS_BRANCHES</SOURCE_TABLE>
+          <FAKE_TABLE>ZAGS_BRANCHES</FAKE_TABLE>
+          <WHERE_RESTRICTION>REPO = &apos;051MCIMJ7JK0V6LYVLF0SW&apos;</WHERE_RESTRICTION>
+          <TDC_PARAMETER_NAME>ZAGS_BRANCHES</TDC_PARAMETER_NAME>
+          <IS_INITIAL>X</IS_INITIAL>
+         </item>
+         <item>
+          <SOURCE_TABLE>ZAGS_MERGE_REQ</SOURCE_TABLE>
+          <FAKE_TABLE>ZAGS_MERGE_REQ</FAKE_TABLE>
+          <WHERE_RESTRICTION>REPO = &apos;051MCIMJ7JK0V6LYVLF0SW&apos;</WHERE_RESTRICTION>
+          <TDC_PARAMETER_NAME>ZAGS_MERGE_REQ</TDC_PARAMETER_NAME>
+          <IS_INITIAL>X</IS_INITIAL>
+         </item>
+        </_ZEXPORT_TABLE_LIST>
+       </DEEP_DATA>
+      </item>
+     </ETPAR_GUIX>
+     <ETPAR_VARI/>
+    </PARAMETERS>
+    <VARIANT_MODE>
+     <ETVAR_EXT>
+      <VAR_EXT_PATH></VAR_EXT_PATH>
+     </ETVAR_EXT>
+    </VARIANT_MODE>
+   </ECTD>
+  </VERSION>
+ </VERSIONS>
+</abapGit>

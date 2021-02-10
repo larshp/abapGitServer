@@ -13,6 +13,18 @@ by activating the ServiceName ZABAPGITSERVER in transaction SICF
 
 to use it via the web frontend by running transaction ZABAPGITSERVER (or right click on the SICF service ZABAPGITSERVER and choose Test Service)
 
+## Merge requests
+abapGitServer supports merge requests between two branches of the same repo.
+
+### Creating branches
+After creating a new branch, push it directly to `abapGitServer` before committing any changes:
+```
+git branch <new>
+git push origin <new>
+```
+After this operation you can make your changes and commit them to the new branch.
+When you push a new branch with new commits, the operation will fail.
+
 ### News
 2018-02-25: Support for tags added, use conversion program ZAGS_MIGRATION_03 to convert old repositories
 

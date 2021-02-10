@@ -604,13 +604,13 @@ class Commit extends React.Component {
 class BranchList extends React.Component {
   constructor(props) {
     super(props);
-    this.state = {data: [], spinner: true };
+    this.state = {data: [], mergeRequest: {}, spinner: true };
     REST.listBranches(props.params.repo, 
                       this.update.bind(this));
   }
   
   update(d) {
-    this.setState({data: d, spinner: false});
+    this.setState({data: d, mergeRequest: {}, spinner: false});
   }
   
   single(e) {
@@ -635,17 +635,68 @@ class BranchList extends React.Component {
   list() {
     return (<table>{this.state.data.map(this.single.bind(this))}</table>);
   }
-  
+ 
+  createMergeRequest() {
+    
+  }
+
+  onSelectSource(event) {
+    const state = this.state;
+    state.mergeRequest.sourceBranch = event.data;  
+    this.setState(state);
+  }
+
+  onSelectTarget(event) {
+    const state = this.state;
+    state.mergeRequest.targetBranch = event.data;
+    this.setState(state);
+  }
+
   render() {
     return(<div>
       <Breadcrumb routes={this.props.routes} params={this.props.params} />
       <h1>Branch list</h1>
       Clone URL: {cloneURL(this.props.params.repo)}<br />
       <br />
-      {this.state.spinner?<Spinner />:this.list()}                      
+      <button onClick={this.createMergeRequest.bind(this)}>Create Merge request</button><br />
+      From <BranchSelect branches={this.state.data} onselect={this.onSelectSource}/> To <BranchSelect branches={this.state.data} onselect={this.onSelectTarget}/>
+      <br />
+      {this.state.spinner?<Spinner />:this.list()}                   
+      <br />
+      <button onClick={this.listMergeRequests.bind(this)}>List merge requests</button>
+      <DiffMergeRequest mergeRequest={this.state.mergeRequest}/>
       </div>);
   }
 }              
+
+class BranchSelect extends React.Component {
+
+  options() {
+    return this.props.branches.map(b => <option value={b}>{b}</branch>);
+  }
+
+  render() {
+    return(<select onChange={this.props.onselect}>
+      {this.options.bind(this)}
+      </select>);
+  }
+}
+
+class DiffMergeRequest extends React.Component {
+
+  render() {
+    if (this.props.mergeRequest.targetBranch && this.props.mergeRequest.sourceBranch)
+
+    else
+      return ();
+  }
+}
+
+class MergeRequest extends React.Component {
+  constructor(props) {
+    super(props);
+  }
+}
 
 class BlobHistory extends React.Component {
   constructor(props) {
