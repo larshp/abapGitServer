@@ -59,6 +59,15 @@ CLASS zcl_ags_service_rest DEFINITION
       source TYPE zags_sha1,
       target TYPE zags_sha1,
     END OF ty_merge_request_commits.
+    TYPES BEGIN OF ty_merge_request.
+      INCLUDE TYPE ty_merge_request_commits.
+      INCLUDE TYPE zags_merge_req.
+    TYPES END OF ty_merge_request.
+    TYPES: BEGIN OF ty_create_merge_req,
+      repo TYPE zags_repo_name,
+      sourcebranch TYPE zags_branch_name,
+      targetbranch TYPE zags_branch_name,
+    END OF ty_create_merge_req.
 
     METHODS create_repo
       IMPORTING
@@ -135,19 +144,25 @@ CLASS zcl_ags_service_rest DEFINITION
         zcx_ags_error .
     METHODS create_merge_request
       IMPORTING
+        iv_data TYPE ty_create_merge_req
+      RETURNING VALUE(rs_merge_request) TYPE ty_merge_request
+      RAISING
+        zcx_ags_error .
+    METHODS get_anchestor_merge_request
+      IMPORTING
         iv_repo          TYPE zags_repo_name
         iv_target_branch  TYPE zags_branch_name
         iv_source_branch  TYPE zags_branch_name
       RETURNING VALUE(rs_commits) TYPE ty_merge_request_commits
       RAISING
         zcx_ags_error .
-    METHODS get_anchestor_merge_request
+    METHODS get_merge_request
       IMPORTING
         iv_repo          TYPE zags_repo_name
-        iv_id TYPE zags_merge_request_id
-      RETURNING VALUE(rs_commits) TYPE ty_merge_request_commits
+        iv_id            TYPE zags_merge_request_id
+      RETURNING VALUE(rs_merge_request) TYPE ty_merge_request
       RAISING
-        zcx_ags_error .
+        zcx_ags_error.
   PROTECTED SECTION.
   PRIVATE SECTION.
 
@@ -176,11 +191,18 @@ CLASS ZCL_AGS_SERVICE_REST IMPLEMENTATION.
 
   METHOD create_merge_request.
 
-    DATA(lv_id) = zcl_ags_db_merge_requests=>create(
-      iv_repo_name = iv_repo iv_target_branch = iv_target_branch
-      iv_source_branch = iv_source_branch ).
-    rs_commits = get_anchestor_merge_request( iv_repo = iv_repo
-      iv_id = lv_id ).
+    DATA(ls_merge_request) = zcl_ags_db_merge_requests=>create(
+      iv_repo_name = iv_data-repo iv_target_branch = iv_data-targetbranch
+      iv_source_branch = iv_data-sourcebranch ).
+
+    DATA(ls_commits) = get_anchestor_merge_request(
+      iv_repo = iv_data-repo
+      iv_source_branch = iv_data-sourcebranch
+      iv_target_branch = iv_data-targetbranch ).
+
+    MOVE-CORRESPONDING:
+      ls_merge_request TO rs_merge_request,
+      ls_commits TO rs_merge_request.
 
   ENDMETHOD.
 
@@ -203,12 +225,10 @@ CLASS ZCL_AGS_SERVICE_REST IMPLEMENTATION.
 
   METHOD get_anchestor_merge_request.
 
-    DATA(ls_merge_req) = zcl_ags_db_merge_requests=>single(
-      iv_repo_name = iv_repo iv_id = iv_id ).
     DATA(lt_source_branch_commits) = list_commits( iv_repo = iv_repo
-      iv_branch = ls_merge_req-source_branch_name ).
+      iv_branch = iv_source_branch ).
     DATA(lt_target_branch_commits) = list_commits( iv_repo = iv_repo
-      iv_branch = ls_merge_req-target_branch_name ).
+      iv_branch = iv_target_branch ).
 
     LOOP AT lt_source_branch_commits REFERENCE INTO DATA(lr_commit).
       IF line_exists( lt_target_branch_commits[ sha1 = lr_commit->*-sha1 ] ).
@@ -228,6 +248,10 @@ CLASS ZCL_AGS_SERVICE_REST IMPLEMENTATION.
     ENDIF.
 
   ENDMETHOD.
+
+
+  method GET_MERGE_REQUEST.
+  endmethod.
 
 
   METHOD list_branches.
@@ -615,6 +639,21 @@ CLASS ZCL_AGS_SERVICE_REST IMPLEMENTATION.
     APPEND 'IV_BRANCH' TO <ls_meta>-url-group_names.
     <ls_meta>-method    = zcl_swag=>c_method-get.
     <ls_meta>-handler   = 'LIST_COMMITS'.
+
+    APPEND INITIAL LINE TO rt_meta ASSIGNING <ls_meta>.
+    <ls_meta>-summary   = 'Get branch anchestor'.
+    <ls_meta>-url-regex = '/anchestor/([\w-]+)/([\w-]+)/([\w-]+)$'.
+    APPEND 'IV_REPO' TO <ls_meta>-url-group_names.
+    APPEND 'IV_TARGET_BRANCH' TO <ls_meta>-url-group_names.
+    APPEND 'IV_SOURCE_BRANCH' TO <ls_meta>-url-group_names.
+    <ls_meta>-method    = zcl_swag=>c_method-get.
+    <ls_meta>-handler   = 'GET_ANCHESTOR_MERGE_REQUEST'.
+
+    APPEND INITIAL LINE TO rt_meta ASSIGNING <ls_meta>.
+    <ls_meta>-summary   = 'Create merge request'.
+    <ls_meta>-url-regex = '/create_merge_request$'.
+    <ls_meta>-method    = zcl_swag=>c_method-post.
+    <ls_meta>-handler   = 'CREATE_MERGE_REQUEST'.
 
   ENDMETHOD.
 ENDCLASS.

@@ -10,7 +10,7 @@ CLASS zcl_ags_db_merge_requests DEFINITION
                 iv_repo_name     TYPE zags_repo_name
                 iv_target_branch TYPE zags_branch_name
                 iv_source_branch TYPE zags_branch_name
-      RETURNING VALUE(rv_id)     TYPE zags_merge_request_id
+      RETURNING VALUE(rv_req)    TYPE zags_merge_req
       RAISING
                 zcx_ags_error.
     CLASS-METHODS list_open
@@ -51,21 +51,21 @@ CLASS ZCL_AGS_DB_MERGE_REQUESTS IMPLEMENTATION.
 
     DATA(ls_repo) = zcl_ags_db=>get_repos( )->single( iv_repo_name ).
     SELECT id UP TO 1 ROWS FROM zags_merge_req
-      INTO rv_id
-      WHERE repo = ls_repo-repo.
+      INTO @DATA(lv_id)
+      WHERE repo = @ls_repo-repo.
     ENDSELECT.
-    rv_id = rv_id + 1.
+    lv_id = lv_id + 1.
 
     DATA(ls_target_branch) = zcl_ags_db=>get_branches( )->single(
       iv_repo = ls_repo-repo iv_name = iv_target_branch ).
     DATA(ls_source_branch) = zcl_ags_db=>get_branches( )->single(
       iv_repo = ls_repo-repo iv_name = iv_source_branch ).
 
-    DATA(ls_merge_request) = VALUE zags_merge_req(
-      repo = ls_repo-repo id = rv_id target_branch = ls_target_branch-branch
+    rv_req = VALUE #(
+      repo = ls_repo-repo id = lv_id target_branch = ls_target_branch-branch
       source_branch = ls_source_branch-branch
     ).
-    INSERT zags_merge_req FROM ls_merge_request.
+    INSERT zags_merge_req FROM rv_req.
 
   ENDMETHOD.
 
