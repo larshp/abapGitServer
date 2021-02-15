@@ -131,6 +131,15 @@ class REST {
     this.get(url, callback);
   }
 
+  static readAnchestor(repoName, targetBranch, sourceBranch, callback) {
+    const url = "anchestor/" + repoName + "/" + targetBranch + "/" + sourceBranch;
+    this.get(url, callback);
+  }
+
+  static createMergeRequest(repoName, targetBranch, sourceBranch, callback) {
+    this.post("create_merge_request" callback, {repo, targetBranch, sourceBranch});
+  }
+
   static get(folder, callback, json = true) {
     let oReq = new XMLHttpRequest();
     oReq.addEventListener("load", (evt) => { handleError(evt, callback, json); });
@@ -637,7 +646,11 @@ class BranchList extends React.Component {
   }
  
   createMergeRequest() {
-    
+    if (!this.state.mergeRequest.sourceBranch || !this.state.mergeRequest.targetBranch) {
+      alert("Choose target and source branch before."); 
+      return;
+    }
+    REST.createMergeRequest(this.props.params.repo, this.state.mergeRequest.targetBranch, this.state.mergeRequest.sourceBranch, forward);
   }
 
   onSelectSource(event) {
@@ -652,19 +665,27 @@ class BranchList extends React.Component {
     this.setState(state);
   }
 
+  createMergeRequestComponent() {
+    if (this.state.spinner)
+      return ();
+    return (<div>
+      <button onClick={this.listMergeRequests.bind(this)}>List merge requests</button><br />
+      <button onClick={this.createMergeRequest.bind(this)}>Create merge request</button><br />
+      From <BranchSelect branches={this.state.data} onselect={this.onSelectSource}/>
+      To <BranchSelect branches={this.state.data} onselect={this.onSelectTarget}/>
+      <DiffMergeRequest mergeRequest={...this.state.mergeRequest, this.props.params.repo}/>
+      </div>);
+  }
+
   render() {
     return(<div>
       <Breadcrumb routes={this.props.routes} params={this.props.params} />
       <h1>Branch list</h1>
       Clone URL: {cloneURL(this.props.params.repo)}<br />
       <br />
-      <button onClick={this.createMergeRequest.bind(this)}>Create Merge request</button><br />
-      From <BranchSelect branches={this.state.data} onselect={this.onSelectSource}/> To <BranchSelect branches={this.state.data} onselect={this.onSelectTarget}/>
+      {this.state.spinner?<Spinner />:this.list()}
       <br />
-      {this.state.spinner?<Spinner />:this.list()}                   
-      <br />
-      <button onClick={this.listMergeRequests.bind(this)}>List merge requests</button>
-      <DiffMergeRequest mergeRequest={this.state.mergeRequest}/>
+      this.createMergeRequestComponent()
       </div>);
   }
 }              
@@ -683,11 +704,20 @@ class BranchSelect extends React.Component {
 }
 
 class DiffMergeRequest extends React.Component {
-
-  render() {
+  constructor(props) {
+    super(props);
     if (this.props.mergeRequest.targetBranch && this.props.mergeRequest.sourceBranch)
+      REST.readAnchestor(this.props.mergeRequest.repo, this.repo.mergeRequest.targetBranch, this.props.mergeRequest.sourceBranch, this.onAnchestorRead.bind(this));
+  }
 
-    else
+  onAnchestorRead(anchestor) {
+    this.setState({anchestor});
+  }
+
+  async render() {
+    if (this.stat.anchestor) {
+      return (<Diff old={this.stat.anchestor.anchestor} new={this.stat.anchestor.source});
+    } else
       return ();
   }
 }
