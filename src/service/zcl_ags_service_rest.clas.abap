@@ -54,20 +54,25 @@ CLASS zcl_ags_service_rest DEFINITION
             INCLUDE TYPE zcl_ags_obj_commit=>ty_pretty.
     TYPES: files TYPE ty_changed_files_tt,
            END OF ty_commit .
-    TYPES: BEGIN OF ty_merge_request_commits,
-      anchestor TYPE zags_sha1,
-      source TYPE zags_sha1,
-      target TYPE zags_sha1,
-    END OF ty_merge_request_commits.
+    TYPES:
+      BEGIN OF ty_merge_request_commits,
+        anchestor TYPE zags_sha1,
+        source TYPE zags_sha1,
+        target TYPE zags_sha1,
+        source_branch_name TYPE zags_branch_name,
+        target_branch_name TYPE zags_branch_name,
+        changed_files TYPE HASHED TABLE OF ty_changed_file WITH UNIQUE KEY filename path,
+      END OF ty_merge_request_commits.
     TYPES BEGIN OF ty_merge_request.
       INCLUDE TYPE ty_merge_request_commits.
       INCLUDE TYPE zags_merge_req.
     TYPES END OF ty_merge_request.
-    TYPES: BEGIN OF ty_create_merge_req,
-      repo TYPE zags_repo_name,
-      sourcebranch TYPE zags_branch_name,
-      targetbranch TYPE zags_branch_name,
-    END OF ty_create_merge_req.
+    TYPES:
+      BEGIN OF ty_create_merge_req,
+        repo TYPE zags_repo_name,
+        sourcebranch TYPE zags_branch_name,
+        targetbranch TYPE zags_branch_name,
+      END OF ty_create_merge_req.
 
     METHODS create_repo
       IMPORTING
@@ -224,18 +229,35 @@ CLASS ZCL_AGS_SERVICE_REST IMPLEMENTATION.
 
 
   METHOD get_anchestor_merge_request.
+    DATA lt_changed_files TYPE ty_changed_files_tt.
 
+    DATA(lo_repo) = zcl_ags_repo=>get_instance( iv_repo ).
     DATA(lt_source_branch_commits) = list_commits( iv_repo = iv_repo
       iv_branch = iv_source_branch ).
     DATA(lt_target_branch_commits) = list_commits( iv_repo = iv_repo
       iv_branch = iv_target_branch ).
 
     LOOP AT lt_source_branch_commits REFERENCE INTO DATA(lr_commit).
+
       IF line_exists( lt_target_branch_commits[ sha1 = lr_commit->*-sha1 ] ).
         rs_commits-anchestor = lr_commit->*-sha1.
         EXIT.
       ENDIF.
+
+      lt_changed_files = list_changes(
+        iv_repo = lo_repo->get_data( )-repo
+        iv_new = lr_commit->*-sha1
+        iv_old = lr_commit->*-parent ).
+      LOOP AT lt_changed_files REFERENCE INTO DATA(lr_changed_file).
+        INSERT lr_changed_file->* INTO TABLE rs_commits-changed_files.
+        IF sy-subrc <> 0.
+          rs_commits-changed_files[ filename = lr_changed_file->*-filename
+            path = lr_changed_file->*-path ]-old_blob = lr_changed_file->*-old_blob.
+        ENDIF.
+      ENDLOOP.
+
     ENDLOOP.
+
     READ TABLE lt_source_branch_commits REFERENCE INTO lr_commit
       INDEX 1.
     IF sy-subrc = 0.
@@ -247,11 +269,16 @@ CLASS ZCL_AGS_SERVICE_REST IMPLEMENTATION.
       rs_commits-target = lr_commit->*-sha1.
     ENDIF.
 
+    rs_commits-target_branch_name = iv_target_branch.
+    rs_commits-source_branch_name = iv_source_branch.
+    REPLACE 'refs/heads/' IN rs_commits-target_branch_name WITH ''.
+    REPLACE 'refs/heads/' IN rs_commits-source_branch_name WITH ''.
+
   ENDMETHOD.
 
 
-  method GET_MERGE_REQUEST.
-  endmethod.
+  METHOD get_merge_request.
+  ENDMETHOD.
 
 
   METHOD list_branches.

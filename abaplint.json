@@ -101,7 +101,7 @@
     "7bit_ascii": true,
     "avoid_use": {
       "define": false,
-      "endselect": true,
+      "endselect": false,
       "execSQL": true,
       "statics": true,
       "describeLines": true,
@@ -142,7 +142,7 @@
       "while": true,
       "case": true,
       "try": true,
-      "select": true,
+      "select": false,
       "do": true,
       "at": true
     },

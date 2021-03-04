@@ -38,8 +38,8 @@ CLASS zcl_ags_db_merge_requests DEFINITION
       RETURNING VALUE(rs_request) TYPE zags_merge_req_s
       RAISING
                 zcx_ags_error.
-protected section.
-private section.
+  PROTECTED SECTION.
+  PRIVATE SECTION.
 ENDCLASS.
 
 
@@ -50,9 +50,11 @@ CLASS ZCL_AGS_DB_MERGE_REQUESTS IMPLEMENTATION.
   METHOD create.
 
     DATA(ls_repo) = zcl_ags_db=>get_repos( )->single( iv_repo_name ).
-    SELECT id UP TO 1 ROWS FROM zags_merge_req
-      INTO @DATA(lv_id)
-      WHERE repo = @ls_repo-repo.
+    SELECT id FROM zags_merge_req
+        UP TO 1 ROWS
+        INTO @DATA(lv_id)
+        WHERE repo = @ls_repo-repo
+        ORDER BY id DESCENDING.
     ENDSELECT.
     lv_id = lv_id + 1.
 
@@ -63,8 +65,7 @@ CLASS ZCL_AGS_DB_MERGE_REQUESTS IMPLEMENTATION.
 
     rv_req = VALUE #(
       repo = ls_repo-repo id = lv_id target_branch = ls_target_branch-branch
-      source_branch = ls_source_branch-branch
-    ).
+      source_branch = ls_source_branch-branch ).
     INSERT zags_merge_req FROM rv_req.
 
   ENDMETHOD.
