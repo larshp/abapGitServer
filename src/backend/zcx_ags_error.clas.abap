@@ -108,8 +108,8 @@ public section.
     end of M003 .
   data SHA1 type ZAGS_SHA1 .
   data STRING type STRING .
-  data repo_name TYPE zags_repo_name.
-  data id TYPE zags_merge_request_id.
+  data REPO_NAME type ZAGS_REPO_NAME .
+  data ID type ZAGS_MERGE_REQUEST_ID .
 
   methods CONSTRUCTOR
     importing
@@ -117,8 +117,8 @@ public section.
       !PREVIOUS like PREVIOUS optional
       !SHA1 type ZAGS_SHA1 optional
       !STRING type STRING optional
-      repo_name TYPE zags_repo_name OPTIONAL
-      id TYPE zags_merge_request_id OPTIONAL.
+      !REPO_NAME type ZAGS_REPO_NAME optional
+      !ID type ZAGS_MERGE_REQUEST_ID optional .
 protected section.
 private section.
 ENDCLASS.
@@ -135,6 +135,8 @@ PREVIOUS = PREVIOUS
 .
 me->SHA1 = SHA1 .
 me->STRING = STRING .
+me->REPO_NAME = REPO_NAME .
+me->ID = ID .
 clear me->textid.
 if textid is initial.
   IF_T100_MESSAGE~T100KEY = ZCX_AGS_ERROR .

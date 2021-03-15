@@ -10,6 +10,7 @@ CLASS zcl_ags_db_merge_requests DEFINITION
                 iv_repo_name     TYPE zags_repo_name
                 iv_target_branch TYPE zags_branch_name
                 iv_source_branch TYPE zags_branch_name
+                iv_title         TYPE zags_merge_request_title
       RETURNING VALUE(rv_req)    TYPE zags_merge_req
       RAISING
                 zcx_ags_error.
@@ -65,7 +66,8 @@ CLASS ZCL_AGS_DB_MERGE_REQUESTS IMPLEMENTATION.
 
     rv_req = VALUE #(
       repo = ls_repo-repo id = lv_id target_branch = ls_target_branch-branch
-      source_branch = ls_source_branch-branch ).
+      source_branch = ls_source_branch-branch title = iv_title
+      created_by = sy-uname ).
     INSERT zags_merge_req FROM rv_req.
 
   ENDMETHOD.

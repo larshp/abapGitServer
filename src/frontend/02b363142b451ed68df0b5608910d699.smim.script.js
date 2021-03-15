@@ -136,8 +136,16 @@ class REST {
     this.get(url, callback);
   }
 
-  static createMergeRequest(repoName, targetBranch, sourceBranch, callback) {
-    this.post("create_merge_request", callback, {repo, targetBranch, sourceBranch});
+  static createMergeRequest(repoName, targetBranch, sourceBranch, title, callback) {
+    this.post("create_merge_request", callback, {repoName, targetBranch: 'refs/heads/' + targetBranch, sourceBranch: 'refs/heads/' + sourceBranch, title});
+  }
+
+  static getMergeRequest(repoName, id, callback) {
+    this.get("merge_request/" + repoName + "/" + id, callback);
+  }
+
+  static listOpenMergeRequests(repoName, callback) {
+    this.get("list_merge_requests/" + repoName, callback);
   }
 
   static get(folder, callback, json = true) {
@@ -452,27 +460,40 @@ class Create extends React.Component {
 class Diff extends React.Component {
   old;
   new;
+  blobOld;
+  blobNew;
   
   constructor(props) {
     super(props);
-
     this.state = {diff: null};
-    if (props.old === "") {
+    this.readDiff();
+  }
+
+  componentDidUpdate() {
+    if (this.blobOld !== this.props.old || this.blobNew !== this.props.new) {
+      this.readDiff();
+    }
+  }
+
+  readDiff() {
+    if (this.props.old === "") {
       this.old = "";
     } else {
       this.old = null;
-      REST.readBlobSHA1(props.repo,
-                        props.old,
+      REST.readBlobSHA1(this.props.repo,
+                        this.props.old,
                         this.oldd.bind(this));
     }
-    if (props.new === "") {
+    if (this.props.new === "") {
       this.new = "";
     } else {
       this.new = null;
-      REST.readBlobSHA1(props.repo,
-                        props.new,
+      REST.readBlobSHA1(this.props.repo,
+                        this.props.new,
                         this.newd.bind(this));     
-    }     
+    }
+    this.blobOld = this.props.old;
+    this.blobNew = this.props.new;
   }
   
   runDiff() {
@@ -645,12 +666,14 @@ class BranchList extends React.Component {
     return (<table>{this.state.data.map(this.single.bind(this))}</table>);
   }
  
-  listMergeRequests() {
-    console.log('todo');
+  forward(mergeRequest) {
+    const state = this.state;
+    state.mergeRequest.id = mergeRequest.id
+    this.setState(state);
   }
 
   createMergeRequest() {
-    REST.createMergeRequest(this.props.params.repo, this.state.mergeRequest.targetBranch, this.state.mergeRequest.sourceBranch, forward);
+    REST.createMergeRequest(this.props.params.repo, this.state.mergeRequest.targetBranch, this.state.mergeRequest.sourceBranch, this.state.mergeRequest.title, this.forward.bind(this));
   }
 
   createMergeRequestButtonDisabled() {
@@ -669,12 +692,27 @@ class BranchList extends React.Component {
     this.setState(state);
   }
 
+  onTitleChanged(event) {
+    const state = this.state;
+    state.mergeRequest.title = event.target.value;
+    this.setState(state);
+  }
+
+  immediatelyCreatedMergeRequest() {
+    if (this.state.mergeRequest.id) {
+      return (<div>Merge request <Link to={this.props.params.repo+ "/merge_request/" + this.state.mergeRequest.id}>#{this.state.mergeRequest.id}</Link> created.</div>);
+    }
+    return null;
+  }
+
   createMergeRequestComponent() {
     return (<div>
-      <button onClick={this.listMergeRequests.bind(this)}>List merge requests</button><br />
+      <Link to={this.props.params.repo+ "/list_merge_requests/"}>List open merge requests</Link><br />
       <button disabled={this.createMergeRequestButtonDisabled()} onClick={this.createMergeRequest.bind(this)}>Create merge request</button><br />
+      {this.immediatelyCreatedMergeRequest()}
       From <BranchSelect branches={this.state.data} onselect={this.onSelectSource.bind(this)}/>
       To <BranchSelect branches={this.state.data} onselect={this.onSelectTarget.bind(this)}/>
+      <input type="text" value={this.state.mergeRequest.title} onChange={this.onTitleChanged.bind(this)}/>
       <DiffMergeRequest mergeRequest={{sourceBranch: this.state.mergeRequest.sourceBranch, targetBranch: this.state.mergeRequest.targetBranch, repo: this.props.params.repo}}/>
       </div>);
   }
@@ -710,7 +748,7 @@ class DiffMergeRequest extends React.Component {
 
   constructor(props) {
     super(props);
-    this.state = {};
+    this.state = {anchestor: this.props.anchestor};
   }
 
   componentDidUpdate() {
@@ -725,6 +763,7 @@ class DiffMergeRequest extends React.Component {
   single(changedFile) {
     return (<Diff
       filename={changedFile.FILENAME}
+      fileNumber={this.i++}
       path={changedFile.PATH}
       repo={this.props.mergeRequest.repo}
       old={changedFile.OLD_BLOB}
@@ -746,11 +785,68 @@ class DiffMergeRequest extends React.Component {
   }
 }
 
-/*class MergeRequest extends React.Component {
+class MergeRequest extends React.Component {
   constructor(props) {
     super(props);
+    this.state = {data: {}, spinner: true};
+    REST.getMergeRequest(this.props.params.repo, this.props.params.id, this.update.bind(this)); 
   }
-}*/
+
+  update(d){
+    this.state.data = d;
+    this.state.spinner = null;
+    this.setState(this.state);
+  }
+
+  show() {
+    return (<div>
+      <h1>Merge request #{this.props.params.id} {this.state.data.TITLE}</h1>
+      Author: {this.state.data.CREATED_BY} {this.state.data.MERGED ? 'Merged' : 'Open'}<br />
+      From branch {this.state.data.SOURCE_BRANCH_NAME} to branch {this.state.data.TARGET_BRANCH_NAME}<br />
+      <DiffMergeRequest mergeRequest={{sourceBranch: this.state.data.SOURCE_BRANCH_NAME, targetBranch: this.state.data.TARGET_BRANCH_NAME, repo: this.props.params.repo}} anchestor={{SOURCE_BRANCH_NAME: this.state.data.SOURCE_BRANCH_NAME, TARGET_BRANCH_NAME: this.state.data.TARGET_BRANCH_NAME, CHANGED_FILES: this.state.data.CHANGED_FILES}}/>
+      </div>);
+  }
+
+  render() {
+    return (<div>
+      { this.state.spinner ? <Spinner /> : this.show() }
+      </div>);
+  }
+}
+
+class ListOpenMergeRequests extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = {data: [], spinner: true};
+    REST.listOpenMergeRequests(this.props.params.repo, this.update.bind(this));
+  }
+
+  update(d) {
+    this.state.data = d;
+    this.state.spinner = null;
+    this.setState(this.state);
+  }
+
+  single(mergeRequest) {
+    return (<tr>
+      <td><Link to={this.props.params.repo + "/merge_request/" + mergeRequest.ID}>{mergeRequest.ID}</Link></td>
+      <td>{mergeRequest.TITLE}</td>
+      <td>{mergeRequest.CREATED_BY}</td></tr>);
+  }
+
+  show() {
+    return (<div>
+      <h1>Open merge requests</h1>
+      <table><tr><th>Id</th><th>Title</th><th>Created by</th></tr>{this.state.data.map(this.single.bind(this))}</table>
+      </div>);
+  }
+
+  render() {
+    return (<div>
+      { this.state.spinner ? <Spinner /> : this.show() }
+      </div>);
+  }
+}
 
 class BlobHistory extends React.Component {
   constructor(props) {
@@ -1097,6 +1193,13 @@ class Router extends React.Component {
                 <ReactRouter.IndexRoute component={NoMatch} />
                 <ReactRouter.Route path="*" component={BlobHistory} />
               </ReactRouter.Route>      
+            </ReactRouter.Route>
+            <ReactRouter.Route path="merge_request">
+	      <ReactRouter.IndexRoute component={NoMatch} />
+              <ReactRouter.Route path=":id" component={MergeRequest} />
+            </ReactRouter.Route>
+            <ReactRouter.Route path="list_merge_requests">
+              <ReactRouter.IndexRoute component={ListOpenMergeRequests} />
             </ReactRouter.Route>
           </ReactRouter.Route>
         </ReactRouter.Route>

@@ -51,7 +51,7 @@ CLASS zcl_ags_service_rest DEFINITION
       ty_changed_files_tt TYPE STANDARD TABLE OF ty_changed_file WITH DEFAULT KEY .
     TYPES:
       BEGIN OF ty_commit.
-            INCLUDE TYPE zcl_ags_obj_commit=>ty_pretty.
+        INCLUDE TYPE zcl_ags_obj_commit=>ty_pretty.
     TYPES: files TYPE ty_changed_files_tt,
            END OF ty_commit .
     TYPES:
@@ -64,12 +64,13 @@ CLASS zcl_ags_service_rest DEFINITION
         changed_files TYPE HASHED TABLE OF ty_changed_file WITH UNIQUE KEY filename path,
       END OF ty_merge_request_commits.
     TYPES BEGIN OF ty_merge_request.
-      INCLUDE TYPE ty_merge_request_commits.
-      INCLUDE TYPE zags_merge_req.
+      INCLUDE TYPE ty_merge_request_commits AS ap.
+      INCLUDE TYPE zags_merge_req AS db.
     TYPES END OF ty_merge_request.
     TYPES:
       BEGIN OF ty_create_merge_req,
-        repo TYPE zags_repo_name,
+        reponame TYPE zags_repo_name,
+        title TYPE zags_merge_request_title,
         sourcebranch TYPE zags_branch_name,
         targetbranch TYPE zags_branch_name,
       END OF ty_create_merge_req.
@@ -155,7 +156,7 @@ CLASS zcl_ags_service_rest DEFINITION
         zcx_ags_error .
     METHODS get_anchestor_merge_request
       IMPORTING
-        iv_repo          TYPE zags_repo_name
+        iv_repo           TYPE zags_repo_name
         iv_target_branch  TYPE zags_branch_name
         iv_source_branch  TYPE zags_branch_name
       RETURNING VALUE(rs_commits) TYPE ty_merge_request_commits
@@ -166,6 +167,12 @@ CLASS zcl_ags_service_rest DEFINITION
         iv_repo          TYPE zags_repo_name
         iv_id            TYPE zags_merge_request_id
       RETURNING VALUE(rs_merge_request) TYPE ty_merge_request
+      RAISING
+        zcx_ags_error.
+    METHODS list_open_merge_requests
+      IMPORTING
+        iv_repo          TYPE zags_repo_name
+      RETURNING VALUE(rt_requests) TYPE zags_merge_req_tt
       RAISING
         zcx_ags_error.
   PROTECTED SECTION.
@@ -197,17 +204,17 @@ CLASS ZCL_AGS_SERVICE_REST IMPLEMENTATION.
   METHOD create_merge_request.
 
     DATA(ls_merge_request) = zcl_ags_db_merge_requests=>create(
-      iv_repo_name = iv_data-repo iv_target_branch = iv_data-targetbranch
-      iv_source_branch = iv_data-sourcebranch ).
+      iv_repo_name = iv_data-reponame iv_target_branch = iv_data-targetbranch
+      iv_source_branch = iv_data-sourcebranch
+      iv_title = iv_data-title ).
 
     DATA(ls_commits) = get_anchestor_merge_request(
-      iv_repo = iv_data-repo
+      iv_repo = iv_data-reponame
       iv_source_branch = iv_data-sourcebranch
       iv_target_branch = iv_data-targetbranch ).
 
-    MOVE-CORRESPONDING:
-      ls_merge_request TO rs_merge_request,
-      ls_commits TO rs_merge_request.
+    rs_merge_request-db = ls_merge_request.
+    rs_merge_request-ap = ls_commits.
 
   ENDMETHOD.
 
@@ -278,6 +285,16 @@ CLASS ZCL_AGS_SERVICE_REST IMPLEMENTATION.
 
 
   METHOD get_merge_request.
+
+    DATA(ls_merge_request) = zcl_ags_db_merge_requests=>single(
+      iv_repo_name = iv_repo iv_id = iv_id ).
+    MOVE-CORRESPONDING ls_merge_request TO rs_merge_request-db.
+    rs_merge_request-target_branch_name = ls_merge_request-target_branch_name.
+    rs_merge_request-source_branch_name = ls_merge_request-source_branch_name.
+    rs_merge_request-ap = get_anchestor_merge_request(
+      iv_repo = iv_repo iv_target_branch = rs_merge_request-target_branch_name
+      iv_source_branch = rs_merge_request-source_branch_name ).
+
   ENDMETHOD.
 
 
@@ -416,6 +433,13 @@ CLASS ZCL_AGS_SERVICE_REST IMPLEMENTATION.
       )->get_branch( iv_branch
       )->get_cache(
       )->list_files_by_path( '/' && iv_path ).
+
+  ENDMETHOD.
+
+
+  METHOD list_open_merge_requests.
+
+    rt_requests = zcl_ags_db_merge_requests=>list_open( iv_repo ).
 
   ENDMETHOD.
 
@@ -681,6 +705,21 @@ CLASS ZCL_AGS_SERVICE_REST IMPLEMENTATION.
     <ls_meta>-url-regex = '/create_merge_request$'.
     <ls_meta>-method    = zcl_swag=>c_method-post.
     <ls_meta>-handler   = 'CREATE_MERGE_REQUEST'.
+
+    APPEND INITIAL LINE TO rt_meta ASSIGNING <ls_meta>.
+    <ls_meta>-summary   = 'Get single merge requests'.
+    <ls_meta>-url-regex = '/merge_request/([\w-]+)/([\w-]+)'.
+    APPEND 'IV_REPO' TO <ls_meta>-url-group_names.
+    APPEND 'IV_ID' TO <ls_meta>-url-group_names.
+    <ls_meta>-method    = zcl_swag=>c_method-get.
+    <ls_meta>-handler   = 'GET_MERGE_REQUEST'.
+
+    APPEND INITIAL LINE TO rt_meta ASSIGNING <ls_meta>.
+    <ls_meta>-summary   = 'List open merge requests'.
+    <ls_meta>-url-regex = '/list_merge_requests/([\w-]+)'.
+    APPEND 'IV_REPO' TO <ls_meta>-url-group_names.
+    <ls_meta>-method    = zcl_swag=>c_method-get.
+    <ls_meta>-handler   = 'LIST_OPEN_MERGE_REQUESTS'.
 
   ENDMETHOD.
 ENDCLASS.

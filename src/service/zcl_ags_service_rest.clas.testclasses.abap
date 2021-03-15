@@ -102,7 +102,7 @@ CLASS ltcl_merge_request IMPLEMENTATION.
   METHOD create_merge_request_af.
 
     DATA(ls_act_merge_request) = NEW zcl_ags_service_rest( )->create_merge_request(
-      iv_data = VALUE #( repo = 'ags_ci' targetbranch = 'refs/heads/master'
+      VALUE #( reponame = 'ags_ci' targetbranch = 'refs/heads/master'
         sourcebranch = 'refs/heads/b1' ) ).
 
     DATA(ls_exp_merge_request) = VALUE zcl_ags_service_rest=>ty_merge_request(
@@ -114,6 +114,7 @@ CLASS ltcl_merge_request IMPLEMENTATION.
       source_branch = '051MciMJ7jkQzS7GMQrWsW'
       source_branch_name = 'b1'
       target_branch_name = 'master'
+      created_by = sy-uname
       changed_files = VALUE #(
         ( filename = 'MANIFEST.md'
           path = '/'
@@ -132,7 +133,7 @@ CLASS ltcl_merge_request IMPLEMENTATION.
   METHOD create_merge_request_mf.
 
     DATA(ls_act_merge_request) = NEW zcl_ags_service_rest( )->create_merge_request(
-      iv_data = VALUE #( repo = 'ags_ci' targetbranch = 'refs/heads/master'
+      VALUE #( reponame = 'ags_ci' targetbranch = 'refs/heads/master'
         sourcebranch = 'refs/heads/b2' ) ).
 
     DATA(ls_exp_merge_request) = VALUE zcl_ags_service_rest=>ty_merge_request(
@@ -144,6 +145,7 @@ CLASS ltcl_merge_request IMPLEMENTATION.
       source_branch = '051MciMJ7jkVbzqd2dz0sW'
       source_branch_name = 'b2'
       target_branch_name = 'master'
+      created_by = sy-uname
       changed_files = VALUE #(
         ( filename = 'README.md'
           path = '/'
@@ -163,7 +165,7 @@ CLASS ltcl_merge_request IMPLEMENTATION.
   METHOD create_merge_request_df.
 
     DATA(ls_act_merge_request) = NEW zcl_ags_service_rest( )->create_merge_request(
-      iv_data = VALUE #( repo = 'ags_ci' targetbranch = 'refs/heads/master'
+      VALUE #( reponame = 'ags_ci' targetbranch = 'refs/heads/master'
         sourcebranch = 'refs/heads/b3' ) ).
 
     DATA(ls_exp_merge_request) = VALUE zcl_ags_service_rest=>ty_merge_request(
@@ -175,6 +177,7 @@ CLASS ltcl_merge_request IMPLEMENTATION.
       source_branch = '051MciMJ7jkVc3yk9a{0sW'
       source_branch_name = 'b3'
       target_branch_name = 'master'
+      created_by = sy-uname
       changed_files = VALUE #(
         ( filename = 'README.md'
           path = '/'
