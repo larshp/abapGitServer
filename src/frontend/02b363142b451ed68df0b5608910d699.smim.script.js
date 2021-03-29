@@ -778,7 +778,7 @@ class DiffMergeRequest extends React.Component {
         this.state.anchestor.CHANGED_FILES.splice(view);
       }
       return (<div>{ total} total, { this.state.anchestor.CHANGED_FILES.length } shown<br />
-        { this.state.anchestor.CHANGED_FILES.map(this.single.bind(this)) }
+        { this.state.anchestor.CHANGED_FILES.filter(f => f.OLD_BLOB || f.NEW_BLOB).map(this.single.bind(this)) }
 	</div>);
     }
     return null;

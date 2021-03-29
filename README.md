@@ -38,6 +38,9 @@ When you push a new branch with new commits, the operation will fail.
 - https://github.com/larshp/ABAP-Swagger
 - https://github.com/larshp/abapGit (the full repository is needed, not only the latest build on https://raw.githubusercontent.com/abapGit/build/master/zabapgit.abap)
 
+#### Testing
+- https://github.com/bunysae/abap_db_preparator
+
 ### Version requirement
 see https://github.com/larshp/ABAP-Swagger
 
