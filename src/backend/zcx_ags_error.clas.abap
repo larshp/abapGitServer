@@ -98,6 +98,15 @@ public section.
       attr4 type scx_attrname value '',
     end of M013 .
   constants:
+    begin of M014,
+      msgid type symsgid value 'ZABAPGITSERVER',
+      msgno type symsgno value '014',
+      attr1 type scx_attrname value '',
+      attr2 type scx_attrname value '',
+      attr3 type scx_attrname value '',
+      attr4 type scx_attrname value '',
+    end of M014 .
+  constants:
     begin of M003,
       msgid type symsgid value 'ZABAPGITSERVER',
       msgno type symsgno value '003',

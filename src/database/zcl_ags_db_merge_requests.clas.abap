@@ -41,6 +41,14 @@ CLASS zcl_ags_db_merge_requests DEFINITION
                 zcx_ags_error.
   PROTECTED SECTION.
   PRIVATE SECTION.
+
+    CLASS-METHODS get_next_id
+      IMPORTING
+        is_repo TYPE zags_repos
+      RETURNING VALUE(rv_id) TYPE zags_merge_request_id
+      RAISING
+              zcx_ags_error.
+
 ENDCLASS.
 
 
@@ -51,13 +59,6 @@ CLASS ZCL_AGS_DB_MERGE_REQUESTS IMPLEMENTATION.
   METHOD create.
 
     DATA(ls_repo) = zcl_ags_db=>get_repos( )->single( iv_repo_name ).
-    SELECT id FROM zags_merge_req
-        UP TO 1 ROWS
-        INTO @DATA(lv_id)
-        WHERE repo = @ls_repo-repo
-        ORDER BY id DESCENDING.
-    ENDSELECT.
-    lv_id = lv_id + 1.
 
     DATA(ls_target_branch) = zcl_ags_db=>get_branches( )->single(
       iv_repo = ls_repo-repo iv_name = iv_target_branch ).
@@ -65,7 +66,8 @@ CLASS ZCL_AGS_DB_MERGE_REQUESTS IMPLEMENTATION.
       iv_repo = ls_repo-repo iv_name = iv_source_branch ).
 
     rv_req = VALUE #(
-      repo = ls_repo-repo id = lv_id target_branch = ls_target_branch-branch
+      repo = ls_repo-repo id = get_next_id( ls_repo )
+      target_branch = ls_target_branch-branch
       source_branch = ls_source_branch-branch title = iv_title
       created_by = sy-uname ).
     INSERT zags_merge_req FROM rv_req.
@@ -85,6 +87,36 @@ CLASS ZCL_AGS_DB_MERGE_REQUESTS IMPLEMENTATION.
           repo_name = iv_repo_name
           id = iv_id.
     ENDIF.
+
+  ENDMETHOD.
+
+
+  METHOD get_next_id.
+
+    CALL FUNCTION 'ENQUEUE_EZAGS_MERGE_REQ'
+      EXPORTING
+        repo = is_repo-repo
+        _wait = abap_true
+        _scope = '1'
+      EXCEPTIONS
+        foreign_lock = 2.
+    IF sy-subrc <> 0.
+      RAISE EXCEPTION TYPE zcx_ags_error
+        EXPORTING
+          textid = zcx_ags_error=>m014.
+    ENDIF.
+
+    SELECT id FROM zags_merge_req
+        UP TO 1 ROWS
+        INTO @rv_id
+        WHERE repo = @is_repo-repo
+        ORDER BY id DESCENDING.
+    ENDSELECT.
+    rv_id = rv_id + 1.
+
+    CALL FUNCTION 'DEQUEUE_EZAGS_MERGE_REQ'
+      EXPORTING
+        repo = is_repo-repo.
 
   ENDMETHOD.
 
