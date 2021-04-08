@@ -74,6 +74,7 @@ Library   | Version | License
 [jsdiff](https://github.com/kpdecker/jsdiff) | 2.2.3 | BSD-3-Clause
 [jquery](https://github.com/jquery/jquery) | 2.2.3 | MIT
 [diff2html](https://github.com/rtfpessoa/diff2html) | 2.3.0 | MIT
+[wasm-git](https://github.com/petersalomonsen/wasm-git) | 0.0.4 | GPL with linking exception
 
 ### Screenshots
 [See wiki](https://github.com/larshp/abapGitServer/wiki/Screenshots)

@@ -792,10 +792,62 @@ class MergeRequest extends React.Component {
     REST.getMergeRequest(this.props.params.repo, this.props.params.id, this.update.bind(this)); 
   }
 
-  update(d){
+  update(d) {
     this.state.data = d;
     this.state.spinner = null;
     this.setState(this.state);
+  }
+
+  merge() {
+    const worker = new Worker('/sap/zabapgitserver/static/merge-worker.js');
+    worker.onmessage = event => {
+      switch(event.data.state) {
+        case 'ready':
+          worker.postMessage({url: this.buildUrl(), name: this.state.data.NAME, email: this.state.data.EMAIL, repo: this.props.params.repo, sourceBranch: this.state.data.SOURCE_BRANCH_NAME, targetBranch: this.state.data.TARGET_BRANCH_NAME});
+	  break;
+	case 'merged':
+	  this.state.data.MERGED = 'X'
+	  this.setState(this.state);
+	  break;
+        case 'terminated':
+          this.state.mergeError = event.data.error;
+          this.setState(this.state);
+          break;
+      }
+    }
+  }
+
+  buildUrl() {
+    return `${window.origin}/sap/zabapgitserver/git/${this.props.params.repo}.git`;
+  }
+
+  nameChanged(event) {
+    this.state.NAME = event.target.value;
+  }
+
+  emailChanged(event) {
+    this.state.EMAIL = event.target.value;
+  }
+
+  renderMergeBox() {
+    if (this.state.data.MERGED)
+      return null;
+    return (<div><div class='tile'>
+        <label>Name: <input value={this.state.data.NAME} onChange={this.nameChanged.bind(this)}/></label><br />
+        <label>E-Mail: <input value={this.state.data.EMAIL} onChange={this.emailChanged.bind(this)}/></label><br />
+	<button onClick={this.merge.bind(this)}>Merge</button>
+        <div>{this.state.mergeError}</div>
+      </div>
+      <div class='tile'>
+        Merge in the command line:
+        <div><code>
+          git clone {window.origin}/sap/zabapgitserver/git/{this.props.params.repo}<br />
+	  cd {this.props.params.repo}<br />
+	  git checkout {this.state.data.SOURCE_BRANCH_NAME}<br />
+          git checkout {this.state.data.TARGET_BRANCH_NAME}<br />
+	  git merge {this.state.data.SOURCE_BRANCH_NAME}<br />
+          git pull
+      </code></div></div></div>);
   }
 
   show() {
@@ -803,6 +855,7 @@ class MergeRequest extends React.Component {
       <h1>Merge request #{this.props.params.id} {this.state.data.TITLE}</h1>
       Author: {this.state.data.CREATED_BY} {this.state.data.MERGED ? 'Merged' : 'Open'}<br />
       From branch {this.state.data.SOURCE_BRANCH_NAME} to branch {this.state.data.TARGET_BRANCH_NAME}<br />
+      {this.renderMergeBox()}
       <DiffMergeRequest mergeRequest={{sourceBranch: this.state.data.SOURCE_BRANCH_NAME, targetBranch: this.state.data.TARGET_BRANCH_NAME, repo: this.props.params.repo}} anchestor={{SOURCE_BRANCH_NAME: this.state.data.SOURCE_BRANCH_NAME, TARGET_BRANCH_NAME: this.state.data.TARGET_BRANCH_NAME, CHANGED_FILES: this.state.data.CHANGED_FILES}}/>
       </div>);
   }

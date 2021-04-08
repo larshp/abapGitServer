@@ -97,7 +97,6 @@ CLASS ZCL_AGS_DB_MERGE_REQUESTS IMPLEMENTATION.
       EXPORTING
         repo = is_repo-repo
         _wait = abap_true
-        _scope = '1'
       EXCEPTIONS
         foreign_lock = 2.
     IF sy-subrc <> 0.
@@ -113,10 +112,6 @@ CLASS ZCL_AGS_DB_MERGE_REQUESTS IMPLEMENTATION.
         ORDER BY id DESCENDING.
     ENDSELECT.
     rv_id = rv_id + 1.
-
-    CALL FUNCTION 'DEQUEUE_EZAGS_MERGE_REQ'
-      EXPORTING
-        repo = is_repo-repo.
 
   ENDMETHOD.
 

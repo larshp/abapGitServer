@@ -108,12 +108,6 @@ CLASS ZCL_AGS_BRANCH IMPLEMENTATION.
 
     ASSERT NOT iv_new IS INITIAL.
     ASSERT NOT iv_old IS INITIAL.
-    ASSERT NOT it_objects IS INITIAL.
-
-    READ TABLE it_objects WITH KEY sha1 = iv_new TRANSPORTING NO FIELDS.
-* new commit should exist in objects
-    ASSERT sy-subrc = 0.
-
     ASSERT ms_data-sha1 = iv_old.
 
 * todo, add object validations?

@@ -63,9 +63,15 @@ CLASS zcl_ags_service_rest DEFINITION
         target_branch_name TYPE zags_branch_name,
         changed_files TYPE HASHED TABLE OF ty_changed_file WITH UNIQUE KEY filename path,
       END OF ty_merge_request_commits.
+    TYPES:
+      BEGIN OF ty_user,
+        name TYPE string,
+        email TYPE string,
+      END OF ty_user.
     TYPES BEGIN OF ty_merge_request.
       INCLUDE TYPE ty_merge_request_commits AS ap.
       INCLUDE TYPE zags_merge_req AS db.
+      INCLUDE TYPE ty_user AS us.
     TYPES END OF ty_merge_request.
     TYPES:
       BEGIN OF ty_create_merge_req,
@@ -194,6 +200,8 @@ CLASS zcl_ags_service_rest DEFINITION
         VALUE(rt_files) TYPE ty_changed_files_tt
       RAISING
         zcx_ags_error .
+    METHODS get_user
+      RETURNING VALUE(rs_result) TYPE ty_user.
 ENDCLASS.
 
 
@@ -294,6 +302,16 @@ CLASS ZCL_AGS_SERVICE_REST IMPLEMENTATION.
     rs_merge_request-ap = get_anchestor_merge_request(
       iv_repo = iv_repo iv_target_branch = rs_merge_request-target_branch_name
       iv_source_branch = rs_merge_request-source_branch_name ).
+    rs_merge_request-us = get_user( ).
+
+  ENDMETHOD.
+
+
+  METHOD get_user.
+
+    DATA(lo_user) = zcl_abapgit_user_master_record=>get_instance( sy-uname ).
+    rs_result-name = lo_user->get_name( ).
+    rs_result-email = lo_user->get_email( ).
 
   ENDMETHOD.
 
