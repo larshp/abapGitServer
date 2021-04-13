@@ -80,6 +80,12 @@
      <MSGNR>014</MSGNR>
      <TEXT>Can&apos;t retrieve id for merge request. Table is locked (Transaction SM12)</TEXT>
     </T100>
+    <T100>
+     <SPRSL>E</SPRSL>
+     <ARBGB>ZABAPGITSERVER</ARBGB>
+     <MSGNR>015</MSGNR>
+     <TEXT>Open merge request &amp;1 already exists for this combination.</TEXT>
+    </T100>
    </T100>
   </asx:values>
  </asx:abap>

@@ -137,7 +137,7 @@ class REST {
   }
 
   static createMergeRequest(repoName, targetBranch, sourceBranch, title, callback) {
-    this.post("create_merge_request", callback, {repoName, targetBranch: 'refs/heads/' + targetBranch, sourceBranch: 'refs/heads/' + sourceBranch, title});
+    this.post("create_merge_request", callback, {repoName, targetBranch: 'refs/heads/' + targetBranch, sourceBranch: 'refs/heads/' + sourceBranch, title}, true);
   }
 
   static getMergeRequest(repoName, id, callback) {
@@ -155,9 +155,9 @@ class REST {
     oReq.send();
   }
 
-  static post(folder, callback, data) {
+  static post(folder, callback, data, json = false) {
     let oReq = new XMLHttpRequest();
-    oReq.addEventListener("load", (evt) => { handleError(evt, callback, false); });
+    oReq.addEventListener("load", (evt) => { handleError(evt, callback, json); });
     oReq.open("POST", this.root + folder);
     oReq.send(JSON.stringify(data));
   }
@@ -668,7 +668,8 @@ class BranchList extends React.Component {
  
   forward(mergeRequest) {
     const state = this.state;
-    state.mergeRequest.id = mergeRequest.id
+    state.mergeRequest.id = mergeRequest.ID
+    state.mergeRequest.errorMessage = mergeRequest.ERROR_MESSAGE
     this.setState(state);
   }
 
@@ -699,8 +700,10 @@ class BranchList extends React.Component {
   }
 
   immediatelyCreatedMergeRequest() {
-    if (this.state.mergeRequest.id) {
-      return (<div>Merge request <Link to={this.props.params.repo+ "/merge_request/" + this.state.mergeRequest.id}>#{this.state.mergeRequest.id}</Link> created.</div>);
+    if (this.state.mergeRequest.errorMessage) {
+      return (<div className="errorMessage"><span className="octicon octicon-stop">{this.state.mergeRequest.errorMessage}</span></div>);
+    } else if (this.state.mergeRequest.id) {
+      return (<div className="infoMessage"><span className="octicon octicon-check">Merge request <Link to={this.props.params.repo+ "/merge_request/" + this.state.mergeRequest.id}>#{this.state.mergeRequest.id}</Link> created.</span></div>);
     }
     return null;
   }
@@ -832,14 +835,14 @@ class MergeRequest extends React.Component {
   renderMergeBox() {
     if (this.state.data.MERGED)
       return null;
-    return (<div><div class='tile'>
-        <label>Name: <input value={this.state.data.NAME} onChange={this.nameChanged.bind(this)}/></label><br />
-        <label>E-Mail: <input value={this.state.data.EMAIL} onChange={this.emailChanged.bind(this)}/></label><br />
+    return (<div><div className="mergeBox">
+        <label>Name: <input className="inputElement" value={this.state.data.NAME} onChange={this.nameChanged.bind(this)}/></label><br />
+        <label>E-Mail: <input className="inputElement" value={this.state.data.EMAIL} onChange={this.emailChanged.bind(this)}/></label><br />
 	<button onClick={this.merge.bind(this)}>Merge</button>
         <div>{this.state.mergeError}</div>
       </div>
-      <div class='tile'>
-        Merge in the command line:
+      <div className="mergeBox">
+        Command line instructions:
         <div><code>
           git clone {window.origin}/sap/zabapgitserver/git/{this.props.params.repo}<br />
 	  cd {this.props.params.repo}<br />
