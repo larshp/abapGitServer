@@ -7,47 +7,44 @@ CLASS zcl_ags_db_merge_requests DEFINITION
 
     CLASS-METHODS create
       IMPORTING
-                iv_repo_name     TYPE zags_repo_name
-                iv_target_branch TYPE zags_branch_name
-                iv_source_branch TYPE zags_branch_name
-                iv_title         TYPE zags_merge_request_title
-      RETURNING VALUE(rv_req)    TYPE zags_merge_req
+        !iv_repo_name     TYPE zags_repo_name
+        !iv_target_branch TYPE zags_branch_name
+        !iv_source_branch TYPE zags_branch_name
+        !iv_title         TYPE zags_merge_request_title
+      RETURNING
+        VALUE(rv_req)     TYPE zags_merge_req
       RAISING
-                zcx_ags_error.
+        zcx_ags_error .
     CLASS-METHODS list_open
       IMPORTING
-                iv_repo_name       TYPE zags_repo_name
-      RETURNING VALUE(rt_requests) TYPE zags_merge_req_tt
+        !iv_repo_name      TYPE zags_repo_name
+      RETURNING
+        VALUE(rt_requests) TYPE zags_merge_req_tt
       RAISING
-                zcx_ags_error.
-    CLASS-METHODS merge
-      IMPORTING
-        iv_repo_name TYPE zags_repo_name
-        iv_id        TYPE zags_merge_request_id
-      RAISING
-        zcx_ags_error.
+        zcx_ags_error .
     CLASS-METHODS delete
       IMPORTING
-        iv_repo_name TYPE zags_repo_name
-        iv_id        TYPE zags_merge_request_id
+        !iv_repo_name TYPE zags_repo_name
+        !iv_id        TYPE zags_merge_request_id
       RAISING
-        zcx_ags_error.
+        zcx_ags_error .
     CLASS-METHODS single
       IMPORTING
-                iv_repo_name      TYPE zags_repo_name
-                iv_id             TYPE zags_merge_request_id
-      RETURNING VALUE(rs_request) TYPE zags_merge_req_s
+        !iv_repo_name     TYPE zags_repo_name
+        !iv_id            TYPE zags_merge_request_id
+      RETURNING
+        VALUE(rs_request) TYPE zags_merge_req_s
       RAISING
-                zcx_ags_error.
+        zcx_ags_error .
   PROTECTED SECTION.
   PRIVATE SECTION.
 
     CLASS-METHODS get_next_id
       IMPORTING
-        is_repo TYPE zags_repos
+                is_repo      TYPE zags_repos
       RETURNING VALUE(rv_id) TYPE zags_merge_request_id
       RAISING
-              zcx_ags_error.
+                zcx_ags_error.
 
 ENDCLASS.
 
@@ -83,9 +80,9 @@ CLASS ZCL_AGS_DB_MERGE_REQUESTS IMPLEMENTATION.
     IF sy-subrc <> 0.
       RAISE EXCEPTION TYPE zcx_ags_error
         EXPORTING
-          textid = zcx_ags_error=>m013
+          textid    = zcx_ags_error=>m013
           repo_name = iv_repo_name
-          id = iv_id.
+          id        = iv_id.
     ENDIF.
 
   ENDMETHOD.
@@ -95,8 +92,9 @@ CLASS ZCL_AGS_DB_MERGE_REQUESTS IMPLEMENTATION.
 
     CALL FUNCTION 'ENQUEUE_EZAGS_MERGE_REQ'
       EXPORTING
-        repo = is_repo-repo
-        _wait = abap_true
+        repo         = is_repo-repo
+        _wait        = abap_true
+        x_id         = abap_true
       EXCEPTIONS
         foreign_lock = 2.
     IF sy-subrc <> 0.
@@ -121,14 +119,6 @@ CLASS ZCL_AGS_DB_MERGE_REQUESTS IMPLEMENTATION.
     DATA(ls_repo) = zcl_ags_db=>get_repos( )->single( iv_repo_name ).
     SELECT * FROM zags_merge_req INTO TABLE rt_requests
       WHERE repo = ls_repo-repo AND merged = abap_false.
-
-  ENDMETHOD.
-
-
-  METHOD merge.
-
-    DATA(ls_repo) = zcl_ags_db=>get_repos( )->single( iv_repo_name ).
-
 
   ENDMETHOD.
 

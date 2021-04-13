@@ -114,8 +114,16 @@ CLASS ZCL_AGS_BRANCH IMPLEMENTATION.
     zcl_ags_pack=>save(
       iv_repo    = ms_data-repo
       it_objects = it_objects ).
-
     update_sha1( iv_new ).
+
+    CALL FUNCTION 'ZAGS_HANDLE_MERGE_REQUESTS'
+      IN UPDATE TASK
+      EXPORTING
+        iv_repo = ms_data-repo
+        iv_target_branch = ms_data-branch
+        iv_sha1_commit_new = iv_new
+        iv_sha1_commit_old = iv_old.
+    COMMIT WORK.
 
   ENDMETHOD.
 
