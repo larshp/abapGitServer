@@ -62,10 +62,10 @@ CLASS ZCL_AGS_DB_MERGE_REQUESTS IMPLEMENTATION.
     DATA(ls_source_branch) = zcl_ags_db=>get_branches( )->single(
       iv_repo = ls_repo-repo iv_name = iv_source_branch ).
 
-    SELECT id FROM zags_merge_req INTO @DATA(lv_existing_id)
+    ##WARN_OK
+    SELECT SINGLE id FROM zags_merge_req INTO @DATA(lv_existing_id)
       WHERE repo = @ls_repo-repo AND target_branch = @ls_target_branch-branch
       AND source_branch = @ls_source_branch-branch AND merged = @abap_false.
-    ENDSELECT.
     IF sy-subrc = 0.
       RAISE EXCEPTION TYPE zcx_ags_merge_req_exc
         EXPORTING

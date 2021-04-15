@@ -1,3 +1,3 @@
-FUNCTION-POOL ZAGS_MERGE_REQUESTS.          "MESSAGE-ID ..
+FUNCTION-POOL zags_merge_requests.           "MESSAGE-ID ..
 
 * INCLUDE LZAGS_MERGE_REQUESTSD...           " Local class definition

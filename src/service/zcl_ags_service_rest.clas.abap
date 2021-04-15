@@ -234,8 +234,8 @@ CLASS ZCL_AGS_SERVICE_REST IMPLEMENTATION.
 
         rs_merge_request-db = ls_merge_request.
         rs_merge_request-ap = ls_commits.
-      CATCH zcx_ags_merge_req_exc INTO DATA(exc).
-        rs_merge_request-error_message = exc->get_text( ).
+      CATCH zcx_ags_merge_req_exc INTO DATA(lo_exc).
+        rs_merge_request-error_message = lo_exc->get_text( ).
     ENDTRY.
 
   ENDMETHOD.
@@ -323,7 +323,7 @@ CLASS ZCL_AGS_SERVICE_REST IMPLEMENTATION.
 
   METHOD get_user.
 
-    DATA(lo_user) = zcl_abapgit_user_master_record=>get_instance( sy-uname ).
+    DATA(lo_user) = zcl_abapgit_user_record=>get_instance( sy-uname ).
     rs_result-name = lo_user->get_name( ).
     rs_result-email = lo_user->get_email( ).
 

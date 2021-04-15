@@ -63,8 +63,8 @@ CLASS ZCL_AGS_MERGE_REQUESTS IMPLEMENTATION.
       IF lv_source_branch IS NOT INITIAL.
 
         SELECT * FROM zags_merge_req INTO @DATA(ls_merge_request)
-          WHERE repo = @iv_repo AND target_branch = @iv_target_branch
-          AND source_branch = @lv_source_branch.
+            WHERE repo = @iv_repo AND target_branch = @iv_target_branch
+            AND source_branch = @lv_source_branch.
           INSERT ls_merge_request INTO TABLE rt_merge_requests.
         ENDSELECT.
 
@@ -81,10 +81,10 @@ CLASS ZCL_AGS_MERGE_REQUESTS IMPLEMENTATION.
     DATA(lt_commits) = lo_ags_cache->list_commits( ).
 
     LOOP AT lt_commits REFERENCE INTO DATA(lr_commit).
-      SELECT branch UP TO 1 ROWS FROM zags_branches INTO rv_branch
+      ##WARN_OK
+      SELECT SINGLE branch FROM zags_branches INTO rv_branch
         WHERE repo = iv_repo AND sha1 = lr_commit->*-sha1
         AND branch <> iv_target_branch.
-      ENDSELECT.
       IF sy-subrc = 0.
         RETURN.
       ENDIF.
@@ -105,7 +105,7 @@ CLASS ZCL_AGS_MERGE_REQUESTS IMPLEMENTATION.
 
     LOOP AT lt_commits REFERENCE INTO DATA(lr_commit).
       IF lr_commit->*-parent2 = lo_source_branch->get_data( )-sha1
-        OR lr_commit->*-parent = lo_source_branch->get_data( )-sha1.
+          OR lr_commit->*-parent = lo_source_branch->get_data( )-sha1.
         rv_merged = abap_true.
         RETURN.
       ENDIF.
