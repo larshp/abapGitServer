@@ -788,6 +788,16 @@ class DiffMergeRequest extends React.Component {
   }
 }
 
+class MergeError extends React.Component {
+  render() {
+    if (!this.props.message)
+      return null;
+    return (<div className="errorMessage"><span className="octicon octicon-stop">
+      Merge conflicts found. Please resolve them in the command line.<br/>
+      ${this.props.message}</span></div>);
+  }
+}
+
 class MergeRequest extends React.Component {
   constructor(props) {
     super(props);
@@ -839,7 +849,7 @@ class MergeRequest extends React.Component {
         <label>Name: <input className="inputElement" value={this.state.data.NAME} onChange={this.nameChanged.bind(this)}/></label><br />
         <label>E-Mail: <input className="inputElement" value={this.state.data.EMAIL} onChange={this.emailChanged.bind(this)}/></label><br />
 	<button onClick={this.merge.bind(this)}>Merge</button>
-        <div>{this.state.mergeError}</div>
+	<MergeError message={this.state.mergeError}/>
       </div>
       <div className="mergeBox">
         Command line instructions:
@@ -859,6 +869,8 @@ class MergeRequest extends React.Component {
       Author: {this.state.data.CREATED_BY} {this.state.data.MERGED ? 'Merged' : 'Open'}<br />
       From branch {this.state.data.SOURCE_BRANCH_NAME} to branch {this.state.data.TARGET_BRANCH_NAME}<br />
       {this.renderMergeBox()}
+      <br/>
+      <h3>Diff</h3>
       <DiffMergeRequest mergeRequest={{sourceBranch: this.state.data.SOURCE_BRANCH_NAME, targetBranch: this.state.data.TARGET_BRANCH_NAME, repo: this.props.params.repo}} anchestor={{SOURCE_BRANCH_NAME: this.state.data.SOURCE_BRANCH_NAME, TARGET_BRANCH_NAME: this.state.data.TARGET_BRANCH_NAME, CHANGED_FILES: this.state.data.CHANGED_FILES}}/>
       </div>);
   }
