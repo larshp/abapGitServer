@@ -86,6 +86,12 @@
      <MSGNR>015</MSGNR>
      <TEXT>Open merge request &amp;1 already exists for this combination.</TEXT>
     </T100>
+    <T100>
+     <SPRSL>E</SPRSL>
+     <ARBGB>ZABAPGITSERVER</ARBGB>
+     <MSGNR>016</MSGNR>
+     <TEXT>Branch &amp;1 already merged into &amp;2.</TEXT>
+    </T100>
    </T100>
   </asx:values>
  </asx:abap>

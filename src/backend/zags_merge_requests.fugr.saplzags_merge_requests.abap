@@ -1,8 +1,8 @@
 *******************************************************************
 *   System-defined Include-files.                                 *
 *******************************************************************
-  INCLUDE LZAGS_MERGE_REQUESTSTOP.           " Global Data
-  INCLUDE LZAGS_MERGE_REQUESTSUXX.           " Function Modules
+INCLUDE LZAGS_MERGE_REQUESTSTOP.           " Global Data
+INCLUDE LZAGS_MERGE_REQUESTSUXX.           " Function Modules
 
 *******************************************************************
 *   User-defined Include-files (if necessary).                    *

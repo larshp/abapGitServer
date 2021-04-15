@@ -5,6 +5,7 @@ CLASS zcl_ags_merge_requests DEFINITION
 
   PUBLIC SECTION.
 
+    "! Associated merge requests, that are merged with the new commits
     CLASS-METHODS find_merged_merge_requests
       IMPORTING
         !iv_repo                 TYPE zags_repo
@@ -15,6 +16,17 @@ CLASS zcl_ags_merge_requests DEFINITION
         VALUE(rt_merge_requests) TYPE zags_merge_req_htt
       RAISING
         zcx_ags_error .
+
+    CLASS-METHODS is_branch_merged
+      IMPORTING
+        !iv_repo_name     TYPE zags_repo_name
+        !iv_source_branch TYPE zags_branch_name
+        !iv_target_branch TYPE zags_branch_name
+      RETURNING
+        VALUE(rv_merged)  TYPE abap_bool
+      RAISING
+        zcx_ags_error.
+
   PROTECTED SECTION.
   PRIVATE SECTION.
 
@@ -78,6 +90,24 @@ CLASS ZCL_AGS_MERGE_REQUESTS IMPLEMENTATION.
       ENDIF.
       IF lr_commit->*-sha1 = iv_sha1_commit_old.
         EXIT.
+      ENDIF.
+    ENDLOOP.
+
+  ENDMETHOD.
+
+
+  METHOD is_branch_merged.
+
+    DATA(lo_target_branch) = zcl_ags_repo=>get_instance( iv_repo_name )->get_branch( iv_target_branch ).
+    DATA(lt_commits) = lo_target_branch->get_cache( )->list_commits( ).
+
+    DATA(lo_source_branch) = zcl_ags_repo=>get_instance( iv_repo_name )->get_branch( iv_source_branch ).
+
+    LOOP AT lt_commits REFERENCE INTO DATA(lr_commit).
+      IF lr_commit->*-parent2 = lo_source_branch->get_data( )-sha1
+        OR lr_commit->*-parent = lo_source_branch->get_data( )-sha1.
+        rv_merged = abap_true.
+        RETURN.
       ENDIF.
     ENDLOOP.
 

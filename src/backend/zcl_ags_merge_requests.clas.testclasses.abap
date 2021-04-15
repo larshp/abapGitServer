@@ -14,6 +14,12 @@ CLASS ltcl_merge_requests DEFINITION FOR TESTING
     METHODS normal_commit FOR TESTING
       RAISING zcx_ags_error.
 
+    METHODS branch_merged FOR TESTING
+      RAISING zcx_ags_error.
+
+    METHODS branch_not_merged FOR TESTING
+      RAISING zcx_ags_error.
+
 ENDCLASS.
 
 CLASS ltcl_merge_requests IMPLEMENTATION.
@@ -65,6 +71,22 @@ CLASS ltcl_merge_requests IMPLEMENTATION.
     ).
 
     cl_abap_unit_assert=>assert_initial( act = lt_act_merge_requests ).
+
+  ENDMETHOD.
+
+  METHOD branch_merged.
+
+    cl_abap_unit_assert=>assert_true( act = zcl_ags_merge_requests=>is_branch_merged(
+      iv_repo_name = 'ags_ci2' iv_target_branch = 'refs/heads/master'
+      iv_source_branch = 'refs/heads/f2' ) ).
+
+  ENDMETHOD.
+
+  METHOD branch_not_merged.
+
+    cl_abap_unit_assert=>assert_false( act = zcl_ags_merge_requests=>is_branch_merged(
+      iv_repo_name = 'ags_ci4' iv_target_branch = 'refs/heads/master'
+      iv_source_branch = 'refs/heads/f1' ) ).
 
   ENDMETHOD.
 

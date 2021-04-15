@@ -212,6 +212,15 @@ CLASS ZCL_AGS_SERVICE_REST IMPLEMENTATION.
 
   METHOD create_merge_request.
 
+    DATA(lv_branch_already_merged) = zcl_ags_merge_requests=>is_branch_merged(
+      iv_repo_name = iv_data-reponame iv_source_branch = iv_data-sourcebranch
+      iv_target_branch = iv_data-targetbranch ).
+    IF lv_branch_already_merged = abap_true.
+      MESSAGE e016(zabapgitserver) WITH iv_data-sourcebranch iv_data-targetbranch
+        INTO rs_merge_request-error_message.
+      RETURN.
+    ENDIF.
+
     TRY.
         DATA(ls_merge_request) = zcl_ags_db_merge_requests=>create(
           iv_repo_name = iv_data-reponame iv_target_branch = iv_data-targetbranch
