@@ -339,7 +339,7 @@ CLASS ZCL_AGS_CACHE IMPLEMENTATION.
 
     ENDLOOP.
 
-* todo, not needed? or handle in a different way?
+    " needed for class zcl_ags_merge_requests
     SORT rt_commits STABLE BY author-time DESCENDING.
 
   ENDMETHOD.

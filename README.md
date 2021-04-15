@@ -13,6 +13,18 @@ by activating the ServiceName ZABAPGITSERVER in transaction SICF
 
 to use it via the web frontend by running transaction ZABAPGITSERVER (or right click on the SICF service ZABAPGITSERVER and choose Test Service)
 
+## Merge requests
+abapGitServer supports merge requests between two branches of the same repo.
+
+### Creating branches
+After creating a new branch, push it directly to `abapGitServer` before committing any changes:
+```
+git branch <new>
+git push origin <new>
+```
+After this operation you can make your changes and commit them to the new branch.
+When you push a new branch with new commits, the operation will fail.
+
 ### News
 2018-02-25: Support for tags added, use conversion program ZAGS_MIGRATION_03 to convert old repositories
 
@@ -24,7 +36,10 @@ to use it via the web frontend by running transaction ZABAPGITSERVER (or right c
 
 ### Requirements
 - https://github.com/larshp/ABAP-Swagger
-- https://github.com/larshp/abapGit (the full repository is needed, not only the latest build on https://raw.githubusercontent.com/abapGit/build/master/zabapgit.abap)
+- https://github.com/larshp/abapGit (the full repository version >= 1.102.0 is needed, not only the latest build on https://raw.githubusercontent.com/abapGit/build/master/zabapgit.abap)
+
+#### Testing
+- https://github.com/bunysae/abap_db_preparator
 
 ### Version requirement
 see https://github.com/larshp/ABAP-Swagger
@@ -59,6 +74,7 @@ Library   | Version | License
 [jsdiff](https://github.com/kpdecker/jsdiff) | 2.2.3 | BSD-3-Clause
 [jquery](https://github.com/jquery/jquery) | 2.2.3 | MIT
 [diff2html](https://github.com/rtfpessoa/diff2html) | 2.3.0 | MIT
+[wasm-git](https://github.com/petersalomonsen/wasm-git) | 0.0.4 | GPL with linking exception
 
 ### Screenshots
 [See wiki](https://github.com/larshp/abapGitServer/wiki/Screenshots)

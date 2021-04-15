@@ -1,0 +1,59 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<abapGit version="v1.0.0" serializer="LCL_OBJECT_FUGR" serializer_version="v1.0.0">
+ <asx:abap xmlns:asx="http://www.sap.com/abapxml" version="1.0">
+  <asx:values>
+   <AREAT>Merge requests</AREAT>
+   <INCLUDES>
+    <SOBJ_NAME>LZAGS_MERGE_REQUESTSTOP</SOBJ_NAME>
+    <SOBJ_NAME>SAPLZAGS_MERGE_REQUESTS</SOBJ_NAME>
+   </INCLUDES>
+   <FUNCTIONS>
+    <item>
+     <FUNCNAME>ZAGS_HANDLE_MERGE_REQUESTS</FUNCNAME>
+     <UPDATE_TASK>1</UPDATE_TASK>
+     <SHORT_TEXT>Handle associated merge requests</SHORT_TEXT>
+     <IMPORT>
+      <RSIMP>
+       <PARAMETER>IV_REPO</PARAMETER>
+       <TYP>ZAGS_REPO</TYP>
+      </RSIMP>
+      <RSIMP>
+       <PARAMETER>IV_TARGET_BRANCH</PARAMETER>
+       <TYP>ZAGS_BRANCH</TYP>
+      </RSIMP>
+      <RSIMP>
+       <PARAMETER>IV_SHA1_COMMIT_NEW</PARAMETER>
+       <TYP>ZAGS_SHA1</TYP>
+      </RSIMP>
+      <RSIMP>
+       <PARAMETER>IV_SHA1_COMMIT_OLD</PARAMETER>
+       <TYP>ZAGS_SHA1</TYP>
+      </RSIMP>
+     </IMPORT>
+     <DOCUMENTATION>
+      <RSFDO>
+       <PARAMETER>IV_REPO</PARAMETER>
+       <KIND>P</KIND>
+       <STEXT>Repository</STEXT>
+      </RSFDO>
+      <RSFDO>
+       <PARAMETER>IV_TARGET_BRANCH</PARAMETER>
+       <KIND>P</KIND>
+       <STEXT>Branch</STEXT>
+      </RSFDO>
+      <RSFDO>
+       <PARAMETER>IV_SHA1_COMMIT_NEW</PARAMETER>
+       <KIND>P</KIND>
+       <STEXT>SHA1 new commit</STEXT>
+      </RSFDO>
+      <RSFDO>
+       <PARAMETER>IV_SHA1_COMMIT_OLD</PARAMETER>
+       <KIND>P</KIND>
+       <STEXT>SHA1 old commit</STEXT>
+      </RSFDO>
+     </DOCUMENTATION>
+    </item>
+   </FUNCTIONS>
+  </asx:values>
+ </asx:abap>
+</abapGit>

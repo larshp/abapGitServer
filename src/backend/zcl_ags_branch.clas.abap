@@ -108,20 +108,22 @@ CLASS ZCL_AGS_BRANCH IMPLEMENTATION.
 
     ASSERT NOT iv_new IS INITIAL.
     ASSERT NOT iv_old IS INITIAL.
-    ASSERT NOT it_objects IS INITIAL.
-
-    READ TABLE it_objects WITH KEY sha1 = iv_new TRANSPORTING NO FIELDS.
-* new commit should exist in objects
-    ASSERT sy-subrc = 0.
-
     ASSERT ms_data-sha1 = iv_old.
 
 * todo, add object validations?
     zcl_ags_pack=>save(
       iv_repo    = ms_data-repo
       it_objects = it_objects ).
-
     update_sha1( iv_new ).
+
+    CALL FUNCTION 'ZAGS_HANDLE_MERGE_REQUESTS'
+      IN UPDATE TASK
+      EXPORTING
+        iv_repo = ms_data-repo
+        iv_target_branch = ms_data-branch
+        iv_sha1_commit_new = iv_new
+        iv_sha1_commit_old = iv_old.
+    COMMIT WORK.
 
   ENDMETHOD.
 

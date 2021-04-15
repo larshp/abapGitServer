@@ -51,40 +51,67 @@ CLASS zcl_ags_service_rest DEFINITION
       ty_changed_files_tt TYPE STANDARD TABLE OF ty_changed_file WITH DEFAULT KEY .
     TYPES:
       BEGIN OF ty_commit.
-        INCLUDE TYPE zcl_ags_obj_commit=>ty_pretty.
+            INCLUDE TYPE zcl_ags_obj_commit=>ty_pretty.
     TYPES: files TYPE ty_changed_files_tt,
            END OF ty_commit .
+    TYPES:
+      BEGIN OF ty_merge_request_commits,
+        anchestor          TYPE zags_sha1,
+        source             TYPE zags_sha1,
+        target             TYPE zags_sha1,
+        source_branch_name TYPE zags_branch_name,
+        target_branch_name TYPE zags_branch_name,
+        changed_files      TYPE HASHED TABLE OF ty_changed_file WITH UNIQUE KEY filename path,
+      END OF ty_merge_request_commits.
+    TYPES:
+      BEGIN OF ty_user,
+        name  TYPE string,
+        email TYPE string,
+      END OF ty_user.
+    TYPES BEGIN OF ty_merge_request.
+    INCLUDE TYPE ty_merge_request_commits AS ap.
+    INCLUDE TYPE zags_merge_req AS db.
+    INCLUDE TYPE ty_user AS us.
+    TYPES error_message TYPE string.
+    TYPES END OF ty_merge_request.
+    TYPES:
+      BEGIN OF ty_create_merge_req,
+        reponame     TYPE zags_repo_name,
+        title        TYPE zags_merge_request_title,
+        sourcebranch TYPE zags_branch_name,
+        targetbranch TYPE zags_branch_name,
+      END OF ty_create_merge_req.
 
     METHODS create_repo
       IMPORTING
-        !is_data TYPE ty_create
+        is_data TYPE ty_create
       RAISING
         zcx_ags_error .
     METHODS edit_repo
       IMPORTING
-        !is_data TYPE ty_create
+        is_data TYPE ty_create
       RAISING
         zcx_ags_error .
     METHODS list_branches
       IMPORTING
-        !iv_repo           TYPE zags_repo_name
+        iv_repo            TYPE zags_repo_name
       RETURNING
         VALUE(rt_branches) TYPE ty_branches_tt
       RAISING
         zcx_ags_error .
     METHODS list_commits
       IMPORTING
-        !iv_repo          TYPE zags_repo_name
-        !iv_branch        TYPE zags_branch_name
+        iv_repo           TYPE zags_repo_name
+        iv_branch         TYPE zags_branch_name
       RETURNING
         VALUE(rt_commits) TYPE zcl_ags_obj_commit=>ty_pretty_tt
       RAISING
         zcx_ags_error .
     METHODS list_files
       IMPORTING
-        !iv_repo        TYPE zags_repo_name
-        !iv_branch      TYPE zags_branch_name
-        !iv_path        TYPE string
+        iv_repo         TYPE zags_repo_name
+        iv_branch       TYPE zags_branch_name
+        iv_path         TYPE string
       RETURNING
         VALUE(rt_files) TYPE zcl_ags_cache=>ty_files_tt
       RAISING
@@ -96,38 +123,65 @@ CLASS zcl_ags_service_rest DEFINITION
         zcx_ags_error .
     METHODS read_blob
       IMPORTING
-        !iv_repo           TYPE zags_repo_name
-        !iv_branch         TYPE zags_branch_name
-        !iv_filename       TYPE string
+        iv_repo            TYPE zags_repo_name
+        iv_branch          TYPE zags_branch_name
+        iv_filename        TYPE string
       RETURNING
         VALUE(rv_contents) TYPE xstring
       RAISING
         zcx_ags_error .
     METHODS read_blob_sha1
       IMPORTING
-        !iv_repo           TYPE zags_repos-name
-        !iv_sha1           TYPE zags_objects-sha1
+        iv_repo            TYPE zags_repos-name
+        iv_sha1            TYPE zags_objects-sha1
       RETURNING
         VALUE(rv_contents) TYPE xstring
       RAISING
         zcx_ags_error .
     METHODS read_commit
       IMPORTING
-        !iv_repo       TYPE zags_repos-name
-        !iv_commit     TYPE zags_sha1
+        iv_repo        TYPE zags_repos-name
+        iv_commit      TYPE zags_sha1
       RETURNING
         VALUE(rs_data) TYPE ty_commit
       RAISING
         zcx_ags_error .
     METHODS read_history
       IMPORTING
-        !iv_repo          TYPE zags_repo_name
-        !iv_branch        TYPE zags_branch_name
-        !iv_filename      TYPE string
+        iv_repo           TYPE zags_repo_name
+        iv_branch         TYPE zags_branch_name
+        iv_filename       TYPE string
       RETURNING
         VALUE(rt_commits) TYPE zcl_ags_obj_commit=>ty_pretty_tt
       RAISING
         zcx_ags_error .
+    METHODS create_merge_request
+      IMPORTING
+                iv_data                 TYPE ty_create_merge_req
+      RETURNING VALUE(rs_merge_request) TYPE ty_merge_request
+      RAISING
+                zcx_ags_error .
+    METHODS get_anchestor_merge_request
+      IMPORTING
+                iv_repo           TYPE zags_repo_name
+                iv_target_branch  TYPE zags_branch_name
+                iv_source_branch  TYPE zags_branch_name
+      RETURNING VALUE(rs_commits) TYPE ty_merge_request_commits
+      RAISING
+                zcx_ags_error .
+    METHODS get_merge_request
+      IMPORTING
+                iv_repo                 TYPE zags_repo_name
+                iv_id                   TYPE zags_merge_request_id
+      RETURNING VALUE(rs_merge_request) TYPE ty_merge_request
+      RAISING
+                zcx_ags_error.
+    METHODS list_open_merge_requests
+      IMPORTING
+                iv_repo            TYPE zags_repo_name
+      RETURNING VALUE(rt_requests) TYPE zags_merge_req_tt
+      RAISING
+                zcx_ags_error.
   PROTECTED SECTION.
   PRIVATE SECTION.
 
@@ -147,11 +201,44 @@ CLASS zcl_ags_service_rest DEFINITION
         VALUE(rt_files) TYPE ty_changed_files_tt
       RAISING
         zcx_ags_error .
+    METHODS get_user
+      RETURNING VALUE(rs_result) TYPE ty_user.
 ENDCLASS.
 
 
 
 CLASS ZCL_AGS_SERVICE_REST IMPLEMENTATION.
+
+
+  METHOD create_merge_request.
+
+    DATA(lv_branch_already_merged) = zcl_ags_merge_requests=>is_branch_merged(
+      iv_repo_name = iv_data-reponame iv_source_branch = iv_data-sourcebranch
+      iv_target_branch = iv_data-targetbranch ).
+    IF lv_branch_already_merged = abap_true.
+      MESSAGE e016(zabapgitserver) WITH iv_data-sourcebranch iv_data-targetbranch
+        INTO rs_merge_request-error_message.
+      RETURN.
+    ENDIF.
+
+    TRY.
+        DATA(ls_merge_request) = zcl_ags_db_merge_requests=>create(
+          iv_repo_name = iv_data-reponame iv_target_branch = iv_data-targetbranch
+          iv_source_branch = iv_data-sourcebranch
+          iv_title = iv_data-title ).
+
+        DATA(ls_commits) = get_anchestor_merge_request(
+          iv_repo = iv_data-reponame
+          iv_source_branch = iv_data-sourcebranch
+          iv_target_branch = iv_data-targetbranch ).
+
+        rs_merge_request-db = ls_merge_request.
+        rs_merge_request-ap = ls_commits.
+      CATCH zcx_ags_merge_req_exc INTO DATA(lo_exc).
+        rs_merge_request-error_message = lo_exc->get_text( ).
+    ENDTRY.
+
+  ENDMETHOD.
 
 
   METHOD create_repo.
@@ -166,6 +253,79 @@ CLASS ZCL_AGS_SERVICE_REST IMPLEMENTATION.
   METHOD edit_repo.
 
     zcl_ags_repo=>get_instance( is_data-name )->set_description( is_data-description ).
+
+  ENDMETHOD.
+
+
+  METHOD get_anchestor_merge_request.
+    DATA lt_changed_files TYPE ty_changed_files_tt.
+
+    DATA(lo_repo) = zcl_ags_repo=>get_instance( iv_repo ).
+    DATA(lt_source_branch_commits) = list_commits( iv_repo = iv_repo
+      iv_branch = iv_source_branch ).
+    DATA(lt_target_branch_commits) = list_commits( iv_repo = iv_repo
+      iv_branch = iv_target_branch ).
+
+    LOOP AT lt_source_branch_commits REFERENCE INTO DATA(lr_commit).
+
+      IF line_exists( lt_target_branch_commits[ sha1 = lr_commit->*-sha1 ] ).
+        rs_commits-anchestor = lr_commit->*-sha1.
+        EXIT.
+      ENDIF.
+
+      lt_changed_files = list_changes(
+        iv_repo = lo_repo->get_data( )-repo
+        iv_new = lr_commit->*-sha1
+        iv_old = lr_commit->*-parent ).
+      LOOP AT lt_changed_files REFERENCE INTO DATA(lr_changed_file).
+        INSERT lr_changed_file->* INTO TABLE rs_commits-changed_files.
+        IF sy-subrc <> 0.
+          rs_commits-changed_files[ filename = lr_changed_file->*-filename
+            path = lr_changed_file->*-path ]-old_blob = lr_changed_file->*-old_blob.
+        ENDIF.
+      ENDLOOP.
+
+    ENDLOOP.
+
+    READ TABLE lt_source_branch_commits REFERENCE INTO lr_commit
+      INDEX 1.
+    IF sy-subrc = 0.
+      rs_commits-source = lr_commit->*-sha1.
+    ENDIF.
+    READ TABLE lt_target_branch_commits REFERENCE INTO lr_commit
+      INDEX 1.
+    IF sy-subrc = 0.
+      rs_commits-target = lr_commit->*-sha1.
+    ENDIF.
+
+    rs_commits-target_branch_name = iv_target_branch.
+    rs_commits-source_branch_name = iv_source_branch.
+    REPLACE 'refs/heads/' IN rs_commits-target_branch_name WITH ''.
+    REPLACE 'refs/heads/' IN rs_commits-source_branch_name WITH ''.
+
+  ENDMETHOD.
+
+
+  METHOD get_merge_request.
+
+    DATA(ls_merge_request) = zcl_ags_db_merge_requests=>single(
+      iv_repo_name = iv_repo iv_id = iv_id ).
+    MOVE-CORRESPONDING ls_merge_request TO rs_merge_request-db.
+    rs_merge_request-target_branch_name = ls_merge_request-target_branch_name.
+    rs_merge_request-source_branch_name = ls_merge_request-source_branch_name.
+    rs_merge_request-ap = get_anchestor_merge_request(
+      iv_repo = iv_repo iv_target_branch = rs_merge_request-target_branch_name
+      iv_source_branch = rs_merge_request-source_branch_name ).
+    rs_merge_request-us = get_user( ).
+
+  ENDMETHOD.
+
+
+  METHOD get_user.
+
+    DATA(lo_user) = zcl_abapgit_user_record=>get_instance( sy-uname ).
+    rs_result-name = lo_user->get_name( ).
+    rs_result-email = lo_user->get_email( ).
 
   ENDMETHOD.
 
@@ -305,6 +465,13 @@ CLASS ZCL_AGS_SERVICE_REST IMPLEMENTATION.
       )->get_branch( iv_branch
       )->get_cache(
       )->list_files_by_path( '/' && iv_path ).
+
+  ENDMETHOD.
+
+
+  METHOD list_open_merge_requests.
+
+    rt_requests = zcl_ags_db_merge_requests=>list_open( iv_repo ).
 
   ENDMETHOD.
 
@@ -555,6 +722,36 @@ CLASS ZCL_AGS_SERVICE_REST IMPLEMENTATION.
     APPEND 'IV_BRANCH' TO <ls_meta>-url-group_names.
     <ls_meta>-method    = zcl_swag=>c_method-get.
     <ls_meta>-handler   = 'LIST_COMMITS'.
+
+    APPEND INITIAL LINE TO rt_meta ASSIGNING <ls_meta>.
+    <ls_meta>-summary   = 'Get branch anchestor'.
+    <ls_meta>-url-regex = '/anchestor/([\w-]+)/([\w-]+)/([\w-]+)$'.
+    APPEND 'IV_REPO' TO <ls_meta>-url-group_names.
+    APPEND 'IV_TARGET_BRANCH' TO <ls_meta>-url-group_names.
+    APPEND 'IV_SOURCE_BRANCH' TO <ls_meta>-url-group_names.
+    <ls_meta>-method    = zcl_swag=>c_method-get.
+    <ls_meta>-handler   = 'GET_ANCHESTOR_MERGE_REQUEST'.
+
+    APPEND INITIAL LINE TO rt_meta ASSIGNING <ls_meta>.
+    <ls_meta>-summary   = 'Create merge request'.
+    <ls_meta>-url-regex = '/create_merge_request$'.
+    <ls_meta>-method    = zcl_swag=>c_method-post.
+    <ls_meta>-handler   = 'CREATE_MERGE_REQUEST'.
+
+    APPEND INITIAL LINE TO rt_meta ASSIGNING <ls_meta>.
+    <ls_meta>-summary   = 'Get single merge requests'.
+    <ls_meta>-url-regex = '/merge_request/([\w-]+)/([\w-]+)'.
+    APPEND 'IV_REPO' TO <ls_meta>-url-group_names.
+    APPEND 'IV_ID' TO <ls_meta>-url-group_names.
+    <ls_meta>-method    = zcl_swag=>c_method-get.
+    <ls_meta>-handler   = 'GET_MERGE_REQUEST'.
+
+    APPEND INITIAL LINE TO rt_meta ASSIGNING <ls_meta>.
+    <ls_meta>-summary   = 'List open merge requests'.
+    <ls_meta>-url-regex = '/list_merge_requests/([\w-]+)'.
+    APPEND 'IV_REPO' TO <ls_meta>-url-group_names.
+    <ls_meta>-method    = zcl_swag=>c_method-get.
+    <ls_meta>-handler   = 'LIST_OPEN_MERGE_REQUESTS'.
 
   ENDMETHOD.
 ENDCLASS.

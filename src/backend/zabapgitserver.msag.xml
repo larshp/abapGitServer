@@ -68,6 +68,30 @@
      <MSGNR>012</MSGNR>
      <TEXT>Commit, bad field format</TEXT>
     </T100>
+    <T100>
+     <SPRSL>E</SPRSL>
+     <ARBGB>ZABAPGITSERVER</ARBGB>
+     <MSGNR>013</MSGNR>
+     <TEXT>Merge request &amp;1 Repository &amp;2 not found</TEXT>
+    </T100>
+    <T100>
+     <SPRSL>E</SPRSL>
+     <ARBGB>ZABAPGITSERVER</ARBGB>
+     <MSGNR>014</MSGNR>
+     <TEXT>Can&apos;t retrieve id for merge request. Table is locked (Transaction SM12)</TEXT>
+    </T100>
+    <T100>
+     <SPRSL>E</SPRSL>
+     <ARBGB>ZABAPGITSERVER</ARBGB>
+     <MSGNR>015</MSGNR>
+     <TEXT>Open merge request &amp;1 already exists for this combination.</TEXT>
+    </T100>
+    <T100>
+     <SPRSL>E</SPRSL>
+     <ARBGB>ZABAPGITSERVER</ARBGB>
+     <MSGNR>016</MSGNR>
+     <TEXT>Branch &amp;1 already merged into &amp;2.</TEXT>
+    </T100>
    </T100>
   </asx:values>
  </asx:abap>

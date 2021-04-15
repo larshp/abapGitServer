@@ -89,6 +89,24 @@ public section.
       attr4 type scx_attrname value '',
     end of M012 .
   constants:
+    begin of M013,
+      msgid type symsgid value 'ZABAPGITSERVER',
+      msgno type symsgno value '013',
+      attr1 type scx_attrname value 'REPO_NAME',
+      attr2 type scx_attrname value 'ID',
+      attr3 type scx_attrname value '',
+      attr4 type scx_attrname value '',
+    end of M013 .
+  constants:
+    begin of M014,
+      msgid type symsgid value 'ZABAPGITSERVER',
+      msgno type symsgno value '014',
+      attr1 type scx_attrname value '',
+      attr2 type scx_attrname value '',
+      attr3 type scx_attrname value '',
+      attr4 type scx_attrname value '',
+    end of M014 .
+  constants:
     begin of M003,
       msgid type symsgid value 'ZABAPGITSERVER',
       msgno type symsgno value '003',
@@ -99,13 +117,17 @@ public section.
     end of M003 .
   data SHA1 type ZAGS_SHA1 .
   data STRING type STRING .
+  data REPO_NAME type ZAGS_REPO_NAME .
+  data ID type ZAGS_MERGE_REQUEST_ID .
 
   methods CONSTRUCTOR
     importing
       !TEXTID like IF_T100_MESSAGE=>T100KEY optional
       !PREVIOUS like PREVIOUS optional
       !SHA1 type ZAGS_SHA1 optional
-      !STRING type STRING optional .
+      !STRING type STRING optional
+      !REPO_NAME type ZAGS_REPO_NAME optional
+      !ID type ZAGS_MERGE_REQUEST_ID optional .
 protected section.
 private section.
 ENDCLASS.
@@ -122,6 +144,8 @@ PREVIOUS = PREVIOUS
 .
 me->SHA1 = SHA1 .
 me->STRING = STRING .
+me->REPO_NAME = REPO_NAME .
+me->ID = ID .
 clear me->textid.
 if textid is initial.
   IF_T100_MESSAGE~T100KEY = ZCX_AGS_ERROR .
