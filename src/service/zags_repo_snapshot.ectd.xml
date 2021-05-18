@@ -31,7 +31,7 @@
       <TWB_EUBOBJ/>
       <TWB_EUTYPE/>
       <DEVCLASS></DEVCLASS>
-      <MASTERLANG>E</MASTERLANG>
+      <MASTERLANG>D</MASTERLANG>
       <TADIR_RESP></TADIR_RESP>
       <FRANGE>BC</FRANGE>
       <BCSET_MODE/>
@@ -560,7 +560,7 @@
       <item>
        <PNAME>ZAGS_MERGE_REQ</PNAME>
        <PTYP>V</PTYP>
-       <PDESC>Merge requests</PDESC>
+       <PDESC>Merge-requests</PDESC>
        <PINDEX>0002</PINDEX>
        <XMLREF_TYP>D</XMLREF_TYP>
        <PSTRUC_TYP>T</PSTRUC_TYP>
@@ -570,14 +570,14 @@
        <PDECIMALS>000000</PDECIMALS>
        <SORT_LNR>0004</SORT_LNR>
        <PREF_NAME2>ZAGS_MERGE_REQ[]</PREF_NAME2>
-       <VALUE>&lt;INITIAL&gt;</VALUE>
+       <VALUE>&lt;VALUE&gt;</VALUE>
        <VAL_TYPE>T</VAL_TYPE>
        <TAB_INDEX>0</TAB_INDEX>
        <DEEP_STRU>
         <xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema" targetNamespace="http://xml.sap.com/2003/05/eCATT/ddic" version="1.0">
          <xsd:complexType name="_ZAGS_MERGE_REQ">
           <xsd:annotation>
-           <xsd:documentation>I=t=O==C=S=K==D=ZAGS_MERGE_REQ=A==L==doc=Table from Structure</xsd:documentation>
+           <xsd:documentation>I=t=O==C=S=K==D=ZAGS_MERGE_REQ=A==L==doc=Tabelle aus Struktur</xsd:documentation>
           </xsd:annotation>
           <xsd:sequence>
            <xsd:element name="item" type="ZAGS_MERGE_REQ" minOccurs="0" maxOccurs="unbounded"/>
@@ -585,12 +585,12 @@
          </xsd:complexType>
          <xsd:complexType name="ZAGS_MERGE_REQ">
           <annotation>
-           <documentation>I==O==C=S=K==D=ZAGS_MERGE_REQ=A=u=L=000000=doc=Merge requests</documentation>
+           <documentation>I==O==C=S=K==D=ZAGS_MERGE_REQ=A=u=L=000000=doc=</documentation>
           </annotation>
           <sequence>
            <element name="CLIENT" minOccurs="0">
             <annotation>
-             <documentation>I==O==C==K=X=D=MANDT=A=C=L=000003=doc=Client</documentation>
+             <documentation>I==O==C==K=X=D=MANDT=A=C=L=000003=doc=Mandant</documentation>
             </annotation>
             <simpleType>
              <restriction base="string">
@@ -600,7 +600,7 @@
            </element>
            <element name="REPO" minOccurs="0">
             <annotation>
-             <documentation>I==O==C==K=X=D=ZAGS_REPO=A=C=L=000022=doc=Repository</documentation>
+             <documentation>I==O==C==K=X=D=ZAGS_REPO=A=C=L=000022=doc=</documentation>
             </annotation>
             <simpleType>
              <restriction base="string">
@@ -610,12 +610,22 @@
            </element>
            <element name="ID" minOccurs="0" type="int">
             <annotation>
-             <documentation>I==O==C==K=X=D=ZAGS_MERGE_REQUEST_ID=A=I=L=000010=doc=Merge</documentation>
+             <documentation>I==O==C==K=X=D=ZAGS_MERGE_REQUEST_ID=A=I=L=000010=doc=</documentation>
             </annotation>
+           </element>
+           <element name="TITLE" minOccurs="0">
+            <annotation>
+             <documentation>I==O==C==K==D=ZAGS_MERGE_REQUEST_TITLE=A=C=L=000200=doc=</documentation>
+            </annotation>
+            <simpleType>
+             <restriction base="string">
+              <maxLength value="200"/>
+             </restriction>
+            </simpleType>
            </element>
            <element name="TARGET_BRANCH" minOccurs="0">
             <annotation>
-             <documentation>I==O==C==K==D=ZAGS_BRANCH=A=C=L=000022=doc=Branch</documentation>
+             <documentation>I==O==C==K==D=ZAGS_BRANCH=A=C=L=000022=doc=</documentation>
             </annotation>
             <simpleType>
              <restriction base="string">
@@ -625,7 +635,7 @@
            </element>
            <element name="SOURCE_BRANCH" minOccurs="0">
             <annotation>
-             <documentation>I==O==C==K==D=ZAGS_BRANCH=A=C=L=000022=doc=Branch</documentation>
+             <documentation>I==O==C==K==D=ZAGS_BRANCH=A=C=L=000022=doc=</documentation>
             </annotation>
             <simpleType>
              <restriction base="string">
@@ -635,11 +645,21 @@
            </element>
            <element name="MERGED" minOccurs="0">
             <annotation>
-             <documentation>I==O==C==K==D=ZAGS_MERGE_REQUEST_MERGED=A=C=L=000001=doc=Mer</documentation>
+             <documentation>I==O==C==K==D=ZAGS_MERGE_REQUEST_MERGED=A=C=L=000001=doc=</documentation>
             </annotation>
             <simpleType>
              <restriction base="string">
               <maxLength value="1"/>
+             </restriction>
+            </simpleType>
+           </element>
+           <element name="CREATED_BY" minOccurs="0">
+            <annotation>
+             <documentation>I==O==C==K==D=SYST_UNAME=A=C=L=000012=doc=ABAP-Systemfeld: N</documentation>
+            </annotation>
+            <simpleType>
+             <restriction base="string">
+              <maxLength value="12"/>
              </restriction>
             </simpleType>
            </element>
@@ -648,7 +668,18 @@
         </xsd:schema>
        </DEEP_STRU>
        <DEEP_DATA>
-        <_ZAGS_MERGE_REQ/>
+        <ddic:_ZAGS_MERGE_REQ xmlns:ddic="http://xml.sap.com/2003/05/eCATT/ddic">
+         <item>
+          <CLIENT/>
+          <REPO/>
+          <ID/>
+          <TITLE/>
+          <TARGET_BRANCH/>
+          <SOURCE_BRANCH/>
+          <MERGED/>
+          <CREATED_BY/>
+         </item>
+        </ddic:_ZAGS_MERGE_REQ>
        </DEEP_DATA>
       </item>
       <item>
@@ -662,7 +693,7 @@
        <PDATLEN>0000</PDATLEN>
        <PINTLEN>000000</PINTLEN>
        <PDECIMALS>000000</PDECIMALS>
-       <SORT_LNR>0005</SORT_LNR>
+       <SORT_LNR>0006</SORT_LNR>
        <PREF_NAME2>ZEXPORT_TABLE_LIST[]</PREF_NAME2>
        <VALUE>&lt;VALUE&gt;</VALUE>
        <VAL_TYPE>T</VAL_TYPE>
@@ -1144,7 +1175,7 @@
          <VALUE>&lt;VALUE&gt;</VALUE>
          <VAL_TYPE>X</VAL_TYPE>
          <DEEP_DATA>
-          <_ZAGS_MERGE_REQ>
+          <ddic:_ZAGS_MERGE_REQ xmlns:ddic="http://xml.sap.com/2003/05/eCATT/ddic">
            <item>
             <CLIENT>010</CLIENT>
             <REPO>051MciMJ7jkcybs}nEaWsW</REPO>
@@ -1162,7 +1193,7 @@
             <SOURCE_BRANCH>051MciMJ7jkcyIuN2Z10sW</SOURCE_BRANCH>
             <CREATED_BY>GERBERSHAGEJ</CREATED_BY>
            </item>
-          </_ZAGS_MERGE_REQ>
+          </ddic:_ZAGS_MERGE_REQ>
          </DEEP_DATA>
         </item>
         <item>
