@@ -1,11 +1,9 @@
-interface ZIF_AGS_BACKEND_BLOB
-  public .
+INTERFACE zif_ags_backend_blob
+  PUBLIC .
+  INTERFACES if_badi_interface .
 
-
-  interfaces IF_BADI_INTERFACE .
-
-  methods AFTER_SAVE
-    importing
-      !IO_BLOB type ref to ZCL_AGS_OBJ_BLOB
-      !IS_OBJECT type ZAGS_OBJECTS .
-endinterface.
+  METHODS after_save
+    IMPORTING
+      !io_blob   TYPE REF TO zcl_ags_obj_blob
+      !is_object TYPE zags_objects .
+ENDINTERFACE.

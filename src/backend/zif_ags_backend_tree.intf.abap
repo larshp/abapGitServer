@@ -1,11 +1,9 @@
-interface ZIF_AGS_BACKEND_TREE
-  public .
+INTERFACE zif_ags_backend_tree
+  PUBLIC .
+  INTERFACES if_badi_interface .
 
-
-  interfaces IF_BADI_INTERFACE .
-
-  methods AFTER_SAVE
-    importing
-      !IO_TREE type ref to ZCL_AGS_OBJ_TREE
-      !IS_OBJECT type ZAGS_OBJECTS .
-endinterface.
+  METHODS after_save
+    IMPORTING
+      !io_tree   TYPE REF TO zcl_ags_obj_tree
+      !is_object TYPE zags_objects .
+ENDINTERFACE.
