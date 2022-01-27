@@ -204,6 +204,19 @@ CLASS ZCL_AGS_OBJ_TREE IMPLEMENTATION.
 
     zcl_ags_db=>get_objects( )->modify( ls_object ).
 
+    DATA:
+      lo_badi TYPE REF TO zbd_ags_backend_tree.
+
+    TRY.
+        GET BADI lo_badi.
+
+        CALL BADI lo_badi->after_save
+          EXPORTING
+            io_tree   = me
+            is_object = ls_object.
+      CATCH cx_badi_not_implemented.
+
+    ENDTRY.
   ENDMETHOD.
 
 

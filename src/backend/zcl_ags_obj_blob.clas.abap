@@ -198,6 +198,19 @@ CLASS ZCL_AGS_OBJ_BLOB IMPLEMENTATION.
 
     zcl_ags_db=>get_objects( )->modify( ls_object ).
 
+    DATA:
+      lo_badi TYPE REF TO zbd_ags_backend_blob.
+
+    TRY.
+        GET BADI lo_badi.
+
+        CALL BADI lo_badi->after_save
+          EXPORTING
+            io_blob   = me
+            is_object = ls_object.
+      CATCH cx_badi_not_implemented.
+
+    ENDTRY.
   ENDMETHOD.
 
 
