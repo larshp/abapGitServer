@@ -13,7 +13,7 @@
       "files": "/src/**/*.*"
     },
     {
-      "url": "https://github.com/larshp/abapGit",
+      "url": "https://github.com/abapGit/abapGit",
       "folder": "/abapGit",
       "files": "/src/**/*.*"
     },
@@ -42,7 +42,6 @@
     "uncaught_exception": true,
     "unused_methods": false,
     "identical_contents": true,
-    "many_parenthesis": true,
     "prefer_xsdbool": true,
     "check_subrc": false,
     "cyclomatic_complexity": true,
@@ -56,6 +55,7 @@
     "unknown_types": true,
     "begin_single_include": true,
     "downport": false,
+    "unused_ddic": true,
     "line_break_multiple_parameters": false,
     "names_no_dash": true,
     "parser_missing_space": true,
@@ -101,15 +101,10 @@
     "7bit_ascii": true,
     "avoid_use": {
       "define": false,
-      "endselect": false,
-      "execSQL": true,
       "statics": true,
       "describeLines": true,
-      "communication": true,
-      "kernelCall": true,
       "break": true,
-      "defaultKey": false,
-      "systemCall": true
+      "defaultKey": false
     },
     "class_attribute_names": {
       "ignoreExceptions": true,
@@ -154,13 +149,12 @@
     "global_class": true,
     "identical_form_names": true,
     "if_in_if": true,
-    "in_statement_indentation": {
-      "ignoreExceptions": true
-    },
+    "in_statement_indentation": false,
     "indentation": {
       "ignoreExceptions": true,
       "alignTryCatch": false,
       "globalClassSkipFirst": false,
+      "selectionScreenBlockIndentation": false,
       "ignoreGlobalClassDefinition": false,
       "ignoreGlobalInterface": false
     },
@@ -185,6 +179,7 @@
     "message_exists": true,
     "method_length": {
       "errorWhenEmpty": true,
+      "checkForms": true,
       "ignoreTestClasses": false,
       "statements": 100
     },
@@ -231,6 +226,16 @@
       "compute": true,
       "fieldSymbolStructure": true,
       "add": true,
+      "parameter": true,
+      "callTransformation": true,
+      "communication": true,
+      "exitFromSQL": true,
+      "freeMemory": true,
+      "pack": true,
+      "ranges": true,
+      "regex": true,
+      "selectWithoutInto": true,
+      "sortByFS": true,
       "typePools": true,
       "load": true,
       "subtract": true,
