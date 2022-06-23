@@ -137,13 +137,13 @@ CLASS ltcl_explode_repo IMPLEMENTATION.
     cl_abap_unit_assert=>assert_equals(
       act = lines( lt_result )
       exp = 3 ).
-    READ TABLE lt_result WITH KEY type = zif_ags_constants=>c_type-commit
+    READ TABLE lt_result WITH KEY type COMPONENTS type = zif_ags_constants=>c_type-commit
       TRANSPORTING NO FIELDS.
     cl_abap_unit_assert=>assert_subrc( ).
-    READ TABLE lt_result WITH KEY type = zif_ags_constants=>c_type-tree
+    READ TABLE lt_result WITH KEY type COMPONENTS type = zif_ags_constants=>c_type-tree
       TRANSPORTING NO FIELDS.
     cl_abap_unit_assert=>assert_subrc( ).
-    READ TABLE lt_result WITH KEY type = zif_ags_constants=>c_type-blob
+    READ TABLE lt_result WITH KEY type COMPONENTS type = zif_ags_constants=>c_type-blob
       TRANSPORTING NO FIELDS.
     cl_abap_unit_assert=>assert_subrc( ).
 
