@@ -73,7 +73,7 @@ ENDCLASS.
 
 
 
-CLASS ZCL_AGS_OBJ_TREE IMPLEMENTATION.
+CLASS zcl_ags_obj_tree IMPLEMENTATION.
 
 
   METHOD add_file.
@@ -209,7 +209,11 @@ CLASS ZCL_AGS_OBJ_TREE IMPLEMENTATION.
 
   METHOD zif_ags_object~serialize.
 
-    rv_data = zcl_abapgit_git_pack=>encode_tree( mt_data ).
+    TRY.
+        rv_data = zcl_abapgit_git_pack=>encode_tree( mt_data ).
+      CATCH zcx_abapgit_exception.
+        RAISE EXCEPTION TYPE zcx_ags_error.
+    ENDTRY.
 
   ENDMETHOD.
 ENDCLASS.

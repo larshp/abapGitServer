@@ -42,7 +42,7 @@ ENDCLASS.
 
 
 
-CLASS ZCL_AGS_DB_OBJECTS IMPLEMENTATION.
+CLASS zcl_ags_db_objects IMPLEMENTATION.
 
 
   METHOD list.
@@ -100,7 +100,7 @@ CLASS ZCL_AGS_DB_OBJECTS IMPLEMENTATION.
         INTO TABLE rt_list
         FOR ALL ENTRIES IN it_sha1
         WHERE repo = iv_repo
-        AND sha1 = it_sha1-table_line.
+        AND sha1 = it_sha1-table_line ##SELECT_FAE_WITH_LOB[DATA_RAW].
     ENDIF.
 
   ENDMETHOD.

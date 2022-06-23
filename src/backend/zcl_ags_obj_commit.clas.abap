@@ -106,7 +106,7 @@ ENDCLASS.
 
 
 
-CLASS ZCL_AGS_OBJ_COMMIT IMPLEMENTATION.
+CLASS zcl_ags_obj_commit IMPLEMENTATION.
 
 
   METHOD get.
@@ -321,7 +321,11 @@ CLASS ZCL_AGS_OBJ_COMMIT IMPLEMENTATION.
     ASSERT NOT ms_data-author IS INITIAL.
     ASSERT NOT ms_data-committer IS INITIAL.
 
-    rv_data = zcl_abapgit_git_pack=>encode_commit( ms_data ).
+    TRY.
+        rv_data = zcl_abapgit_git_pack=>encode_commit( ms_data ).
+      CATCH zcx_abapgit_exception.
+        RAISE EXCEPTION TYPE zcx_ags_error.
+    ENDTRY.
 
   ENDMETHOD.
 ENDCLASS.
