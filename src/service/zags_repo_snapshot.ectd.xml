@@ -655,7 +655,7 @@
            </element>
            <element name="CREATED_BY" minOccurs="0">
             <annotation>
-             <documentation>I==O==C==K==D=SYST_UNAME=A=C=L=000012=doc=ABAP-Systemfeld: N</documentation>
+             <documentation>I==O==C==K==D=SYUNAME=A=C=L=000012=doc=Current Username</documentation>
             </annotation>
             <simpleType>
              <restriction base="string">

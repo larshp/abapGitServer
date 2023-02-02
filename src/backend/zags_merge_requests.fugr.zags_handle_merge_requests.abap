@@ -10,11 +10,13 @@ FUNCTION zags_handle_merge_requests.
 *"     VALUE(IV_SHA1_COMMIT_OLD) TYPE  ZAGS_SHA1
 *"----------------------------------------------------------------------
 
+  DATA: lt_merge_requests TYPE zags_merge_req_htt.
+  FIELD-SYMBOLS: <ls_mr> TYPE zags_merge_req.
   TRY.
-      DATA(lt_merge_requests) = zcl_ags_merge_requests=>find_merged_merge_requests(
+      lt_merge_requests = zcl_ags_merge_requests=>find_merged_merge_requests(
         iv_repo = iv_repo iv_target_branch = iv_target_branch
         iv_sha1_commit_new = iv_sha1_commit_new iv_sha1_commit_old = iv_sha1_commit_old ).
-      LOOP AT lt_merge_requests ASSIGNING FIELD-SYMBOL(<ls_mr>).
+      LOOP AT lt_merge_requests ASSIGNING <ls_mr>.
         CALL FUNCTION 'ENQUEUE_EZAGS_MERGE_REQ'
           EXPORTING
             repo         = iv_repo
