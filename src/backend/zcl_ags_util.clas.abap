@@ -46,6 +46,7 @@ CLASS ZCL_AGS_UTIL IMPLEMENTATION.
   METHOD get_time.
 
     TRY.
+
         rv_time = zcl_abapgit_git_time=>get_unix( ).
       CATCH zcx_abapgit_exception.
         ASSERT 0 = 1.
