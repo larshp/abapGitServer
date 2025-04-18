@@ -323,9 +323,9 @@ CLASS ZCL_AGS_SERVICE_REST IMPLEMENTATION.
 
   METHOD get_user.
 
-    DATA(lo_user) = zcl_abapgit_user_record=>get_instance( ).
-    rs_result-name = lo_user->get_name( sy-uname ).
-    rs_result-email = lo_user->get_email( sy-uname ).
+    DATA(li_user) = zcl_abapgit_env_factory=>get_user_record( ).
+    rs_result-name = li_user->get_name( sy-uname ).
+    rs_result-email = li_user->get_email( sy-uname ).
 
   ENDMETHOD.
 
