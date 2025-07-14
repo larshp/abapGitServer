@@ -24,7 +24,7 @@
     }
   ],
   "syntax": {
-    "version": "v740sp08",
+    "version": "v756",
     "errorNamespace": "^(Z|Y)"
   },
   "rules": {
@@ -49,7 +49,7 @@
     "omit_preceding_zeros": true,
     "pragma_style": false,
     "prefer_corresponding": false,
-    "prefer_raise_exception_new": true,
+    "prefer_raise_exception_new": false,
     "select_add_order_by": false,
     "select_performance": false,
     "slow_parameter_passing": false,
@@ -129,6 +129,8 @@
       "testSeams": true,
       "statics": true,
       "describeLines": true,
+      "exportToMemory": true,
+      "exportToDatabase": true,
       "break": true,
       "defaultKey": false
     },
@@ -162,6 +164,7 @@
       "if": true,
       "when": true,
       "while": true,
+      "loopAllowIfSubrc": false,
       "case": true,
       "try": true,
       "select": false,
@@ -254,6 +257,9 @@
       "compute": true,
       "occurences": true,
       "fieldSymbolStructure": true,
+      "clientSpecified": true,
+      "formDefinition": true,
+      "formImplementation": true,
       "add": true,
       "parameter": true,
       "callTransformation": true,
@@ -262,7 +268,7 @@
       "freeMemory": true,
       "pack": true,
       "ranges": true,
-      "regex": true,
+      "regex": false,
       "selectWithoutInto": true,
       "sortByFS": true,
       "typePools": true,
