@@ -24,7 +24,7 @@
     }
   ],
   "syntax": {
-    "version": "v756",
+    "version": "v740sp08",
     "errorNamespace": "^(Z|Y)"
   },
   "rules": {
