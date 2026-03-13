@@ -34,7 +34,7 @@ CLASS ZCL_AGS_LENGTH IMPLEMENTATION.
 
     rv_length = lv_x.
 
-  ENDMETHOD.                    "decode
+  ENDMETHOD.
 
 
   METHOD encode.
@@ -49,5 +49,5 @@ CLASS ZCL_AGS_LENGTH IMPLEMENTATION.
     lv_xstring = zcl_ags_util=>string_to_xstring_utf8( to_lower( lv_char ) ).
     rv_hex     = lv_xstring.
 
-  ENDMETHOD.                    "encode
+  ENDMETHOD.
 ENDCLASS.
